@@ -27,16 +27,31 @@ from modules.india.client import IndiaClient
 from modules.opensanctions.client import OpenSanctionsClient
 from modules.raw_search.engine import RawSearchEngine
 from modules.reporting.generator import generate_reports, generate_raw_reports
-from modules.reporting.logger import (
-    has_user_acknowledged,
-    log_acknowledgement,
-    log_search,
-    log_raw_search,
-    log_manual_check,
-    get_manual_checks_for_entity,
-    get_total_opensanctions_credits,
-    APP_VERSION,
-)
+try:
+    from modules.reporting.logger import (
+        has_user_acknowledged,
+        log_acknowledgement,
+        log_search,
+        log_raw_search,
+        log_manual_check,
+        get_manual_checks_for_entity,
+        get_total_opensanctions_credits,
+        APP_VERSION,
+    )
+except ImportError:
+    from modules.reporting.logger import (
+        has_user_acknowledged,
+        log_acknowledgement,
+        log_search,
+        log_raw_search,
+        log_manual_check,
+        get_total_opensanctions_credits,
+        APP_VERSION,
+    )
+
+    def get_manual_checks_for_entity(name: str, limit: int = 10) -> List[Dict[str, Any]]:
+        return []
+
 from modules.screening.tiering import screen_query_all_lists
 from modules.watchman.client import WatchmanClient
 
