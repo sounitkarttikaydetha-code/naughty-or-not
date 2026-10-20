@@ -8,6 +8,7 @@ import getpass
 import os
 import platform
 import re
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -19,7 +20,28 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
 
-REPORTS_DIR = Path(__file__).resolve().parent.parent.parent / "reports"
+def _get_reports_dir() -> Path:
+    """Return reports directory with %LOCALAPPDATA% fallback when frozen or in Program Files."""
+    if getattr(sys, "frozen", False):
+        local_app = os.environ.get("LOCALAPPDATA")
+        if local_app:
+            return Path(local_app) / "NaughtyOrNot" / "reports"
+    base = Path(__file__).resolve().parent.parent.parent
+    try:
+        r_dir = base / "reports"
+        r_dir.mkdir(parents=True, exist_ok=True)
+        test_file = r_dir / ".write_test"
+        test_file.touch()
+        test_file.unlink()
+        return r_dir
+    except (OSError, PermissionError):
+        local_app = os.environ.get("LOCALAPPDATA")
+        if local_app:
+            return Path(local_app) / "NaughtyOrNot" / "reports"
+        return base / "reports"
+
+REPORTS_DIR = _get_reports_dir()
+
 NOTICE_TEXT = (
     "TEST VERSION — for internal evaluation only. OpenSanctions data is licensed CC BY-NC 4.0; "
     "commercial use requires a licence from OpenSanctions. Not to be relied upon for transaction decisions."

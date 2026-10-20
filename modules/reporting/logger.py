@@ -8,13 +8,36 @@ import json
 import os
 import platform
 import sqlite3
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-LOGS_DIR = Path(__file__).resolve().parent.parent.parent / "logs"
+def _get_base_data_dir() -> Path:
+    """Return base storage directory with %LOCALAPPDATA% fallback when frozen or in Program Files."""
+    if getattr(sys, "frozen", False):
+        local_app = os.environ.get("LOCALAPPDATA")
+        if local_app:
+            return Path(local_app) / "NaughtyOrNot"
+    base = Path(__file__).resolve().parent.parent.parent
+    try:
+        test_dir = base / "logs"
+        test_dir.mkdir(parents=True, exist_ok=True)
+        test_file = test_dir / ".write_test"
+        test_file.touch()
+        test_file.unlink()
+        return base
+    except (OSError, PermissionError):
+        local_app = os.environ.get("LOCALAPPDATA")
+        if local_app:
+            return Path(local_app) / "NaughtyOrNot"
+        return base
+
+BASE_DATA_DIR = _get_base_data_dir()
+LOGS_DIR = BASE_DATA_DIR / "logs"
 DB_PATH = LOGS_DIR / "screening.db"
 APP_VERSION = "1.6.0"
+
 
 
 def get_db_connection() -> sqlite3.Connection:
