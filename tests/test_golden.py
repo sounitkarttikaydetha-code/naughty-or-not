@@ -78,6 +78,7 @@ class TestGoldenRegression(unittest.TestCase):
         if mismatches:
             self.fail(f"Golden regression mismatches on verified entries:\n" + "\n".join(mismatches))
 
+        self.assertGreater(verified_count, 0, "Golden regression suite must verify at least one golden expectation")
         print(f"\n[Golden Regression] Verified entries checked: {verified_count} (all passed).")
 
 

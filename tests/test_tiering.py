@@ -320,7 +320,7 @@ class TestMatchTieringLayerV2(unittest.TestCase):
         self.assertTrue(len(all_cands) > 0)
         # Verify info_hits exist
         info_cands = [c for c in all_cands if c.get("tier") == TIER_BELOW_THRESHOLD]
-        self.assertTrue(len(info_cands) >= 0)
+        self.assertGreater(len(info_cands), 0, "Volga Logistics search must yield sub-threshold info candidates")
 
     def test_13_jaipur_airport_overall_clean_with_info_candidates(self):
         """T1.7 Item 4: Jaipur International Airport Limited stays ✅ on overall banner even with ℹ️ candidates."""
