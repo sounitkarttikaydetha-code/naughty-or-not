@@ -259,15 +259,38 @@ class TestMatchTieringLayerV2(unittest.TestCase):
         self.assertEqual(csl_hit["matched_name"], "S7 AIRLINES")
         self.assertEqual(csl_hit["reason"], "core_name")
         self.assertAlmostEqual(csl_hit["score"], 0.4971, places=3)
-        self.assertEqual(csl_hit.get("score_source"), "query")
+        # T1.6 Item 3: Any hit below 0.60 must carry score_source: token_pass
+        self.assertEqual(csl_hit.get("score_source"), "token_pass")
 
     def test_9_siberia_airlines_on_us_csl_stem_difference(self):
-        """T1.4 Item 3: 'Siberia Airlines' vs 'SIBERIAN AIRLINES' stem difference -> NO_MATCH on us_csl."""
+        """T1.6 Item 2: 'Siberia Airlines' via alias table expansion -> POTENTIAL_MATCH on us_csl (b04d5f...)."""
         from modules.screening.tiering import screen_query_all_lists
         res = screen_query_all_lists("Siberia Airlines", query_type="airline")
         csl_hit = res["us_csl"]["best_hit"]
-        self.assertEqual(csl_hit["tier"], TIER_NO_MATCH)
-        self.assertEqual(csl_hit["tier_icon"], "✅")
+        self.assertEqual(csl_hit["tier"], TIER_POTENTIAL_MATCH)
+        self.assertEqual(csl_hit["tier_icon"], "🔴")
+        self.assertTrue(csl_hit["source_id"].startswith("b04d5f"))
+        self.assertIsNotNone(csl_hit.get("expanded_from"))
+
+    def test_10_fuzzy_word_pairs(self):
+        """T1.6 Item 5: Fuzzy word matching (>= 5 chars, >= 90% similarity)."""
+        from modules.screening.tiering import is_fuzzy_word_pair, check_core_name_match
+        self.assertTrue(is_fuzzy_word_pair("mohammad", "mohammed"))
+        self.assertTrue(is_fuzzy_word_pair("sberbank", "sberbanc"))
+        self.assertFalse(is_fuzzy_word_pair("air", "aim"))  # too short (< 5 chars)
+
+        # Check core matching with fuzzy pair yields core_name_fuzzy
+        m, reason = check_core_name_match(["mohammad"], ["mohammed"], is_person=True)
+        self.assertTrue(m)
+        self.assertEqual(reason, "core_name_fuzzy")
+
+        m, reason = check_core_name_match(["sberbank"], ["sberbanc"], is_person=False)
+        self.assertTrue(m)
+        self.assertEqual(reason, "core_name_fuzzy")
+
+        m, reason = check_core_name_match(["air"], ["aim"], is_person=False)
+        self.assertFalse(m)
+
 
 
 

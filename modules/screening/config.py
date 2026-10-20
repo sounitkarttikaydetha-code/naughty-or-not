@@ -30,4 +30,6 @@ COMPANY_TYPE_WORDS: List[str] = _config.get("company_type_words", [])
 NAME_VARIANTS: Dict[str, str] = _config.get("name_variants", {})
 ENABLE_COUNTRY_WORDS_GUARD: bool = bool(_config.get("enable_country_words_guard", False))
 COUNTRY_WORDS: List[str] = _config.get("country_words", [])
+FUZZY_WORD_MIN_LEN: int = int(_config.get("fuzzy_word_min_len", 5))
+FUZZY_WORD_MIN_SIMILARITY: float = float(_config.get("fuzzy_word_min_similarity", 0.85))
 

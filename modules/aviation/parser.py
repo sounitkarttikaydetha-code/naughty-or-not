@@ -361,6 +361,12 @@ def parse_eu_air_safety_list(pdf_path: Optional[Path] = None) -> Dict[str, Any]:
             if m:
                 icao = m.group(1).strip()
                 state = m.group(2).strip()
+
+                # Fix wrapped airline names where '... AIR SERVICES' was mistakenly matched as ICAO 'AIR' and State 'SERVICES'
+                if state.upper().strip("() ") in ["SERVICES", "SERVICE"]:
+                    prefix = combined
+                    continue
+
                 before_icao = combined[:m.start()].strip()
                 m_aoc = re.search(r'\s+(AOC\s+\d+|[A-Za-z0-9\-/\.]+)$', before_icao)
                 if m_aoc:

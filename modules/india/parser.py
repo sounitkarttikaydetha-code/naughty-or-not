@@ -302,15 +302,34 @@ def parse_fourth_schedule(html_path: Optional[Path] = None) -> Dict[str, Any]:
 
     entities: List[Dict[str, Any]] = []
 
+    # Load official registry to look up authoritative serial numbers rather than calculating len - i
+    registry_file = DATA_DIR / "fourth_schedule_registry.json"
+    registry_by_raw: Dict[str, int] = {}
+    registry_by_primary: Dict[str, int] = {}
+    if registry_file.is_file():
+        try:
+            with open(registry_file, "r", encoding="utf-8") as rf:
+                reg_data = json.load(rf)
+                for entry in reg_data:
+                    registry_by_raw[entry["raw_title"].strip()] = entry["sno"]
+                    registry_by_primary[entry["primary"].strip().lower()] = entry["sno"]
+        except Exception as e:
+            logger.warning(f"Error reading fourth_schedule_registry.json: {e}")
+
     total_records = len(raw_records)
     for i, row in enumerate(raw_records):
-        # MHA list is published in reverse chronological order (entry 80 down to entry 1)
-        mha_sno = total_records - i
         parts = [p.strip().rstrip(".").strip() for p in row.split("@") if p.strip()]
         if not parts:
             continue
         primary = parts[0]
         aliases = [p for p in parts[1:] if p and p != primary]
+
+        # Use authoritative serial number from official registry
+        mha_sno = (
+            registry_by_raw.get(row.strip())
+            or registry_by_primary.get(primary.strip().lower())
+            or (total_records - i)
+        )
 
         entities.append({
             "id": f"IN-UAPA-IND-{mha_sno}",

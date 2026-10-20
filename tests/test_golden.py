@@ -54,15 +54,26 @@ class TestGoldenRegression(unittest.TestCase):
                     verified_count += 1
                     actual_tier = actual_results.get(src, {}).get("best_hit", {}).get("tier")
                     expected_tier = exp.get("tier")
-                    # Must be 🔴 or 🟠, and must match expected tier
-                    if actual_tier not in ["POTENTIAL_MATCH", "POSSIBLE_MATCH_REVIEW"]:
-                        mismatches.append(
-                            f"[{query_name}] on '{src}': expected 🔴 or 🟠 ('{expected_tier}'), but got '{actual_tier}' (Evidence: {exp.get('evidence')})"
-                        )
-                    elif actual_tier != expected_tier:
-                        mismatches.append(
-                            f"[{query_name}] on '{src}': expected '{expected_tier}', got '{actual_tier}' (Evidence: {exp.get('evidence')})"
-                        )
+                    evidence = exp.get("evidence", "")
+
+                    if evidence == "known_clean_entity":
+                        # Negative regression lock: MUST NOT be 🔴 on any list
+                        if actual_tier == "POTENTIAL_MATCH":
+                            matched_n = actual_results.get(src, {}).get("best_hit", {}).get("matched_name")
+                            mismatches.append(
+                                f"[{query_name}] on '{src}': FALSE RED! Clean entity got 🔴 POTENTIAL_MATCH (Matched: '{matched_n}')"
+                            )
+                    else:
+                        # Positive regression lock: must match expected 🔴 or 🟠
+                        if actual_tier not in ["POTENTIAL_MATCH", "POSSIBLE_MATCH_REVIEW"]:
+                            mismatches.append(
+                                f"[{query_name}] on '{src}': expected 🔴 or 🟠 ('{expected_tier}'), but got '{actual_tier}' (Evidence: {evidence})"
+                            )
+                        elif actual_tier != expected_tier:
+                            mismatches.append(
+                                f"[{query_name}] on '{src}': expected '{expected_tier}', got '{actual_tier}' (Evidence: {evidence})"
+                            )
+
 
         if mismatches:
             self.fail(f"Golden regression mismatches on verified entries:\n" + "\n".join(mismatches))
