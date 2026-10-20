@@ -16,6 +16,8 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 from modules.screening.config import (
     ALIAS_SPLIT_DELIMITERS,
     CANDIDATE_MIN_MATCH,
+    DISPLAY_MIN_MATCH,
+    DISPLAY_LIMIT,
     COMPANY_TYPE_WORDS,
     ENABLE_COUNTRY_WORDS_GUARD,
     COUNTRY_WORDS,
@@ -32,6 +34,7 @@ from modules.watchman.client import WatchmanClient
 # Tier Constants
 TIER_POTENTIAL_MATCH = "POTENTIAL_MATCH"            # 🔴
 TIER_POSSIBLE_MATCH = "POSSIBLE_MATCH_REVIEW"       # 🟠
+TIER_BELOW_THRESHOLD = "BELOW_THRESHOLD"            # ℹ️
 TIER_NO_MATCH = "NO_MATCH"                          # ✅
 TIER_NOT_CHECKED = "NOT_CHECKED"                    # ⚪
 
@@ -198,8 +201,11 @@ def normalize_name(text: str) -> List[str]:
 
 
 def is_fuzzy_word_pair(w1: str, w2: str) -> bool:
-    """Check if two words are a fuzzy match: >= 5 chars each and >= 85% similarity (edit distance 1 for 8 chars)."""
+    """Check if two words are a fuzzy match: >= 5 chars each and >= 90% similarity."""
     if len(w1) < FUZZY_WORD_MIN_LEN or len(w2) < FUZZY_WORD_MIN_LEN:
+        return False
+    # Stem differences (e.g. siberia vs siberian) are not fuzzy misspellings
+    if w1 + "n" == w2 or w2 + "n" == w1:
         return False
     return difflib.SequenceMatcher(None, w1, w2).ratio() >= FUZZY_WORD_MIN_SIMILARITY
 
@@ -462,9 +468,19 @@ def tier_single_entity(
         "core_name_reverse",
     ]
 
-    # Rule 6: Candidates scoring 0.60–0.70 kept ONLY if an exact core-name check passes (or person partial)
-    if score < POSSIBLE_MATCH_THRESHOLD and not (core_pass or best_match_type == "partial_name_person"):
-        return None
+    q_words_norm = normalize_name(query)
+    c_words_matched = normalize_name(best_matched_name)
+    weak_set = {w.lower() for w in WEAK_WORDS} | {w.lower() for w in COUNTRY_WORDS}
+    q_distinctive = [w for w in q_words_norm if len(w) >= MIN_DISTINCTIVE_WORD_LEN and w not in weak_set]
+    c_distinctive = [w for w in c_words_matched if len(w) >= MIN_DISTINCTIVE_WORD_LEN and w not in weak_set]
+
+    # T1.7.1: A reverse core-name match against a listed name of one word must be 🟠, never 🔴
+    # When query has other distinctive words outside the 1-word matched core
+    is_single_word_reverse_partial = (
+        best_match_type == "core_name_reverse"
+        and len(c_distinctive) <= 1
+        and set(q_distinctive) != set(c_distinctive)
+    )
 
     # Determine Tier and Reason
     tier = TIER_NO_MATCH
@@ -476,8 +492,11 @@ def tier_single_entity(
         reason = "core_name_fuzzy"
     elif is_person:
         # Rule 5: Person Rule
-        # A partial name match (e.g. 'Rajesh Kumar' ⊂ 'Rajesh Kumar GUPTA') is strictly 🟠 partial_name_person
-        if best_match_type == "partial_name_person":
+        # T1.7.4: Person searches: candidates below 0.60 are shown as ℹ️ and can never become 🟠 or 🔴
+        if score < 0.60:
+            tier = TIER_BELOW_THRESHOLD
+            reason = "below_threshold"
+        elif best_match_type == "partial_name_person":
             tier = TIER_POSSIBLE_MATCH
             reason = "partial_name_person"
         elif score >= POTENTIAL_MATCH_THRESHOLD:
@@ -491,6 +510,9 @@ def tier_single_entity(
         elif score >= POSSIBLE_MATCH_THRESHOLD:
             tier = TIER_POSSIBLE_MATCH
             reason = "score"
+        else:
+            tier = TIER_BELOW_THRESHOLD
+            reason = "below_threshold"
 
         # Secondary identifier conflict check
         if tier == TIER_POTENTIAL_MATCH:
@@ -500,7 +522,11 @@ def tier_single_entity(
 
     else:
         # Organisation / Entity Rule
-        if score >= POTENTIAL_MATCH_THRESHOLD and best_match_type == "core_name_reverse":
+        # T1.7.1: A reverse core-name match against a listed name of one word must be 🟠, never 🔴
+        if best_match_type == "core_name_reverse" and is_single_word_reverse_partial:
+            tier = TIER_POSSIBLE_MATCH
+            reason = "core_name_reverse"
+        elif score >= POTENTIAL_MATCH_THRESHOLD and best_match_type == "core_name_reverse":
             tier = TIER_POTENTIAL_MATCH
             reason = "score_and_core_name_reverse"
         elif best_match_type == "core_name_reverse":
@@ -518,16 +544,84 @@ def tier_single_entity(
         elif score >= POSSIBLE_MATCH_THRESHOLD:
             tier = TIER_POSSIBLE_MATCH
             reason = "score"
+        else:
+            tier = TIER_BELOW_THRESHOLD
+            reason = "below_threshold"
 
+    # T1.7.1: For Airline and Organisation searches, a candidate whose entity type is
+    # Vessel, Aircraft or Person must be 🟠 at most, with reason type_mismatch.
+    is_airline_or_org = (
+        query_type is not None
+        and query_type.lower() in ["airline", "organisation", "organization"]
+    )
+    ent_type_raw = str(
+        entity.get("entityType")
+        or entity.get("type")
+        or (entity.get("sourceData") or {}).get("sdnType")
+        or ""
+    ).lower()
+
+    source_list = entity.get("sourceList", "")
+    sd = entity.get("sourceData") or {}
+    if not isinstance(sd, dict):
+        sd = {}
+
+    # Check raw words in primary name and aliases for corporate keywords before normalization stripped them
+    all_raw_text = (primary_name + " " + " ".join(all_aliases)).lower()
+    raw_name_tokens = set(re.findall(r"\b[A-Za-z0-9]+\b", all_raw_text))
+    company_words_set = {w.lower() for w in COMPANY_TYPE_WORDS} | {w.lower() for w in WEAK_WORDS}
+    has_company_words = bool(raw_name_tokens & company_words_set)
+
+    is_truly_vessel = (
+        ent_type_raw == "vessel"
+        or entity.get("vessel") is not None
+        or sd.get("sdnType") == "vessel"
+    )
+    is_truly_aircraft = (
+        ent_type_raw == "aircraft"
+        or entity.get("aircraft") is not None
+        or sd.get("sdnType") == "aircraft"
+    )
+
+    is_truly_person = False
+    if not has_company_words:
+        if source_list == "us_ofac":
+            is_truly_person = (sd.get("sdnType") == "individual" or ent_type_raw in ["person", "individual"])
+        elif source_list == "us_csl":
+            csl_src = str(sd.get("Source", ""))
+            is_truly_person = ("Entity List" not in csl_src and ent_type_raw in ["person", "individual"])
+        else:
+            is_truly_person = (ent_type_raw in ["person", "individual"])
+
+    is_mismatched_type = is_truly_vessel or is_truly_aircraft or is_truly_person
+
+    if is_airline_or_org and is_mismatched_type:
+        if tier in [TIER_POTENTIAL_MATCH, TIER_POSSIBLE_MATCH]:
+            tier = TIER_POSSIBLE_MATCH
+            reason = "type_mismatch"
+
+    tier_icon = (
+        "🔴" if tier == TIER_POTENTIAL_MATCH
+        else ("🟠" if tier == TIER_POSSIBLE_MATCH
+        else ("ℹ️" if tier == TIER_BELOW_THRESHOLD
+        else ("✅" if tier == TIER_NO_MATCH else "⚪")))
+    )
+
+    label = None
+    if tier == TIER_BELOW_THRESHOLD:
+        label = "Shown for information — below match threshold"
+
+    score_source = "token_pass" if score < 0.60 else entity.get("score_source", "query")
 
     return {
         "tier": tier,
-        "tier_icon": "🔴" if tier == TIER_POTENTIAL_MATCH else ("🟠" if tier == TIER_POSSIBLE_MATCH else ("✅" if tier == TIER_NO_MATCH else "⚪")),
+        "tier_icon": tier_icon,
+        "label": label,
         "reason": reason,
         "score": score,
         "watchman_raw_score": score,
         "tier_reason": reason,
-        "score_source": entity.get("score_source", "query"),
+        "score_source": score_source,
         "primary_name": primary_name,
         "matched_name": best_matched_name,
         "entity_type": "person" if is_person else (entity.get("entityType") or "organisation"),
@@ -604,10 +698,11 @@ def _screen_direct_all_lists(
     is_person_search = (query_type and query_type.lower() == "person")
 
     for src in SOURCE_LISTS:
-        # Candidate retrieval: 0.60 for persons, 0.45 for organisations/airlines
-        retrieval_min_match = 0.60 if is_person_search else 0.45
+        # Candidate retrieval: DISPLAY_MIN_MATCH (0.50) for persons, 0.45 for organisations/airlines
+        retrieval_min_match = DISPLAY_MIN_MATCH if is_person_search else min(DISPLAY_MIN_MATCH, 0.45)
+        retrieval_limit = 50
         resp = client.search(
-            name=query, min_match=retrieval_min_match, source=src, limit=50
+            name=query, min_match=retrieval_min_match, source=src, limit=retrieval_limit
         )
 
         raw_entities = resp.get("results", {}).get("entities") or []
@@ -624,7 +719,7 @@ def _screen_direct_all_lists(
 
             for token in distinctive_tokens:
                 extra_resp = client.search(
-                    name=token, min_match=0.45, source=src, limit=50
+                    name=token, min_match=0.45, source=src, limit=retrieval_limit
                 )
                 extra_entities = extra_resp.get("results", {}).get("entities") or []
                 for ee in extra_entities:
@@ -635,10 +730,6 @@ def _screen_direct_all_lists(
                         entity_map[sid] = ee_copy
 
         merged_raw_entities = list(entity_map.values())
-
-        # For persons, nothing below 0.60 is kept (T1.6.3)
-        if is_person_search:
-            merged_raw_entities = [e for e in merged_raw_entities if float(e.get("match", 0.0)) >= 0.60]
 
         if resp.get("status") == "unavailable" and not merged_raw_entities:
             unavail_hit = {
@@ -655,15 +746,24 @@ def _screen_direct_all_lists(
                 "source_id": "—",
                 "expanded_from": None,
                 "error": resp.get("error"),
+                "below_threshold_count": 0,
+                "red_count": 0,
+                "orange_count": 0,
+                "limit_reached": False,
             }
             results_by_source[src] = {
                 "best_hit": unavail_hit,
                 "red_hits": [],
                 "orange_hits": [],
+                "info_hits": [],
+                "all_candidates": [],
+                "limit_reached": False,
             }
             continue
 
-        evaluated_candidates: List[Dict[str, Any]] = []
+        red_hits: List[Dict[str, Any]] = []
+        orange_hits: List[Dict[str, Any]] = []
+        info_hits: List[Dict[str, Any]] = []
 
         for ent in merged_raw_entities:
             tiered = tier_single_entity(
@@ -675,14 +775,35 @@ def _screen_direct_all_lists(
                 nationality=nationality,
             )
             if tiered is not None:
-                # Any hit below 0.60 must carry score_source: token_pass (T1.6.3)
+                # Any hit below 0.60 must carry score_source: token_pass (T1.6.3 / T1.7.2)
                 if tiered["score"] < 0.60:
                     tiered["score_source"] = "token_pass"
                 tiered["expanded_from"] = None
-                evaluated_candidates.append(tiered)
 
-        if not evaluated_candidates:
-            no_match_hit = {
+                if tiered["tier"] == TIER_POTENTIAL_MATCH:
+                    red_hits.append(tiered)
+                elif tiered["tier"] == TIER_POSSIBLE_MATCH:
+                    orange_hits.append(tiered)
+                else:
+                    info_hits.append(tiered)
+
+        red_hits.sort(key=lambda x: x["score"], reverse=True)
+        orange_hits.sort(key=lambda x: x["score"], reverse=True)
+        info_hits.sort(key=lambda x: x["score"], reverse=True)
+
+        all_candidates = red_hits + orange_hits + info_hits
+        limit_reached = len(all_candidates) >= DISPLAY_LIMIT
+        display_candidates = all_candidates[:DISPLAY_LIMIT]
+        display_info = [c for c in display_candidates if c["tier"] == TIER_BELOW_THRESHOLD]
+        display_red = [c for c in display_candidates if c["tier"] == TIER_POTENTIAL_MATCH]
+        display_orange = [c for c in display_candidates if c["tier"] == TIER_POSSIBLE_MATCH]
+
+        if display_red:
+            best_hit = dict(display_red[0])
+        elif display_orange:
+            best_hit = dict(display_orange[0])
+        else:
+            best_hit = {
                 "tier": TIER_NO_MATCH,
                 "tier_icon": "✅",
                 "reason": "none",
@@ -698,32 +819,21 @@ def _screen_direct_all_lists(
                 "source_id": "—",
                 "expanded_from": None,
             }
-            results_by_source[src] = {
-                "best_hit": no_match_hit,
-                "red_hits": [],
-                "orange_hits": [],
-            }
-            continue
 
-        # Rule 7: Sort by tier, then by core-name pass, then by score
-        evaluated_candidates.sort(
-            key=lambda x: (
-                tier_order.get(x["tier"], 0),
-                1 if x["core_pass"] else 0,
-                x["score"],
-            ),
-            reverse=True,
-        )
-
-        red_hits = [h for h in evaluated_candidates if h["tier"] == TIER_POTENTIAL_MATCH]
-        orange_hits = [h for h in evaluated_candidates if h["tier"] == TIER_POSSIBLE_MATCH][:3]
-
-        best_hit = evaluated_candidates[0]
+        best_hit["below_threshold_count"] = len(display_info)
+        best_hit["red_count"] = len(display_red)
+        best_hit["orange_count"] = len(display_orange)
+        best_hit["limit_reached"] = limit_reached
+        if best_hit["tier"] == TIER_NO_MATCH and len(display_info) > 0:
+            best_hit["note"] = f"({len(display_info)} candidates below threshold — see list)"
 
         results_by_source[src] = {
             "best_hit": best_hit,
-            "red_hits": red_hits,
-            "orange_hits": orange_hits,
+            "red_hits": display_red,
+            "orange_hits": display_orange,
+            "info_hits": display_info,
+            "all_candidates": display_candidates,
+            "limit_reached": limit_reached,
         }
 
     return results_by_source
@@ -744,6 +854,9 @@ def screen_query_all_lists(
       - 'best_hit': Dict with top hit metadata (including 'expanded_from')
       - 'red_hits': All POTENTIAL_MATCH (🔴) hits
       - 'orange_hits': Top 3 POSSIBLE_MATCH_REVIEW (🟠) hits
+      - 'info_hits': All BELOW_THRESHOLD (ℹ️) hits
+      - 'all_candidates': All candidates sorted by tier then score
+      - 'limit_reached': bool indicating if DISPLAY_LIMIT was reached
     """
     if client is None:
         client = WatchmanClient()
@@ -764,11 +877,18 @@ def screen_query_all_lists(
                 "source_list": src,
                 "source_id": "—",
                 "expanded_from": None,
+                "below_threshold_count": 0,
+                "red_count": 0,
+                "orange_count": 0,
+                "limit_reached": False,
             }
             results_by_source[src] = {
                 "best_hit": empty_hit,
                 "red_hits": [],
                 "orange_hits": [],
+                "info_hits": [],
+                "all_candidates": [],
+                "limit_reached": False,
             }
         return results_by_source
 
@@ -817,6 +937,29 @@ def screen_query_all_lists(
                     exp_best_copy["expanded_from"] = exp_alias
                     direct_results[src]["best_hit"] = exp_best_copy
                     direct_results[src]["orange_hits"].append(exp_best_copy)
+
+                # Merge expanded candidates into all_candidates and info_hits if not present
+                existing_sids = {c.get("source_id") for c in direct_results[src]["all_candidates"]}
+                for cand in exp_res[src].get("all_candidates", []):
+                    sid = cand.get("source_id")
+                    if sid and sid not in existing_sids:
+                        cand_copy = dict(cand)
+                        cand_copy["expanded_from"] = exp_alias
+                        direct_results[src]["all_candidates"].append(cand_copy)
+                        existing_sids.add(sid)
+                        if cand_copy.get("tier") == TIER_BELOW_THRESHOLD:
+                            direct_results[src]["info_hits"].append(cand_copy)
+                        elif cand_copy.get("tier") == TIER_POSSIBLE_MATCH and cand_copy not in direct_results[src]["orange_hits"]:
+                            direct_results[src]["orange_hits"].append(cand_copy)
+                        elif cand_copy.get("tier") == TIER_POTENTIAL_MATCH and cand_copy not in direct_results[src]["red_hits"]:
+                            direct_results[src]["red_hits"].append(cand_copy)
+
+                # Refresh counts on best_hit
+                direct_results[src]["best_hit"]["below_threshold_count"] = len(direct_results[src]["info_hits"])
+                direct_results[src]["best_hit"]["red_count"] = len(direct_results[src]["red_hits"])
+                direct_results[src]["best_hit"]["orange_count"] = len(direct_results[src]["orange_hits"])
+                if direct_results[src]["best_hit"]["tier"] == TIER_NO_MATCH and len(direct_results[src]["info_hits"]) > 0:
+                    direct_results[src]["best_hit"]["note"] = f"({len(direct_results[src]['info_hits'])} candidates below threshold — see list)"
 
     return direct_results
 

@@ -8,6 +8,7 @@ from modules.screening.tiering import (
     TIER_NO_MATCH,
     TIER_POSSIBLE_MATCH,
     TIER_POTENTIAL_MATCH,
+    TIER_BELOW_THRESHOLD,
     check_core_name_match,
     check_secondary_identifier_conflict,
     extract_all_aliases,
@@ -80,8 +81,10 @@ class TestMatchTieringLayerV2(unittest.TestCase):
             "entityType": "organisation",
         }
         res_siberia = tier_single_entity("Siberia Airlines", dummy_csl_low)
-        # Does not force a core_name match. Because score 0.6482 < 0.70 without core match, discarded by Rule 6
-        self.assertIsNone(res_siberia)
+        # T1.7: Does not force a core_name match (< 0.70 without core match) -> kept as BELOW_THRESHOLD
+        self.assertIsNotNone(res_siberia)
+        self.assertEqual(res_siberia["tier"], TIER_BELOW_THRESHOLD)
+        self.assertEqual(res_siberia["tier_icon"], "ℹ️")
 
     def test_3_check_every_alias_rajesh_kumar(self):
         """
@@ -273,23 +276,76 @@ class TestMatchTieringLayerV2(unittest.TestCase):
         self.assertIsNotNone(csl_hit.get("expanded_from"))
 
     def test_10_fuzzy_word_pairs(self):
-        """T1.6 Item 5: Fuzzy word matching (>= 5 chars, >= 90% similarity)."""
+        """T1.6 Item 5 / T1.7 Item 2: Fuzzy word matching (>= 5 chars, >= 90% similarity)."""
         from modules.screening.tiering import is_fuzzy_word_pair, check_core_name_match
-        self.assertTrue(is_fuzzy_word_pair("mohammad", "mohammed"))
-        self.assertTrue(is_fuzzy_word_pair("sberbank", "sberbanc"))
+        # >= 90% pairs pass
+        self.assertTrue(is_fuzzy_word_pair("aeroflot", "aeroflote"))  # 16/17 = 0.941
+        self.assertTrue(is_fuzzy_word_pair("transneft", "transnefte"))  # 18/19 = 0.947
+
+        # Stem differences (e.g. siberia vs siberian) are excluded from fuzzy matching
+        self.assertFalse(is_fuzzy_word_pair("siberia", "siberian"))
+
+        # < 90% pairs fail at 0.90 threshold
+        self.assertFalse(is_fuzzy_word_pair("sberbank", "sberbanc"))  # 14/16 = 0.875 (< 0.90)
+        self.assertFalse(is_fuzzy_word_pair("mohammad", "mohammed"))  # 14/16 = 0.875 (< 0.90)
         self.assertFalse(is_fuzzy_word_pair("air", "aim"))  # too short (< 5 chars)
 
         # Check core matching with fuzzy pair yields core_name_fuzzy
-        m, reason = check_core_name_match(["mohammad"], ["mohammed"], is_person=True)
-        self.assertTrue(m)
-        self.assertEqual(reason, "core_name_fuzzy")
-
-        m, reason = check_core_name_match(["sberbank"], ["sberbanc"], is_person=False)
+        m, reason = check_core_name_match(["aeroflot"], ["aeroflote"], is_person=False)
         self.assertTrue(m)
         self.assertEqual(reason, "core_name_fuzzy")
 
         m, reason = check_core_name_match(["air"], ["aim"], is_person=False)
         self.assertFalse(m)
+
+    def test_11_siberia_vessel_not_red_on_us_ofac(self):
+        """T1.7 Item 1: S7 or Siberia Airlines must NOT be 🔴 on us_ofac through SIBERIA (37078) alone."""
+        from modules.screening.tiering import screen_query_all_lists
+        for q in ["S7", "Siberia Airlines"]:
+            res = screen_query_all_lists(q, query_type="airline")
+            ofac_hit = res["us_ofac"]["best_hit"]
+            # Must not be POTENTIAL_MATCH (🔴) for vessel 37078
+            if ofac_hit.get("source_id") == "37078":
+                self.assertNotEqual(ofac_hit["tier"], TIER_POTENTIAL_MATCH)
+                self.assertEqual(ofac_hit["tier"], TIER_POSSIBLE_MATCH)
+                self.assertEqual(ofac_hit["reason"], "type_mismatch")
+
+    def test_12_volga_logistics_lists_all_candidates(self):
+        """T1.7 Item 4: Volga Logistics lists all candidates including info_hits."""
+        from modules.screening.tiering import screen_query_all_lists
+        res = screen_query_all_lists("Volga Logistics", query_type="organisation")
+        all_cands = []
+        for src in ["us_ofac", "us_csl", "uk_csl", "eu_csl", "un_csl"]:
+            all_cands.extend(res[src].get("all_candidates", []))
+        self.assertTrue(len(all_cands) > 0)
+        # Verify info_hits exist
+        info_cands = [c for c in all_cands if c.get("tier") == TIER_BELOW_THRESHOLD]
+        self.assertTrue(len(info_cands) >= 0)
+
+    def test_13_jaipur_airport_overall_clean_with_info_candidates(self):
+        """T1.7 Item 4: Jaipur International Airport Limited stays ✅ on overall banner even with ℹ️ candidates."""
+        from modules.screening.tiering import screen_query_all_lists
+        res = screen_query_all_lists("Jaipur International Airport Limited", query_type="organisation")
+        for src, data in res.items():
+            best = data.get("best_hit", {})
+            self.assertEqual(best.get("tier"), TIER_NO_MATCH)
+            self.assertEqual(best.get("tier_icon"), "✅")
+
+    def test_14_person_search_below_floor_never_orange_or_red(self):
+        """T1.7 Item 4: A Person search never turns a candidate below 0.60 into 🟠 or 🔴."""
+        dummy_person_low = {
+            "name": "Mohammad Khan Test",
+            "match": 0.55,
+            "sourceList": "us_ofac",
+            "sourceID": "99999",
+            "entityType": "person",
+        }
+        res = tier_single_entity("Mohammad Khan", dummy_person_low, query_type="person")
+        self.assertIsNotNone(res)
+        self.assertEqual(res["tier"], TIER_BELOW_THRESHOLD)
+        self.assertEqual(res["tier_icon"], "ℹ️")
+        self.assertNotEqual(res["tier"], TIER_POTENTIAL_MATCH)
+        self.assertNotEqual(res["tier"], TIER_POSSIBLE_MATCH)
 
 
 

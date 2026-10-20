@@ -20,6 +20,8 @@ def load_config() -> Dict[str, Any]:
 _config = load_config()
 
 CANDIDATE_MIN_MATCH: float = float(_config.get("candidate_min_match", 0.60))
+DISPLAY_MIN_MATCH: float = float(_config.get("display_min_match", 0.50))
+DISPLAY_LIMIT: int = int(_config.get("display_limit", 25))
 POSSIBLE_MATCH_THRESHOLD: float = float(_config.get("possible_match_threshold", 0.70))
 POTENTIAL_MATCH_THRESHOLD: float = float(_config.get("potential_match_threshold", 0.80))
 MIN_DISTINCTIVE_WORD_LEN: int = int(_config.get("min_distinctive_word_len", 4))
@@ -31,5 +33,5 @@ NAME_VARIANTS: Dict[str, str] = _config.get("name_variants", {})
 ENABLE_COUNTRY_WORDS_GUARD: bool = bool(_config.get("enable_country_words_guard", False))
 COUNTRY_WORDS: List[str] = _config.get("country_words", [])
 FUZZY_WORD_MIN_LEN: int = int(_config.get("fuzzy_word_min_len", 5))
-FUZZY_WORD_MIN_SIMILARITY: float = float(_config.get("fuzzy_word_min_similarity", 0.85))
+FUZZY_WORD_MIN_SIMILARITY: float = float(_config.get("fuzzy_word_min_similarity", 0.90))
 
