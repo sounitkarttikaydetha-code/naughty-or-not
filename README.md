@@ -121,9 +121,23 @@ naughty-or-not/
 
 ---
 
-## Stopping the Service
+## How to Start / Stop
 
-To shut down the local Watchman service:
-```bash
-docker compose down
+### Starting the Application
+Double-click the **Naughty or not** desktop shortcut, or run in terminal:
+```cmd
+run_app.bat
 ```
+This batch script automatically:
+1. Checks if Docker Desktop is running (starts it if needed).
+2. Runs `docker compose up -d` to launch the Watchman container.
+3. Polls Watchman health (`http://127.0.0.1:8084/ping`) until ready (timeouts gracefully after 3 minutes if service fails).
+4. Launches the Streamlit UI at `http://127.0.0.1:8501` and opens your default browser.
+
+### Stopping the Application
+Run in terminal:
+```cmd
+stop_app.bat
+```
+This stops the running Streamlit processes and stops Docker containers (`docker compose stop`).
+
