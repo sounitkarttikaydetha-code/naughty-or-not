@@ -1,0 +1,13 @@
+services:
+  watchman:
+    image: moov/watchman:v1.2.2
+    container_name: watchman
+    ports:
+      - "8084:8084"
+    environment:
+      - INCLUDED_LISTS=us_ofac,us_csl,eu_csl,uk_csl,un_csl
+      - DATA_REFRESH_INTERVAL=24h
+      - HTTPS_PROXY=${HTTPS_PROXY:-}
+      - HTTP_PROXY=${HTTPS_PROXY:-}
+      - SSL_CERT_FILE=${SSL_CERT_FILE:-}
+    restart: unless-stopped
