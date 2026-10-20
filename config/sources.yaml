@@ -1,0 +1,144 @@
+# Source Register for Naughty or not (Sanction checK)
+# Tracks all official landing pages, resolved download URLs, dates, hashes, and statuses.
+
+sources:
+  - id: us_ofac
+    authority: US Treasury, OFAC
+    landing_page: https://sanctionssearch.ofac.treas.gov/
+    file_url_resolved: https://ofac.treasury.gov/sanctions-list-service
+    publication_date: "2026-10-18"
+    last_checked: "2026-10-20"
+    sha256: watchman_managed
+    parser: watchman
+    status: OK
+
+  - id: us_csl
+    authority: US ITA (Commerce, State, Treasury)
+    landing_page: https://www.trade.gov/consolidated-screening-list
+    file_url_resolved: https://data.trade.gov/csl/v1/consolidated.csv
+    publication_date: "2026-10-18"
+    last_checked: "2026-10-20"
+    sha256: watchman_managed
+    parser: watchman
+    status: OK
+
+  - id: uk_csl
+    authority: UK FCDO
+    landing_page: https://www.gov.uk/government/publications/the-uk-sanctions-list
+    file_url_resolved: https://search-uk-sanctions-list.service.gov.uk/
+    publication_date: "2026-10-18"
+    last_checked: "2026-10-20"
+    sha256: watchman_managed
+    parser: watchman
+    status: OK
+
+  - id: eu_csl
+    authority: European Commission
+    landing_page: https://data.europa.eu/data/datasets/consolidated-list-of-persons-groups-and-entities-subject-to-eu-financial-sanctions
+    file_url_resolved: https://webgate.ec.europa.eu/fsd/fsf/public/files/xmlFullSanctionsList_1_1/content?token=dG9rZW4tMjAxNw
+    publication_date: "2026-10-18"
+    last_checked: "2026-10-20"
+    sha256: watchman_managed
+    parser: watchman
+    status: OK
+
+  - id: un_csl
+    authority: UN Security Council
+    landing_page: https://main.un.org/securitycouncil/en/content/un-sc-consolidated-list
+    file_url_resolved: https://scsanctions.un.org/resources/xml/en/consolidated.xml
+    publication_date: "2026-10-18"
+    last_checked: "2026-10-20"
+    sha256: watchman_managed
+    parser: watchman
+    status: OK
+
+  - id: bis_aircraft
+    authority: US BIS
+    landing_page: https://media.bis.gov/licensing/country-guidance/russia-belarus/bis-list-commercial-and-private-aircraft-in-potential-violation-of-the-export-administration-regulations-ear
+    file_url_resolved: https://www.bis.gov/media/documents/2025.10.10-current-bis-list-commercial-private-aircraft-potential-violation-export-administration
+    publication_date: "2025-10-10"
+    last_checked: "2026-10-20"
+    sha256: c31c6e62d2899ea4282a78c24ff4dd2c4544d630e37b419d866a1dc6ef69e56e
+    parser: modules.aviation.parser.parse_bis_aircraft
+    status: OK
+
+  - id: bis_tdo
+    authority: US BIS, Export Violations (Temporary Denial Orders)
+    landing_page: https://media.bis.gov/enforcement/export-violations
+    file_url_resolved: https://media.bis.gov/enforcement/export-violations
+    publication_date: "2026-10-15"
+    last_checked: "2026-10-20"
+    sha256: none
+    parser: reference_cross_check
+    status: OK
+
+  - id: eu_air_safety
+    authority: European Commission, DG MOVE
+    landing_page: https://transport.ec.europa.eu/transport-modes/air/aviation-safety/eu-air-safety-list_en
+    file_url_resolved: https://transport.ec.europa.eu/document/download/7414988e-6e85-455b-8c8d-aece8e932aa9_en?filename=air-safety-list.pdf
+    publication_date: "2026-06-09"
+    last_checked: "2026-10-20"
+    sha256: 7d9323517302108170675fb13c21925f19d9680f3fccceee30dfe99bd5cc94da
+    parser: modules.aviation.parser.parse_eu_air_safety_list
+    status: OK
+
+  - id: faa_iasa
+    authority: US FAA
+    landing_page: https://www.faa.gov/about/initiatives/iasa/iasa-program-results
+    file_url_resolved: https://www.faa.gov/sites/faa.gov/files/IASAWSR119r.pdf
+    publication_date: "2025-04-18"
+    last_checked: "2026-10-20"
+    sha256: 73ef0e78c2d17454d89393f3eb1159081c9bc14833e32289da01cfd2e0b23294
+    parser: modules.aviation.parser.parse_faa_iasa
+    status: OK
+
+  - id: in_mha_first_schedule
+    authority: Ministry of Home Affairs, Government of India
+    landing_page: https://www.mha.gov.in/counter-terrorism-counter-radicalization-division
+    file_url_resolved: https://www.mha.gov.in/files/documents/List46TerroristOrganisationsWebsite.pdf
+    publication_date: "2026-10-01"
+    last_checked: "2026-10-20"
+    sha256: pending
+    parser: modules.india.parser.parse_first_schedule
+    status: OK
+
+  - id: in_mha_fourth_schedule
+    authority: Ministry of Home Affairs, Government of India
+    landing_page: https://www.mha.gov.in/counter-terrorism-counter-radicalization-division
+    file_url_resolved: https://www.mha.gov.in/individuals-terrorists-fourth-schedule-unlawful-activities-prevention-act
+    publication_date: "2026-07-04"
+    last_checked: "2026-10-20"
+    sha256: pending
+    parser: modules.india.parser.parse_fourth_schedule
+    status: OK
+
+  - id: in_mha_unlawful_assoc
+    authority: Ministry of Home Affairs, Government of India
+    landing_page: https://www.mha.gov.in/counter-terrorism-counter-radicalization-division
+    file_url_resolved: https://www.mha.gov.in/unlawful-associations-section3-unlawful-activities-prevention-act-1967
+    publication_date: "2025-03-17"
+    last_checked: "2026-10-20"
+    sha256: pending
+    parser: modules.india.parser.parse_unlawful_associations
+    status: OK
+
+  - id: fatf_jurisdictions
+    authority: Financial Action Task Force (FATF)
+    landing_page: https://www.fatf-gafi.org/en/publications/High-risk-and-other-monitored-jurisdictions.html
+    file_url_resolved: https://www.fatf-gafi.org/en/publications/High-risk-and-other-monitored-jurisdictions/increased-monitoring-june-2026.html
+    publication_date: "2026-06-28"
+    last_checked: "2026-10-20"
+    sha256: table_data
+    parser: modules.fatf.client.check_country
+    status: OK
+
+  - id: os_bulk
+    authority: OpenSanctions
+    landing_page: https://www.opensanctions.org/datasets/sanctions/
+    file_url_resolved: https://data.opensanctions.org/datasets/latest/sanctions/entities.ftm.json
+    publication_date: "2026-10-18"
+    last_checked: "2026-10-20"
+    sha256: not_downloaded
+    parser: modules.opensanctions.bulk.load_bulk
+    status: OK
+    licence: CC BY-NC 4.0 – commercial use requires licence

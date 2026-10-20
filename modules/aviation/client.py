@@ -103,23 +103,9 @@ class AviationClient:
 
     def _load_data(self) -> None:
         """Load and cache parsed data from local copies."""
-        try:
-            self.bis_data = parse_bis_aircraft()
-        except Exception as e:
-            logger.error(f"Error loading BIS aircraft data: {e}")
-            self.bis_data = {"active": [], "removals": []}
-
-        try:
-            self.eu_data = parse_eu_air_safety_list()
-        except Exception as e:
-            logger.error(f"Error loading EU ASL data: {e}")
-            self.eu_data = {"annex_a": [], "annex_b": [], "banned_states": []}
-
-        try:
-            self.faa_data = parse_faa_iasa()
-        except Exception as e:
-            logger.error(f"Error loading FAA IASA data: {e}")
-            self.faa_data = []
+        self.bis_data = parse_bis_aircraft()
+        self.eu_data = parse_eu_air_safety_list()
+        self.faa_data = parse_faa_iasa()
 
     def resolve_airline(
         self,
@@ -155,13 +141,27 @@ class AviationClient:
         self,
         registration: Optional[str] = None,
         msn: Optional[str] = None,
-        operator: Optional[str] = None
+        operator: Optional[str] = None,
+        aircraft_type: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Screen aircraft against BIS potential violation list.
         Never matches aircraft in the removals section.
-        Returns:
-          Dict with tier, finding, and details.
+        Applies MSN rule:
+          - Tail match (current or previous) -> 🔴 POTENTIAL_MATCH
+          - MSN only -> 🟠 POSSIBLE_MATCH_REVIEW ('confirm aircraft type')
+          - MSN + matching type or operator -> 🔴 POTENTIAL_MATCH
         """
+        # Check source failure
+        if self.bis_data.get("status") == "FAILED":
+            return {
+                "tier": "NOT_CHECKED",
+                "tier_icon": "⚪",
+                "finding": "SOURCE_UNAVAILABLE",
+                "error": self.bis_data.get("error", "Source unparseable"),
+                "last_good_date": self.bis_data.get("last_good_date"),
+                "safety_label": SAFETY_LABEL,
+            }
+
         try:
             norm_reg = normalize_registration(registration)
             clean_msn = str(msn).strip() if msn else ""
@@ -169,9 +169,10 @@ class AviationClient:
             if not norm_reg and not clean_msn:
                 return {
                     "tier": "NO_MATCH",
-                    "tier_icon": "⚪",
+                    "tier_icon": "✅",
                     "findings": [],
-                    "message": "No registration or MSN provided"
+                    "message": "No registration or MSN provided",
+                    "safety_label": SAFETY_LABEL,
                 }
 
             # 1. Guard against removals: NEVER match removed aircraft
@@ -181,71 +182,95 @@ class AviationClient:
                 if (norm_reg and norm_reg == rem_reg) or (clean_msn and clean_msn == rem_msn):
                     return {
                         "tier": "NO_MATCH",
-                        "tier_icon": "⚪",
+                        "tier_icon": "✅",
+                        "finding": "REMOVAL",
                         "findings": [],
-                        "note": f"Aircraft {registration or msn} was officially removed from BIS list."
+                        "note": f"Aircraft {registration or msn} was officially removed from BIS list.",
+                        "safety_label": SAFETY_LABEL,
                     }
 
             # 2. Match against active aircraft
-            matched_records = []
+            reg_matched_records = []
+            msn_matched_records = []
+
             for item in self.bis_data.get("active", []):
                 curr_reg = normalize_registration(item.get("current_tail_number"))
                 prev_reg = normalize_registration(item.get("previous_tail_number"))
                 item_msn = str(item.get("msn", "")).strip()
 
-                matched = False
-                matched_field = None
-                if norm_reg:
-                    if curr_reg and norm_reg == curr_reg:
-                        matched = True
-                        matched_field = "current_tail_number"
-                    elif prev_reg and norm_reg == prev_reg:
-                        matched = True
-                        matched_field = "previous_tail_number"
+                if norm_reg and (norm_reg == curr_reg or norm_reg == prev_reg):
+                    field = "current_tail_number" if norm_reg == curr_reg else "previous_tail_number"
+                    rec = dict(item)
+                    rec["matched_field"] = field
+                    reg_matched_records.append(rec)
 
-                if not matched and clean_msn:
-                    if item_msn and clean_msn == item_msn:
-                        matched = True
-                        matched_field = "msn"
+                if clean_msn and clean_msn == item_msn:
+                    rec = dict(item)
+                    rec["matched_field"] = "msn"
+                    msn_matched_records.append(rec)
 
-                if matched:
-                    matched_records.append({
-                        "matched_field": matched_field,
-                        "owner_operator": item.get("owner_operator"),
-                        "country": item.get("country"),
-                        "current_tail_number": item.get("current_tail_number"),
-                        "previous_tail_number": item.get("previous_tail_number"),
-                        "msn": item.get("msn"),
-                        "aircraft_type": item.get("aircraft_type"),
-                    })
-
-            if matched_records:
-                primary = matched_records[0]
+            # Rule: Tail number match -> 🔴
+            if reg_matched_records:
+                primary = reg_matched_records[0]
                 return {
                     "tier": "POTENTIAL_MATCH",
                     "tier_icon": "🔴",
                     "finding": "EXPORT_CONTROL",
-                    "reason": f"Matched BIS EAR potential violation list via {primary['matched_field']}",
+                    "reason": f"Matched BIS list via {primary['matched_field']}",
                     "safety_label": SAFETY_LABEL,
-                    "matched_records": matched_records,
-                    "record": primary
+                    "matched_records": reg_matched_records,
+                    "record": primary,
                 }
+
+            # Rule: MSN match
+            if msn_matched_records:
+                primary = msn_matched_records[0]
+                has_corroboration = False
+                if operator and primary.get("owner_operator"):
+                    if distinctive_match(operator, primary["owner_operator"]):
+                        has_corroboration = True
+                if aircraft_type and primary.get("aircraft_type"):
+                    if distinctive_match(aircraft_type, primary["aircraft_type"]):
+                        has_corroboration = True
+
+                if has_corroboration:
+                    return {
+                        "tier": "POTENTIAL_MATCH",
+                        "tier_icon": "🔴",
+                        "finding": "EXPORT_CONTROL",
+                        "reason": "MSN and matching aircraft type/operator",
+                        "safety_label": SAFETY_LABEL,
+                        "matched_records": msn_matched_records,
+                        "record": primary,
+                    }
+                else:
+                    return {
+                        "tier": "POSSIBLE_MATCH_REVIEW",
+                        "tier_icon": "🟠",
+                        "finding": "EXPORT_CONTROL",
+                        "reason": "confirm aircraft type",
+                        "message": "MSN matched. Confirm aircraft type or operator to verify.",
+                        "safety_label": SAFETY_LABEL,
+                        "matched_records": msn_matched_records,
+                        "record": primary,
+                    }
 
             return {
                 "tier": "NO_MATCH",
-                "tier_icon": "⚪",
+                "tier_icon": "✅",
                 "finding": "CLEAN",
                 "findings": [],
-                "message": "No match found on BIS aircraft list"
+                "message": "No match found on BIS aircraft list",
+                "safety_label": SAFETY_LABEL,
             }
         except Exception as e:
             logger.error(f"Error checking aircraft {registration}/{msn}: {e}")
             return {
-                "tier": "NO_MATCH",
+                "tier": "NOT_CHECKED",
                 "tier_icon": "⚪",
                 "finding": "ERROR",
                 "error": str(e),
-                "safety_label": SAFETY_LABEL
+                "safety_label": SAFETY_LABEL,
             }
 
     def check_airline(
@@ -258,6 +283,19 @@ class AviationClient:
         """Screen an airline against EU Air Safety List (Annex A, Annex B) and FAA IASA Cat 2.
         All safety findings carry: 'Safety flag — not a sanctions finding'.
         """
+        # Check source failures
+        if self.eu_data.get("status") == "FAILED" or self.faa_data.get("status") == "FAILED":
+            err = self.eu_data.get("error") or self.faa_data.get("error")
+            date = self.eu_data.get("last_good_date") or self.faa_data.get("last_good_date")
+            return {
+                "tier": "NOT_CHECKED",
+                "tier_icon": "⚪",
+                "finding": "SOURCE_UNAVAILABLE",
+                "error": err,
+                "last_good_date": date,
+                "safety_label": SAFETY_LABEL,
+            }
+
         try:
             # 1. Alias resolution
             resolved = self.resolve_airline(name=name, icao=icao, iata=iata)
@@ -267,7 +305,7 @@ class AviationClient:
 
             findings = []
             highest_tier = "NO_MATCH"
-            tier_icon = "⚪"
+            tier_icon = "✅"
 
             # 2. Check EU Air Safety List Annex B (Restricted)
             for item in self.eu_data.get("annex_b", []):
@@ -316,7 +354,7 @@ class AviationClient:
                     tier_icon = "⚠️"
                     break
 
-            # 4. Check EU Air Safety List State-Level Ban
+            # 4. Check EU Air Safety List State-Level Ban (16 states with all air carriers banned)
             if not annex_a_match and lookup_country:
                 for b_state in self.eu_data.get("banned_states", []):
                     if normalize_token(lookup_country) == normalize_token(b_state) or \
@@ -335,7 +373,7 @@ class AviationClient:
 
             # 5. Check FAA IASA (Category 2 Oversight)
             if lookup_country:
-                for cat2_item in self.faa_data:
+                for cat2_item in self.faa_data.get("countries", []):
                     c_name = cat2_item.get("country", "")
                     if normalize_token(lookup_country) == normalize_token(c_name) or \
                        normalize_token(c_name) in normalize_token(lookup_country):
@@ -363,18 +401,20 @@ class AviationClient:
 
             return {
                 "tier": "NO_MATCH",
-                "tier_icon": "⚪",
+                "tier_icon": "✅",
                 "resolved_airline": resolved,
                 "findings": [],
-                "message": "Clean — no aviation safety bans or oversight flags found"
+                "message": "Clean — no aviation safety bans or oversight flags found",
+                "safety_label": SAFETY_LABEL
             }
 
         except Exception as e:
             logger.error(f"Error checking airline {name}/{icao}/{iata}/{aoc_state}: {e}")
             return {
-                "tier": "NO_MATCH",
+                "tier": "NOT_CHECKED",
                 "tier_icon": "⚪",
                 "findings": [],
                 "error": str(e),
                 "safety_label": SAFETY_LABEL
             }
+

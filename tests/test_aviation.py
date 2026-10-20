@@ -16,7 +16,7 @@ def aviation_client():
 
 
 def test_bis_aircraft_ra73093_current_tail(aviation_client):
-    """RA-73093 tested individually must return 🔴 EXPORT_CONTROL."""
+    """RA-73093 tested individually must return 🔴 EXPORT_CONTROL via tail number."""
     res = aviation_client.check_aircraft(registration="RA-73093")
     assert res["tier_icon"] == "🔴"
     assert res["finding"] == "EXPORT_CONTROL"
@@ -35,26 +35,55 @@ def test_bis_aircraft_vpbcd_previous_tail(aviation_client):
     assert res["safety_label"] == SAFETY_LABEL
 
 
-def test_bis_aircraft_41215_msn(aviation_client):
-    """41215 (MSN of RA-73093) tested individually must return 🔴 EXPORT_CONTROL."""
-    res = aviation_client.check_aircraft(msn="41215")
-    assert res["tier_icon"] == "🔴"
-    assert res["finding"] == "EXPORT_CONTROL"
-    assert res["record"]["msn"] == "41215"
-    assert res["record"]["current_tail_number"] == "RA-73093"
-    assert res["safety_label"] == SAFETY_LABEL
+def test_bis_aircraft_msn_rule(aviation_client):
+    """MSN rule:
+    - MSN only -> 🟠 'confirm aircraft type'
+    - MSN + matching type/operator -> 🔴
+    """
+    # MSN only -> 🟠
+    res_msn_only = aviation_client.check_aircraft(msn="41215")
+    assert res_msn_only["tier_icon"] == "🟠"
+    assert res_msn_only["tier"] == "POSSIBLE_MATCH_REVIEW"
+    assert "confirm aircraft type" in res_msn_only["reason"]
+    assert res_msn_only["record"]["current_tail_number"] == "RA-73093"
+
+    # MSN + matching operator -> 🔴
+    res_msn_operator = aviation_client.check_aircraft(msn="41215", operator="Aeroflot")
+    assert res_msn_operator["tier_icon"] == "🔴"
+    assert res_msn_operator["tier"] == "POTENTIAL_MATCH"
+
+    # MSN + matching aircraft type -> 🔴
+    res_msn_type = aviation_client.check_aircraft(msn="41215", aircraft_type="Boeing 737")
+    assert res_msn_type["tier_icon"] == "🔴"
+    assert res_msn_type["tier"] == "POTENTIAL_MATCH"
+
+    # MSN + non-matching aircraft type -> 🟠 (unconfirmed)
+    res_msn_wrong_type = aviation_client.check_aircraft(msn="41215", aircraft_type="Airbus A320")
+    assert res_msn_wrong_type["tier_icon"] == "🟠"
+    assert res_msn_wrong_type["tier"] == "POSSIBLE_MATCH_REVIEW"
 
 
 def test_bis_aircraft_removals_never_match(aviation_client):
-    """Aircraft officially in removals section must never match as active."""
-    # Belavia EW-254PA, MSN 26294 was in Removals section
+    """Aircraft officially in removals section must never match as active (returns ✅ NO_MATCH)."""
+    # Belavia EW-254PA, MSN 26294
     res_reg = aviation_client.check_aircraft(registration="EW-254PA")
-    assert res_reg["tier_icon"] == "⚪"
+    assert res_reg["tier_icon"] == "✅"
     assert res_reg["tier"] == "NO_MATCH"
+    assert res_reg["finding"] == "REMOVAL"
 
     res_msn = aviation_client.check_aircraft(msn="26294")
-    assert res_msn["tier_icon"] == "⚪"
+    assert res_msn["tier_icon"] == "✅"
     assert res_msn["tier"] == "NO_MATCH"
+
+    # 10 Oct 2025 removal: EW-001PA, MSN 33079
+    res_new_rem = aviation_client.check_aircraft(registration="EW-001PA")
+    assert res_new_rem["tier_icon"] == "✅"
+    assert res_new_rem["tier"] == "NO_MATCH"
+    assert res_new_rem["finding"] == "REMOVAL"
+
+    res_new_msn = aviation_client.check_aircraft(msn="33079")
+    assert res_new_msn["tier_icon"] == "✅"
+    assert res_new_msn["tier"] == "NO_MATCH"
 
 
 def test_eu_air_safety_list_aeroflot(aviation_client):
@@ -78,14 +107,24 @@ def test_eu_air_safety_list_s7(aviation_client):
         assert f["safety_label"] == "Safety flag — not a sanctions finding"
 
 
-def test_eu_air_safety_list_azur_air(aviation_client):
-    """Azur Air (Russian carrier) must flag Annex A / state ban with safety label."""
+def test_eu_air_safety_list_azur_air_reconciliation(aviation_client):
+    """Azur Air reconciliation:
+    - Not listed in EU Annex A or Annex B (Russia is not state-wide, 22 Russian airlines named).
+    - But FAA IASA flags Russia as Category 2 (⚠️ SAFETY_OVERSIGHT).
+    """
     res = aviation_client.check_airline(name="Azur Air")
+    # Overall is ⚠️ because airline resolver links Azur Air to Russia, which triggers FAA IASA Cat 2
     assert res["tier_icon"] == "⚠️"
-    ban_findings = [f for f in res["findings"] if f["finding"] == "SAFETY_BAN"]
-    assert len(ban_findings) > 0
-    for f in res["findings"]:
-        assert f["safety_label"] == "Safety flag — not a sanctions finding"
+
+    # Verify EU ASL has NO findings for Azur Air
+    eu_findings = [f for f in res["findings"] if "EU Air Safety List" in f.get("source", "")]
+    assert len(eu_findings) == 0
+
+    # Verify FAA IASA has the oversight finding
+    faa_findings = [f for f in res["findings"] if f["finding"] == "SAFETY_OVERSIGHT"]
+    assert len(faa_findings) == 1
+    assert faa_findings[0]["country"] == "Russia"
+    assert faa_findings[0]["safety_label"] == "Safety flag — not a sanctions finding"
 
 
 def test_eu_air_safety_list_iran_air_annex_b(aviation_client):
@@ -121,31 +160,41 @@ def test_faa_iasa_russia_venezuela_category_2(aviation_client):
 
 
 def test_clean_aircraft_and_airline(aviation_client):
-    """IndiGo and VT- registrations must return clean ⚪ without flags."""
+    """IndiGo and VT- registrations must return clean ✅ NO_MATCH without flags."""
     res_airline = aviation_client.check_airline(name="IndiGo", icao="IGO")
-    assert res_airline["tier_icon"] == "⚪"
+    assert res_airline["tier_icon"] == "✅"
+    assert res_airline["tier"] == "NO_MATCH"
     assert len(res_airline["findings"]) == 0
 
     res_aircraft = aviation_client.check_aircraft(registration="VT-IFR")
-    assert res_aircraft["tier_icon"] == "⚪"
+    assert res_aircraft["tier_icon"] == "✅"
+    assert res_aircraft["tier"] == "NO_MATCH"
     assert res_aircraft["finding"] == "CLEAN"
 
 
-def test_resiliency_malformed_file_or_parse_failure():
-    """Simulate parse failure or malformed file: must return ⚪ without unhandled exceptions."""
+def test_visibility_of_failures_not_checked():
+    """Simulate parse failure / corrupt file: must return ⚪ NOT_CHECKED with last_good_date."""
     non_existent = Path("data/aviation/does_not_exist.pdf")
     res_bis = parse_bis_aircraft(non_existent)
-    assert res_bis == {"active": [], "removals": []}
+    assert res_bis["status"] == "FAILED"
+    assert "File not found" in res_bis["error"]
+    assert res_bis["last_good_date"] == "2025-10-10"
 
     res_eu = parse_eu_air_safety_list(non_existent)
-    assert res_eu == {"annex_a": [], "annex_b": [], "banned_states": []}
+    assert res_eu["status"] == "FAILED"
+    assert "File not found" in res_eu["error"]
+    assert res_eu["last_good_date"] == "2026-06-09"
 
     res_faa = parse_faa_iasa(non_existent)
-    assert res_faa == []
+    assert res_faa["status"] == "FAILED"
+    assert "File not found" in res_faa["error"]
+    assert res_faa["last_good_date"] == "2025-04-18"
 
-    # Corrupt empty file
-    corrupt = Path("scratch/corrupt.pdf")
-    corrupt.write_text("Not a real PDF file contents")
-    assert parse_bis_aircraft(corrupt) == {"active": [], "removals": []}
-    assert parse_eu_air_safety_list(corrupt) == {"annex_a": [], "annex_b": [], "banned_states": []}
-    assert parse_faa_iasa(corrupt) == []
+    # Client behavior when data failed
+    client = AviationClient()
+    client.bis_data = res_bis
+    res_check = client.check_aircraft(registration="RA-73093")
+    assert res_check["tier_icon"] == "⚪"
+    assert res_check["tier"] == "NOT_CHECKED"
+    assert res_check["finding"] == "SOURCE_UNAVAILABLE"
+    assert res_check["last_good_date"] == "2025-10-10"

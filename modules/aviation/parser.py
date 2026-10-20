@@ -25,8 +25,8 @@ META_FILE = DATA_DIR / "sources_meta.json"
 SOURCES = {
     "bis_aircraft": {
         "name": "BIS Aircraft Potential Violation of EAR",
-        "url": "https://www.bis.gov/media/documents/gp-10-list-091225-current-bis-list-commercial-private-aircraft-potential-violation-export",
-        "publication_date": "2025-09-12",
+        "url": "https://www.bis.gov/media/documents/2025.10.10-current-bis-list-commercial-private-aircraft-potential-violation-export-administration",
+        "publication_date": "2025-10-10",
         "local_file": DATA_DIR / "bis_aircraft.pdf",
     },
     "eu_air_safety_list": {
@@ -154,10 +154,22 @@ def check_and_refresh_sources(force: bool = False) -> None:
     save_meta(meta)
 
 
-def parse_bis_aircraft(pdf_path: Optional[Path] = None) -> Dict[str, List[Dict[str, Any]]]:
+def refresh_all(force: bool = False) -> Dict[str, Any]:
+    """Manual refresh button / application startup check.
+    Checks each source: if older than 24h (or force=True), refreshes.
+    If older than 7 days and refresh failed, marks STALE.
+    """
+    check_and_refresh_sources(force=force)
+    return {"status": "completed", "timestamp": datetime.now(timezone.utc).isoformat()}
+
+
+def parse_bis_aircraft(pdf_path: Optional[Path] = None) -> Dict[str, Any]:
     """Parse the BIS aircraft list PDF.
     Returns:
       {
+        "status": "OK" | "FAILED",
+        "error": Optional[str],
+        "last_good_date": str,
         "active": [
            {
              "owner_operator": str,
@@ -177,13 +189,27 @@ def parse_bis_aircraft(pdf_path: Optional[Path] = None) -> Dict[str, List[Dict[s
            }, ...
         ]
       }
-    Never crashes; returns empty dict on failure.
     """
     path = pdf_path or SOURCES["bis_aircraft"]["local_file"]
-    result = {"active": [], "removals": []}
+    last_good_date = SOURCES["bis_aircraft"]["publication_date"]
+
     if not path.is_file():
         logger.warning(f"BIS aircraft PDF not found at {path}")
-        return result
+        return {
+            "status": "FAILED",
+            "error": f"File not found: {path}",
+            "last_good_date": last_good_date,
+            "active": [],
+            "removals": []
+        }
+
+    result: Dict[str, Any] = {
+        "status": "OK",
+        "error": None,
+        "last_good_date": last_good_date,
+        "active": [],
+        "removals": []
+    }
 
     try:
         reader = PdfReader(str(path))
@@ -242,7 +268,13 @@ def parse_bis_aircraft(pdf_path: Optional[Path] = None) -> Dict[str, List[Dict[s
                         prefix = ""
     except Exception as e:
         logger.error(f"Error parsing BIS aircraft PDF {path}: {e}")
-        return {"active": [], "removals": []}
+        return {
+            "status": "FAILED",
+            "error": str(e),
+            "last_good_date": last_good_date,
+            "active": [],
+            "removals": []
+        }
 
     return result
 
@@ -251,6 +283,9 @@ def parse_eu_air_safety_list(pdf_path: Optional[Path] = None) -> Dict[str, Any]:
     """Parse EU Air Safety List (Annex A, Annex B, and state-level bans).
     Returns:
       {
+        "status": "OK" | "FAILED",
+        "error": Optional[str],
+        "last_good_date": str,
         "annex_a": [
           {"airline": str, "aoc_number": str, "icao_code": str, "state": str}, ...
         ],
@@ -266,29 +301,41 @@ def parse_eu_air_safety_list(pdf_path: Optional[Path] = None) -> Dict[str, Any]:
         ],
         "banned_states": [str, ...]
       }
-    Never crashes; returns empty dict on failure.
     """
     path = pdf_path or SOURCES["eu_air_safety_list"]["local_file"]
-    result = {
+    last_good_date = SOURCES["eu_air_safety_list"]["publication_date"]
+
+    if not path.is_file():
+        logger.warning(f"EU ASL PDF not found at {path}")
+        return {
+            "status": "FAILED",
+            "error": f"File not found: {path}",
+            "last_good_date": last_good_date,
+            "annex_a": [],
+            "annex_b": [],
+            "banned_states": []
+        }
+
+    result: Dict[str, Any] = {
+        "status": "OK",
+        "error": None,
+        "last_good_date": last_good_date,
         "annex_a": [],
         "annex_b": [],
         "banned_states": []
     }
-    if not path.is_file():
-        logger.warning(f"EU ASL PDF not found at {path}")
-        return result
 
     try:
         reader = PdfReader(str(path))
         full_text = "\n".join(page.extract_text() for page in reader.pages)
 
-        # Standard list of states subject to overall air ban / oversight ban
+        # 16 states whose ENTIRE certified carrier base is banned (Russia is NOT a state-wide ban)
         known_banned_states = [
             "Afghanistan", "Angola", "Armenia", "Congo (Brazzaville)",
             "Democratic Republic of the Congo (DRC)", "Djibouti", "Equatorial Guinea",
-            "Eritrea", "Liberia", "Libya", "Nepal", "Russia",
+            "Eritrea", "Liberia", "Libya", "Nepal",
             "São Tomé and Príncipe", "Sao Tome and Principe", "Sierra Leone",
-            "Sudan", "Suriname", "Tanzania", "Venezuela"
+            "Sudan", "Suriname", "Tanzania"
         ]
         result["banned_states"] = known_banned_states
 
@@ -297,15 +344,6 @@ def parse_eu_air_safety_list(pdf_path: Optional[Path] = None) -> Dict[str, Any]:
         annex_a_text = parts[0]
         annex_b_text = parts[1] if len(parts) > 1 else ""
 
-        # Parse Annex A entries
-        # Look for airline rows: Name ... AOC ... ICAO (3 letters or Unknown) ... State
-        # Examples:
-        # AIR EXPRESS ALGERIA TA/010/2002 Unknown Algeria
-        # AIR ZIMBABWE (PVT) 177/04 AZW Zimbabwe
-        # AVIOR AIRLINES ROI-RNR-011 ROI Venezuela
-        # SIBERIA AIRLINES 31 SBI Russia
-        # AEROFLOT - RUSSIAN AIRLINES 1 AFL Russia
-        # POBEDA AIRLINES LIMITED LIABILITY COMPANY 562 PBD Russia
         lines = annex_a_text.splitlines()
         prefix = ""
         for line in lines:
@@ -365,46 +403,53 @@ def parse_eu_air_safety_list(pdf_path: Optional[Path] = None) -> Dict[str, Any]:
 
     except Exception as e:
         logger.error(f"Error parsing EU ASL PDF {path}: {e}")
-        return {"annex_a": [], "annex_b": [], "banned_states": []}
+        return {
+            "status": "FAILED",
+            "error": str(e),
+            "last_good_date": last_good_date,
+            "annex_a": [],
+            "annex_b": [],
+            "banned_states": []
+        }
 
     return result
 
 
-def parse_faa_iasa(pdf_path: Optional[Path] = None) -> List[Dict[str, str]]:
+def parse_faa_iasa(pdf_path: Optional[Path] = None) -> Dict[str, Any]:
     """Parse FAA IASA PDF and return Category 2 countries.
     Returns:
-      [
-        {"country": "Russia", "category": "2"},
-        {"country": "Venezuela", "category": "2"},
-        {"country": "Bangladesh", "category": "2"},
-        ...
-      ]
-    Never crashes; returns empty list on failure.
+      {
+        "status": "OK" | "FAILED",
+        "error": Optional[str],
+        "last_good_date": str,
+        "countries": [
+          {"country": "Russia", "category": "2"}, ...
+        ]
+      }
     """
     path = pdf_path or SOURCES["faa_iasa"]["local_file"]
+    last_good_date = SOURCES["faa_iasa"]["publication_date"]
     cat2_countries = []
+
     if not path.is_file():
         logger.warning(f"FAA IASA PDF not found at {path}")
-        return cat2_countries
+        return {
+            "status": "FAILED",
+            "error": f"File not found: {path}",
+            "last_good_date": last_good_date,
+            "countries": []
+        }
 
     try:
         reader = PdfReader(str(path))
         full_text = "\n".join(page.extract_text() for page in reader.pages)
 
-        # Category 2 countries from Alvarez:R119 table:
-        # Bangladesh 2
-        # Organization of Eastern Caribbean States ... 2
-        # Russia 2
-        # Venezuela 2
         lines = full_text.splitlines()
         for line in lines:
-            # Check for entries ending with 2 or followed by 2
-            # E.g.: "Bangladesh 2", "Croatia 1 Russia 2", "Japan 1 Venezuela 2"
             matches = re.findall(r'([A-Za-z\s,\-\.]+?)\s+([12])', line)
             for country_str, cat in matches:
                 country_clean = country_str.strip().replace("incl.", "").strip()
                 if cat == "2" and country_clean:
-                    # Clean up multi-column splits (e.g., "Croatia 1 Russia" -> "Russia")
                     if " 1 " in country_clean:
                         country_clean = country_clean.split(" 1 ")[-1].strip()
                     elif country_clean.endswith(" 1"):
@@ -414,8 +459,6 @@ def parse_faa_iasa(pdf_path: Optional[Path] = None) -> List[Dict[str, str]]:
                         "category": "2"
                     })
 
-        # Normalize and ensure key Category 2 countries are mapped cleanly
-        # Standardize country names
         known_cat2 = ["Bangladesh", "Russia", "Venezuela", "Antigua & Barbuda", "Dominica", "Grenada", "St. Lucia", "St. Vincent and The Grenadines", "St. Kitts and Nevis"]
         found_names = [c["country"] for c in cat2_countries]
         for k in known_cat2:
@@ -424,6 +467,17 @@ def parse_faa_iasa(pdf_path: Optional[Path] = None) -> List[Dict[str, str]]:
 
     except Exception as e:
         logger.error(f"Error parsing FAA IASA PDF {path}: {e}")
-        return []
+        return {
+            "status": "FAILED",
+            "error": str(e),
+            "last_good_date": last_good_date,
+            "countries": []
+        }
 
-    return cat2_countries
+    return {
+        "status": "OK",
+        "error": None,
+        "last_good_date": last_good_date,
+        "countries": cat2_countries
+    }
+

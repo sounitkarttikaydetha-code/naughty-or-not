@@ -1,12 +1,12 @@
-canonical airline,aliases,ICAO,IATA,country
-Siberia Airlines,"S7;S7 Airlines;Siberia Airlines;Siberian Airlines;PJSC Siberia Airlines;JSC Siberia Airlines;Joint Stock Company Siberia Airlines",SBI,S7,Russia
-Aeroflot,"Aeroflot;Aeroflot - Russian Airlines;PJSC Aeroflot;Public Joint Stock Company Aeroflot - Russian Airlines",AFL,SU,Russia
-Rossiya Airlines,"Rossiya;Rossiya Airlines;Rossiya Russian Airlines;Rossiya Airlines Joint Stock Company",SDM,FV,Russia
-Pobeda,"Pobeda;Pobeda Airlines;Pobeda Airlines Limited Liability Company;LLC Pobeda Airlines",PBD,DP,Russia
-Azur Air,"Azur Air;AzurAir;Katekavia;LLC Azur Air",AZV,ZF,Russia
-UTair,"UTair;Utair;UTair Aviation;UTair Aviation Joint - Stock Company;JSC UTair Aviation",UTA,UT,Russia
-Nordwind Airlines,"Nordwind;Nordwind Airlines;LLC Nord Wind;Nord Wind",NWS,N4,Russia
-Ural Airlines,"Ural;Ural Airlines;JSC Ural Airlines;Joint-Stock Company Ural Airlines",SVR,U6,Russia
-Belavia,"Belavia;Belavia Belarusian Airlines;Belarusian Airlines;JSC Belavia",BRU,B2,Belarus
-Iran Air,"Iran Air;The Airline of the Islamic Republic of Iran;Homa",IRA,IR,Iran
-Mahan Air,"Mahan Air;Mahan Airlines",IRM,W5,Iran
+canonical airline,aliases,ICAO,IATA,country,source_url
+Siberia Airlines,"S7;S7 Airlines;Siberia Airlines;Siberian Airlines;PJSC Siberia Airlines;JSC Siberia Airlines;Joint Stock Company Siberia Airlines",SBI,S7,Russia,https://www.iata.org/en/publications/directories/code-search/?airline-search=S7
+Aeroflot,"Aeroflot;Aeroflot - Russian Airlines;PJSC Aeroflot;Public Joint Stock Company Aeroflot - Russian Airlines",AFL,SU,Russia,https://www.iata.org/en/publications/directories/code-search/?airline-search=SU
+Rossiya Airlines,"Rossiya;Rossiya Airlines;Rossiya Russian Airlines;Rossiya Airlines Joint Stock Company",SDM,FV,Russia,https://www.iata.org/en/publications/directories/code-search/?airline-search=FV
+Pobeda,"Pobeda;Pobeda Airlines;Pobeda Airlines Limited Liability Company;LLC Pobeda Airlines",PBD,DP,Russia,https://www.iata.org/en/publications/directories/code-search/?airline-search=DP
+Azur Air,"Azur Air;AzurAir;Katekavia;LLC Azur Air",AZV,ZF,Russia,https://www.iata.org/en/publications/directories/code-search/?airline-search=ZF
+UTair,"UTair;Utair;UTair Aviation;UTair Aviation Joint - Stock Company;JSC UTair Aviation",UTA,UT,Russia,https://www.iata.org/en/publications/directories/code-search/?airline-search=UT
+Nordwind Airlines,"Nordwind;Nordwind Airlines;LLC Nord Wind;Nord Wind",NWS,N4,Russia,https://www.iata.org/en/publications/directories/code-search/?airline-search=N4
+Ural Airlines,"Ural;Ural Airlines;JSC Ural Airlines;Joint-Stock Company Ural Airlines",SVR,U6,Russia,https://www.iata.org/en/publications/directories/code-search/?airline-search=U6
+Belavia,"Belavia;Belavia Belarusian Airlines;Belarusian Airlines;JSC Belavia",BRU,B2,Belarus,https://www.iata.org/en/publications/directories/code-search/?airline-search=B2
+Iran Air,"Iran Air;The Airline of the Islamic Republic of Iran;Homa",IRA,IR,Iran,https://www.iata.org/en/publications/directories/code-search/?airline-search=IR
+Mahan Air,"Mahan Air;Mahan Airlines",IRM,W5,Iran,https://www.iata.org/en/publications/directories/code-search/?airline-search=W5
