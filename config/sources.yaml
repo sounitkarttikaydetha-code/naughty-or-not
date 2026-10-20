@@ -98,7 +98,7 @@ sources:
     file_url_resolved: https://www.mha.gov.in/files/documents/List46TerroristOrganisationsWebsite.pdf
     publication_date: "2026-10-01"
     last_checked: "2026-10-20"
-    sha256: pending
+    sha256: 8c33d4175680927cd1d27dbfe71eb66e73fd035663c419382c6b3aebb2da7b91
     parser: modules.india.parser.parse_first_schedule
     status: OK
 
@@ -108,7 +108,7 @@ sources:
     file_url_resolved: https://www.mha.gov.in/individuals-terrorists-fourth-schedule-unlawful-activities-prevention-act
     publication_date: "2026-07-04"
     last_checked: "2026-10-20"
-    sha256: pending
+    sha256: 05d1f222c5d89d797f68862577011c3f77e97e05fe8c7e39ffc757814100ea4e
     parser: modules.india.parser.parse_fourth_schedule
     status: OK
 
@@ -118,7 +118,7 @@ sources:
     file_url_resolved: https://www.mha.gov.in/unlawful-associations-section3-unlawful-activities-prevention-act-1967
     publication_date: "2025-03-17"
     last_checked: "2026-10-20"
-    sha256: pending
+    sha256: f30ae013c0f2507643537184f13cebd9041c912693334d78d971086156dd4bb7
     parser: modules.india.parser.parse_unlawful_associations
     status: OK
 
