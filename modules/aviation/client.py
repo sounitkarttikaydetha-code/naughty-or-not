@@ -7,6 +7,7 @@
 import csv
 import logging
 import re
+import unicodedata
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 
@@ -34,10 +35,11 @@ def normalize_registration(reg: Optional[str]) -> str:
 
 
 def normalize_token(s: Optional[str]) -> str:
-    """Normalize string for fuzzy comparison."""
+    """Normalize string for fuzzy comparison by decomposing unicode accents and lowercasing."""
     if not s:
         return ""
-    return re.sub(r'[^a-zA-Z0-9]', '', s).lower()
+    decomposed = unicodedata.normalize('NFKD', s)
+    return re.sub(r'[^a-zA-Z0-9]', '', decomposed).lower()
 
 
 WEAK_WORDS = {

@@ -217,3 +217,18 @@ def test_visibility_of_failures_not_checked():
     assert res_check["tier"] == "NOT_CHECKED"
     assert res_check["finding"] == "SOURCE_UNAVAILABLE"
     assert res_check["last_good_date"] == "2025-10-10"
+
+
+def test_eu_asl_banned_states_count_reconciliation(aviation_client):
+    """EU Air Safety List banned states must reconcile to official 16 states (Finding A-06)."""
+    banned_states = aviation_client.eu_data.get("banned_states", [])
+    assert len(banned_states) == 16, f"Expected exactly 16 banned states, got {len(banned_states)}: {banned_states}"
+    # Both accented and unaccented lookups must match
+    res1 = aviation_client.screen_airline(name="Test Carrier", aoc_state="São Tomé and Príncipe")
+    assert res1.get("tier") == "SAFETY_BAN"
+    assert any(f.get("result_type") == "SAFETY_BAN" for f in res1.get("findings", []))
+    res2 = aviation_client.screen_airline(name="Test Carrier", aoc_state="Sao Tome and Principe")
+    assert res2.get("tier") == "SAFETY_BAN"
+    assert any(f.get("result_type") == "SAFETY_BAN" for f in res2.get("findings", []))
+
+

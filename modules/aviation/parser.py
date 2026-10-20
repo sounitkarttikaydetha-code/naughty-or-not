@@ -334,7 +334,7 @@ def parse_eu_air_safety_list(pdf_path: Optional[Path] = None) -> Dict[str, Any]:
             "Afghanistan", "Angola", "Armenia", "Congo (Brazzaville)",
             "Democratic Republic of the Congo (DRC)", "Djibouti", "Equatorial Guinea",
             "Eritrea", "Liberia", "Libya", "Nepal",
-            "São Tomé and Príncipe", "Sao Tome and Principe", "Sierra Leone",
+            "São Tomé and Príncipe", "Sierra Leone",
             "Sudan", "Suriname", "Tanzania"
         ]
         result["banned_states"] = known_banned_states
