@@ -436,3 +436,65 @@ class AviationClient:
                 "error": str(e),
                 "safety_label": SAFETY_LABEL
             }
+
+    def screen_airline(
+        self,
+        name: Optional[str] = None,
+        aoc_state: Optional[str] = None,
+        icao: Optional[str] = None,
+        iata: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """UI wrapper for airline screening returning formatted findings."""
+        res = self.check_airline(name=name, aoc_state=aoc_state, icao=icao, iata=iata)
+        ui_findings = []
+        for f in res.get("findings", []):
+            airline_name = f.get("airline") or name or "Unknown carrier"
+            source = f.get("source") or "Aviation Safety List"
+            state = f.get("state") or aoc_state or ""
+            detail_str = f"{airline_name} — {source}"
+            if state:
+                detail_str += f" (State: {state})"
+            ui_findings.append({
+                "result_type": f.get("finding", "SAFETY_FLAG"),
+                "details": detail_str,
+                "source": source,
+                "safety_label": f.get("safety_label", SAFETY_LABEL),
+                "tier": f.get("tier", "POSSIBLE_MATCH_REVIEW"),
+            })
+        return {
+            "tier": res.get("tier", "NO_MATCH"),
+            "findings": ui_findings,
+            "raw": res,
+        }
+
+    def screen_aircraft(
+        self,
+        tail_number: Optional[str] = None,
+        msn: Optional[str] = None,
+        operator: Optional[str] = None,
+        aircraft_type: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """UI wrapper for aircraft screening returning formatted findings."""
+        res = self.check_aircraft(registration=tail_number, msn=msn, operator=operator, aircraft_type=aircraft_type)
+        ui_findings = []
+        if res.get("finding") == "EXPORT_CONTROL":
+            rec = res.get("record", {})
+            curr_tail = rec.get("current_tail_number") or tail_number or "Unknown"
+            owner = rec.get("owner_operator") or operator or "Unknown operator"
+            rec_msn = rec.get("msn") or msn or ""
+            details = f"Tail: {curr_tail} | Owner/Operator: {owner}"
+            if rec_msn:
+                details += f" | MSN: {rec_msn}"
+            ui_findings.append({
+                "result_type": "EAR_RESTRICTION",
+                "details": details,
+                "source": "BIS List of Aircraft in Potential Violation of the EAR",
+                "label": res.get("label", BIS_EXPORT_CONTROL_LABEL),
+                "tier": "POTENTIAL_MATCH",
+            })
+        return {
+            "tier": res.get("tier", "NO_MATCH"),
+            "findings": ui_findings,
+            "raw": res,
+        }
+

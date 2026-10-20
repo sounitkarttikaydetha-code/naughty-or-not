@@ -192,3 +192,11 @@ def check_country(country: Optional[str]) -> Dict[str, Any]:
         "risk_label": SAFETY_LABEL,
         "source": "FATF",
     }
+
+
+class FATFClient:
+    """FATF Screening Client wrapper."""
+    def screen_country(self, country: str) -> Dict[str, Any]:
+        return check_country(country)
+
+
