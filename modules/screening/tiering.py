@@ -28,6 +28,7 @@ from modules.screening.config import (
     POSSIBLE_MATCH_THRESHOLD,
     POTENTIAL_MATCH_THRESHOLD,
     WEAK_WORDS,
+    KNOWN_CITIES as CONFIG_KNOWN_CITIES,
 )
 from modules.watchman.client import WatchmanClient
 
@@ -40,13 +41,8 @@ TIER_NOT_CHECKED = "NOT_CHECKED"                    # ⚪
 
 SOURCE_LISTS = ["us_ofac", "us_csl", "uk_csl", "eu_csl", "un_csl"]
 
-KNOWN_CITIES = {
-    "dubai", "abu dhabi", "sharjah", "london", "moscow", "delhi", "new delhi",
-    "mumbai", "beijing", "shanghai", "new york", "tehran", "paris",
-    "singapore", "hong kong", "tokyo", "berlin", "geneva", "zurich",
-    "islamabad", "karachi", "lahore", "kabul", "dhaka", "damascus",
-    "baghdad", "cairo", "beirut", "riyadh", "doha", "ankara", "istanbul"
-}
+KNOWN_CITIES = set(CONFIG_KNOWN_CITIES)
+
 
 
 def is_ignorable_bracket(content: str) -> bool:

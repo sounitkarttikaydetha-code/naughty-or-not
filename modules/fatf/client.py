@@ -8,7 +8,9 @@ Refresh schedule follows the three annual FATF plenaries: February, June, Octobe
 """
 
 from datetime import datetime, timezone
+import json
 import logging
+from pathlib import Path
 import re
 from typing import Any, Dict, List, Optional
 
@@ -16,13 +18,23 @@ logger = logging.getLogger(__name__)
 
 SAFETY_LABEL = "Country risk flag — not a sanctions finding"
 
-FATF_STATEMENT_DATE = "2026-06-28"
+CONFIG_PATH = Path(__file__).resolve().parent.parent.parent / "config" / "fatf_lists.json"
 
-# FATF Plenary statement months: February, June, October
-PLENARY_MONTHS = [2, 6, 10]
 
-# High-Risk Jurisdictions subject to a Call for Action (Black list)
-BLACK_LIST = {
+def _load_fatf_config() -> Dict[str, Any]:
+    if CONFIG_PATH.is_file():
+        try:
+            with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            logger.warning(f"Could not load {CONFIG_PATH}: {e}")
+    return {}
+
+
+_cfg = _load_fatf_config()
+FATF_STATEMENT_DATE = _cfg.get("fatf_statement_date", "2026-06-28")
+PLENARY_MONTHS = _cfg.get("plenary_months", [2, 6, 10])
+BLACK_LIST = _cfg.get("black_list", {
     "dprk": "Democratic People's Republic of Korea",
     "democratic peoples republic of korea": "Democratic People's Republic of Korea",
     "north korea": "Democratic People's Republic of Korea",
@@ -30,47 +42,9 @@ BLACK_LIST = {
     "islamic republic of iran": "Iran",
     "myanmar": "Myanmar",
     "burma": "Myanmar",
-}
+})
+GREY_LIST = _cfg.get("grey_list", {})
 
-# Jurisdictions under Increased Monitoring (Grey list)
-GREY_LIST = {
-    "angola": "Angola",
-    "bolivia": "Bolivia",
-    "bosnia and herzegovina": "Bosnia and Herzegovina",
-    "bosnia": "Bosnia and Herzegovina",
-    "bulgaria": "Bulgaria",
-    "burkina faso": "Burkina Faso",
-    "cameroon": "Cameroon",
-    "cote d ivoire": "Côte d'Ivoire",
-    "cote divoire": "Côte d'Ivoire",
-    "ivory coast": "Côte d'Ivoire",
-    "democratic republic of the congo": "Democratic Republic of the Congo",
-    "democratic republic of congo": "Democratic Republic of the Congo",
-    "drc": "Democratic Republic of the Congo",
-    "haiti": "Haiti",
-    "iraq": "Iraq",
-    "kenya": "Kenya",
-    "kuwait": "Kuwait",
-    "lao pdr": "Lao PDR",
-    "laos": "Lao PDR",
-    "lebanon": "Lebanon",
-    "monaco": "Monaco",
-    "mozambique": "Mozambique",
-    "namibia": "Namibia",
-    "nepal": "Nepal",
-    "nigeria": "Nigeria",
-    "papua new guinea": "Papua New Guinea",
-    "south africa": "South Africa",
-    "south sudan": "South Sudan",
-    "syria": "Syria",
-    "syrian arab republic": "Syria",
-    "tanzania": "Tanzania",
-    "venezuela": "Venezuela",
-    "vietnam": "Vietnam",
-    "virgin islands british": "British Virgin Islands",
-    "british virgin islands": "British Virgin Islands",
-    "yemen": "Yemen",
-}
 
 
 def normalize_country(country: Optional[str]) -> str:

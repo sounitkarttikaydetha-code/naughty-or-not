@@ -115,5 +115,12 @@
     "somalia", "somali",
     "tanzania", "tanzanian",
     "suriname", "surinamese"
+  ],
+  "known_cities": [
+    "dubai", "abu dhabi", "sharjah", "london", "moscow", "delhi", "new delhi",
+    "mumbai", "beijing", "shanghai", "new york", "tehran", "paris",
+    "singapore", "hong kong", "tokyo", "berlin", "geneva", "zurich",
+    "islamabad", "karachi", "lahore", "kabul", "dhaka", "damascus",
+    "baghdad", "cairo", "beirut", "riyadh", "doha", "ankara", "istanbul"
   ]
 }
