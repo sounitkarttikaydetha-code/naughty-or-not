@@ -94,8 +94,9 @@ def check_and_refresh_sources(force: bool = False) -> None:
                 hours_since = (datetime.now(timezone.utc) - dt_checked).total_seconds() / 3600.0
                 if hours_since < 24.0 and info["local_file"].is_file():
                     continue
-            except Exception:
-                pass
+            except (ValueError, TypeError) as e:
+                logger.debug(f"Invalid timestamp format for {src_key} last_checked: {e}")
+
 
         logger.info(f"Checking update for {info['name']} from {info['url']}")
         try:

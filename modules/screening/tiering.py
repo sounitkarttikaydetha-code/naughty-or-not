@@ -7,11 +7,15 @@ secondary identifier conflict checks, and multi-tier categorization.
 
 import csv
 import difflib
+import logging
 import os
 import re
 import unicodedata
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
+
+logger = logging.getLogger(__name__)
+
 
 from modules.screening.config import (
     ALIAS_SPLIT_DELIMITERS,
@@ -668,9 +672,10 @@ def get_airline_alias_row(query: str) -> Optional[Dict[str, Any]]:
                         "icao": icao,
                         "iata": iata,
                     }
-    except Exception:
-        pass
+    except (OSError, csv.Error) as e:
+        logger.warning(f"Error reading airline aliases file: {e}")
     return None
+
 
 
 def _screen_direct_all_lists(

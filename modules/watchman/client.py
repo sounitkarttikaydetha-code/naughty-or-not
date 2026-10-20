@@ -71,8 +71,9 @@ class WatchmanClient:
             body = ""
             try:
                 body = e.read().decode("utf-8")
-            except Exception:
-                pass
+            except (OSError, UnicodeDecodeError) as decode_err:
+                logger.debug("Failed to decode Watchman error body: %s", decode_err)
+
             return {
                 "status": "error",
                 "status_code": e.code,

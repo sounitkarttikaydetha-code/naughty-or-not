@@ -5,6 +5,7 @@ Maintains an append-only audit trail at logs/screening.db per SPEC.md Section 4.
 
 import getpass
 import json
+import logging
 import os
 import platform
 import sqlite3
@@ -12,6 +13,9 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
+logger = logging.getLogger(__name__)
+
 
 def _get_base_data_dir() -> Path:
     """Return base storage directory with %LOCALAPPDATA% fallback when frozen or in Program Files."""
@@ -83,8 +87,9 @@ def get_db_connection() -> sqlite3.Connection:
             conn.execute("ALTER TABLE screening_logs ADD COLUMN mode TEXT DEFAULT 'screened';")
         if "comment" not in cols:
             conn.execute("ALTER TABLE screening_logs ADD COLUMN comment TEXT;")
-    except Exception as e:
-        pass
+    except sqlite3.OperationalError as e:
+        logger.debug("Schema migration notice for screening_logs: %s", e)
+
     conn.commit()
     return conn
 

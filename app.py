@@ -102,9 +102,10 @@ def load_sources_registry() -> Dict[str, Any]:
         try:
             with open(SOURCES_YAML, "r", encoding="utf-8") as f:
                 return yaml.safe_load(f) or {}
-        except Exception:
-            pass
+        except (OSError, yaml.YAMLError) as e:
+            logging.getLogger("app").warning(f"Could not load sources registry: {e}")
     return {"sources": []}
+
 
 
 source_reg = load_sources_registry()

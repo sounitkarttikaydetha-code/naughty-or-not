@@ -356,8 +356,9 @@ class OpenSanctionsClient:
             err_body = ""
             try:
                 err_body = e.read().decode("utf-8")
-            except Exception:
-                pass
+            except (OSError, UnicodeDecodeError) as decode_err:
+                logger.debug("Failed to decode HTTP error response body: %s", decode_err)
+
             logger.warning("OpenSanctions HTTP error %s: %s", e.code, err_body)
             return {
                 "status": STATUS_ERROR,
