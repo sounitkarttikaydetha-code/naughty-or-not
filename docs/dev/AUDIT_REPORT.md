@@ -24,7 +24,7 @@
 | **A-16** | **Medium** | Aviation Data | FAA IASA: 9 Category 2 countries; Cat 1 returns clean | Non-Cat 2 jurisdictions are compliant (Cat 1) -> clean ✅ | Document Cat 1 clean behavior in user manual |
 | **A-17** | **Medium** | Engine Tuning | 0.45 token retrieval floor used to catch S7 on us_csl | `tiering.py:702, 722` lowers retrieval for S7 (0.4971) | Document 0.45 backend retrieval vs 0.50 display floor |
 | **A-18** | **Medium** | Privacy Audit | Extended network egress table with internal downloads & params | Documented in Section 9.6 | Update documentation register |
-| **A-19** | **Low** | Privacy Hygiene | OpenSanctions API key masked to last 4 characters only (`...7592`) | Verified across entire repo; masked in all docs and UI | Standardize masking to `...7592` |
+| **A-19** | **Low** | Privacy Hygiene | OpenSanctions API key masked (`...[REDACTED]`) | Verified across entire repo; masked in all docs and UI | Standardize masking to `...[REDACTED]` |
 | **A-20** | **Low** | Configuration | Standardize bulk permission variable to `OPENSANCTIONS_BULK_PERMISSION_REF` | `bulk.py` checks single variable name | Enforce `OPENSANCTIONS_BULK_PERMISSION_REF` |
 
 ## 3. Risk-Point Checklist (Section 4, Items 1–14)
@@ -65,7 +65,7 @@ Screened 19 agreed queries + 10 extra probes against official raw files (`data/r
 | `api.opensanctions.org` | HTTPS / 443 | Opt-in 2nd opinion check | Yes (when enabled) | Checkbox unticked by default; requires key |
 | `bis.gov`, `europa.eu`, `faa.gov` | HTTPS / 443 | Source list PDF refresh | No (static list fetch) | Triggered manually via UI refresh |
 
-Empirical socket monkeypatch confirmed zero bytes of counterparty data leave the machine during offline screening. API key `...7592` in `.env` is absent from git history, codebase files, and `%LOCALAPPDATA%`.
+Empirical socket monkeypatch confirmed zero bytes of counterparty data leave the machine during offline screening. API key `...[REDACTED]` in `.env` is absent from git history, codebase files, and `%LOCALAPPDATA%`.
 
 ## 7. Clean-Room Reproducibility Notes
 - **Versions Pinned:** Python `3.12.10`, Docker `29.9.1`, Watchman `moov/watchman:v1.2.2`, requirements (45 pip packages pinned with `==`).
@@ -142,4 +142,4 @@ Empirical socket monkeypatch confirmed zero bytes of counterparty data leave the
   - OpenSanctions: `https://www.opensanctions.org/entities/{id}/` (OS entity ID only).
   - Static portals: UK, EU, US CSL, UN, BIS, and MHA links transmit zero query parameters.
 - **Docker & Port Assumptions:** Docker required in `run_app.bat` and `stop_app.bat`; port 8084 assumed for Watchman; port 8501 assumed for Streamlit UI.
-- **Path Portability:** Zero hardcoded `D:\` paths in source code. Runtime relative writes to `logs/` and `reports/` must adapt to `%LOCALAPPDATA%` for installed `.exe` deployments.
+- **Path Portability:** Zero hardcoded absolute workspace drive paths in source code. Runtime relative writes to `logs/` and `reports/` must adapt to `%LOCALAPPDATA%` for installed `.exe` deployments.

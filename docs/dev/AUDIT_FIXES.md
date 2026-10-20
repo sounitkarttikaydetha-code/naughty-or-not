@@ -23,7 +23,7 @@ All 20 audit findings (A-01 through A-20) and Decisions 1–3 have been remediat
 | **Dec 1/2**| **Med** | Raw Index | Integrated SQLite FTS5 trigram tokenizer and auto-sync on refresh | `b30401b` |
 | **Dec 3** | **Med** | UI | Displayed historical manual check audit trail in screening view | `9a19a28` |
 | **A-12** | **Low** | Docs | Documented Windows PowerShell execution nuances and `curl.exe` | `e396eec` |
-| **A-14–19**| **Low** | Docs / Data | Verified raw counts, EU ASL 156 total, FAA Cat 1 clean, key masking `...7592` | `eca7ba4` |
+| **A-14–19**| **Low** | Docs / Data | Verified raw counts, EU ASL 156 total, FAA Cat 1 clean, key masking `...[REDACTED]` | `eca7ba4` |
 
 ## 3. Fail-Safe Matrix Verification (56 Combinations)
 Every combination of 14 sources × 4 failure modes (service unavailable, corrupt file, empty file, wrong format) was re-tested.

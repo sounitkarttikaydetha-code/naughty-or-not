@@ -4,6 +4,12 @@
 
 ---
 
+## About
+
+Internal sanctions screening aid prepared under the Sanctions Compliance Policy. Test version. Not for transaction decisions. Uses only official public sources. OpenSanctions data CC BY-NC 4.0 — commercial use requires a licence.
+
+---
+
 ## Pinned Components & Versions
 
 - **Moov Watchman Image:** `moov/watchman:v1.2.2` (Pinned official Docker release tag)

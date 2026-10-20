@@ -66,7 +66,7 @@
 
 ### 5. Launch & App Status
 - `run_app.bat` tested: launches Docker, verifies Watchman ping, runs Streamlit, and opens browser.
-- Desktop shortcut `C:\Users\souni\Desktop\Naughty or not.lnk` successfully created pointing to `run_app.bat`.
+- Desktop shortcut `%USERPROFILE%\Desktop\Naughty or not.lnk` successfully created pointing to `run_app.bat`.
 - Streamlit Deploy button removed via `client.toolbarMode = "minimal"`.
 - App is **running and left open** at `http://127.0.0.1:8501`.
 
