@@ -214,6 +214,26 @@ class TestMatchTieringLayerV2(unittest.TestCase):
         res = tier_single_entity("", dummy)
         self.assertIsNone(res)
 
+    def test_7_sberbank_of_russia_on_eu_csl_live(self):
+        """T1.3 Item 1: 'Sberbank of Russia' on eu_csl must be 🔴 via core_name_reverse."""
+        from modules.screening.tiering import screen_query_all_lists
+        res = screen_query_all_lists("Sberbank of Russia", query_type="organisation")
+        eu_hit = res["eu_csl"]["best_hit"]
+        self.assertEqual(eu_hit["tier"], TIER_POTENTIAL_MATCH)
+        self.assertEqual(eu_hit["reason"], "core_name_reverse")
+        self.assertEqual(eu_hit["matched_name"], "Sberbank")
+
+    def test_8_s7_airlines_on_us_csl_live(self):
+        """T1.3 Item 2: 'S7 Airlines' on us_csl must return 'SIBERIAN AIRLINES D/B/A S7 AIRLINES'."""
+        from modules.screening.tiering import screen_query_all_lists
+        res = screen_query_all_lists("S7 Airlines", query_type="airline")
+        csl_hit = res["us_csl"]["best_hit"]
+        self.assertEqual(csl_hit["tier"], TIER_POTENTIAL_MATCH)
+        self.assertEqual(csl_hit["primary_name"], "SIBERIAN AIRLINES D/B/A S7 AIRLINES")
+        self.assertEqual(csl_hit["matched_name"], "S7 AIRLINES")
+        self.assertEqual(csl_hit["reason"], "core_name")
+
+
 
 if __name__ == "__main__":
     unittest.main()

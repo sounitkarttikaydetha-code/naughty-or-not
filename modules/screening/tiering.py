@@ -183,20 +183,15 @@ def check_core_name_match(
     if q_set == c_set:
         return True, "core_name_equal"
 
-    # Forward subset check: q_set is subset of c_set
+    # Forward subset check: q_set is subset of c_set (candidate has extra words)
     if q_set.issubset(c_set):
         if is_person:
             # Person rule: partial subset match is partial_name_person (Rule 5)
             return True, "partial_name_person"
         else:
-            # Organisation rule: candidate's extra words MUST only be weak words (Rule 4)
-            # If candidate has extra non-weak words (e.g. "3D" in "Indigo 3D", "Express" in "Air India Express"),
-            # it is a different entity and fails forward core_name match.
-            extra_words = c_set - q_set
-            extra_distinctive = extra_words - weak_set
-            if not extra_distinctive:
-                return True, "core_name_forward"
-            # Extra distinctive words exist -> forward core name fails
+            # Organisation rule: weak words must never promote a match.
+            # Extra words in candidate mean it is not an exact core match.
+            return False, ""
 
     # Reverse subset check: c_set is subset of q_set (Rule 1)
     if c_set.issubset(q_set):
@@ -481,12 +476,32 @@ def screen_query_all_lists(
     }
 
     for src in SOURCE_LISTS:
-        # Rule 6: Candidate retrieval at minMatch=0.60
+        # Candidate retrieval at 0.45 with limit=50 to capture split aliases like 'S7 AIRLINES'
         resp = client.search(
-            name=query, min_match=CANDIDATE_MIN_MATCH, source=src
+            name=query, min_match=0.45, source=src, limit=50
         )
 
-        if resp.get("status") == "unavailable":
+        raw_entities = resp.get("results", {}).get("entities") or []
+        entity_map = {e.get("sourceID"): e for e in raw_entities if e.get("sourceID")}
+
+        # Extra retrieval pass: Query distinctive words (>= 4 chars, non-weak)
+        q_tokens = normalize_name(query)
+        weak_set = {w.lower() for w in WEAK_WORDS}
+        distinctive_tokens = [w for w in q_tokens if w not in weak_set and len(w) >= 4]
+
+        for token in distinctive_tokens:
+            extra_resp = client.search(
+                name=token, min_match=0.45, source=src, limit=50
+            )
+            extra_entities = extra_resp.get("results", {}).get("entities") or []
+            for ee in extra_entities:
+                sid = ee.get("sourceID")
+                if sid and sid not in entity_map:
+                    entity_map[sid] = ee
+
+        merged_raw_entities = list(entity_map.values())
+
+        if resp.get("status") == "unavailable" and not merged_raw_entities:
             unavail_hit = {
                 "tier": TIER_NOT_CHECKED,
                 "reason": "watchman_unavailable",
@@ -506,10 +521,9 @@ def screen_query_all_lists(
             }
             continue
 
-        raw_entities = resp.get("results", {}).get("entities") or []
         evaluated_candidates: List[Dict[str, Any]] = []
 
-        for ent in raw_entities:
+        for ent in merged_raw_entities:
             tiered = tier_single_entity(
                 query=query,
                 entity=ent,

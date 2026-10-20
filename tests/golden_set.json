@@ -88,13 +88,13 @@
         "verified": false
       },
       "eu_csl": {
-        "tier": "NO_MATCH",
-        "reason": "none",
-        "score": 0.0,
-        "primary_name": "—",
-        "matched_name": "—",
-        "source_id": "—",
-        "program": "—",
+        "tier": "POTENTIAL_MATCH",
+        "reason": "core_name_reverse",
+        "score": 0.6904124999999999,
+        "primary_name": "Сбербанк",
+        "matched_name": "Sberbank",
+        "source_id": "142064",
+        "program": "UKR",
         "verified": false
       },
       "un_csl": {
@@ -178,13 +178,13 @@
         "verified": false
       },
       "us_csl": {
-        "tier": "POSSIBLE_MATCH_REVIEW",
-        "reason": "score",
-        "score": 0.764470588235294,
-        "primary_name": "Ukraine Mediterranean Airlines",
-        "matched_name": "Ukraine Mediterranean Airlines",
-        "source_id": "e06e1dfc8b1e9f120dc340b25cf241f001d715c4c2c9bd0d6982c2c8",
-        "program": "Entity List (EL) - Bureau of Industry and Security",
+        "tier": "POTENTIAL_MATCH",
+        "reason": "core_name",
+        "score": 0.4970969999999999,
+        "primary_name": "SIBERIAN AIRLINES D/B/A S7 AIRLINES",
+        "matched_name": "S7 AIRLINES",
+        "source_id": "b04d5f6edf0e3b9ca1ff24074e5f382eb02ba47cf381db8217f9b8bd",
+        "program": "Denied Persons List (DPL) - Bureau of Industry and Security",
         "verified": false
       },
       "uk_csl": {
@@ -223,13 +223,13 @@
     "query_type": "airline",
     "lists": {
       "us_ofac": {
-        "tier": "NO_MATCH",
-        "reason": "none",
-        "score": 0.0,
-        "primary_name": "—",
-        "matched_name": "—",
-        "source_id": "—",
-        "program": "—",
+        "tier": "POTENTIAL_MATCH",
+        "reason": "score_and_core_name_reverse",
+        "score": 0.8122499999999999,
+        "primary_name": "SIBERIA",
+        "matched_name": "SIBERIA",
+        "source_id": "37078",
+        "program": "RUSSIA-EO14024",
         "verified": false
       },
       "us_csl": {
@@ -398,11 +398,11 @@
         "verified": false
       },
       "us_csl": {
-        "tier": "POTENTIAL_MATCH",
-        "reason": "core_name",
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "reason": "score",
         "score": 0.7284867187499998,
         "primary_name": "UTAIR AVIATION JSC,",
-        "matched_name": "UTAIR AVIATION JSC",
+        "matched_name": "UTAIR AVIATION JSC,",
         "source_id": "1c9ad49f655038f54ce330ad4f09c62d5ff6546ef3ea31654271b330",
         "program": "Denied Persons List (DPL) - Bureau of Industry and Security",
         "verified": false
@@ -443,13 +443,13 @@
     "query_type": "organisation",
     "lists": {
       "us_ofac": {
-        "tier": "NO_MATCH",
-        "reason": "none",
-        "score": 0.0,
-        "primary_name": "—",
-        "matched_name": "—",
-        "source_id": "—",
-        "program": "—",
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "reason": "score",
+        "score": 0.7310249999999998,
+        "primary_name": "SAFIRAN AIRPORT SERVICES",
+        "matched_name": "SAFIRAN AIRPORT SERVICES",
+        "source_id": "38978",
+        "program": "RUSSIA-EO14024",
         "verified": false
       },
       "us_csl": {
@@ -498,13 +498,13 @@
     "query_type": "organisation",
     "lists": {
       "us_ofac": {
-        "tier": "NO_MATCH",
-        "reason": "none",
-        "score": 0.0,
-        "primary_name": "—",
-        "matched_name": "—",
-        "source_id": "—",
-        "program": "—",
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "reason": "score",
+        "score": 0.7310249999999998,
+        "primary_name": "SAFIRAN AIRPORT SERVICES",
+        "matched_name": "SAFIRAN AIRPORT SERVICES",
+        "source_id": "38978",
+        "program": "RUSSIA-EO14024",
         "verified": false
       },
       "us_csl": {
@@ -563,13 +563,13 @@
         "verified": false
       },
       "us_csl": {
-        "tier": "NO_MATCH",
-        "reason": "none",
-        "score": 0.0,
-        "primary_name": "—",
-        "matched_name": "—",
-        "source_id": "—",
-        "program": "—",
+        "tier": "POTENTIAL_MATCH",
+        "reason": "core_name_reverse",
+        "score": 0.6053438169642857,
+        "primary_name": "TECHNOLOGY OPTIONS (INDIA) PVT. LTD",
+        "matched_name": "INDIA",
+        "source_id": "ddce84b1f46353d7c05e4f148e127767286aaea8aebd291f4303d504",
+        "program": "Denied Persons List (DPL) - Bureau of Industry and Security",
         "verified": false
       },
       "uk_csl": {
@@ -803,13 +803,13 @@
         "verified": false
       },
       "eu_csl": {
-        "tier": "NO_MATCH",
-        "reason": "none",
-        "score": 0.0,
-        "primary_name": "—",
-        "matched_name": "—",
-        "source_id": "—",
-        "program": "—",
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "reason": "score",
+        "score": 0.7262470588235294,
+        "primary_name": "Suniel Kumar Sharma",
+        "matched_name": "Suniel Kumar Sharma",
+        "source_id": "184187",
+        "program": "UKR",
         "verified": false
       },
       "un_csl": {
@@ -848,33 +848,33 @@
         "verified": false
       },
       "uk_csl": {
-        "tier": "NO_MATCH",
-        "reason": "none",
-        "score": 0.0,
-        "primary_name": "—",
-        "matched_name": "—",
-        "source_id": "—",
-        "program": "—",
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "reason": "partial_name_person",
+        "score": 0.58311,
+        "primary_name": "NOORZAI FAIZULLAH KHAN",
+        "matched_name": "Khan Faizullah Noorzai Akhtar Mohammed Mira",
+        "source_id": "AFG0119",
+        "program": "The Afghanistan (Sanctions) (EU Exit) Regulations 2020",
         "verified": false
       },
       "eu_csl": {
-        "tier": "NO_MATCH",
-        "reason": "none",
-        "score": 0.0,
-        "primary_name": "—",
-        "matched_name": "—",
-        "source_id": "—",
-        "program": "—",
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "reason": "partial_name_person",
+        "score": 0.58311,
+        "primary_name": "Faizullah Khan Noorzai",
+        "matched_name": "Faizullah Noorzai Akhtar Mohammed Mira Khan",
+        "source_id": "6613",
+        "program": "AFG",
         "verified": false
       },
       "un_csl": {
-        "tier": "NO_MATCH",
-        "reason": "none",
-        "score": 0.0,
-        "primary_name": "—",
-        "matched_name": "—",
-        "source_id": "—",
-        "program": "—",
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "reason": "partial_name_person",
+        "score": 0.6904124999999999,
+        "primary_name": "DINNO AMOR ROSALEJOS PAREJA",
+        "matched_name": "Mohammad",
+        "source_id": "UN-2812923",
+        "program": "un_csl",
         "verified": false
       }
     }
@@ -938,43 +938,43 @@
     "query_type": "organisation",
     "lists": {
       "us_ofac": {
-        "tier": "NO_MATCH",
-        "reason": "none",
-        "score": 0.0,
-        "primary_name": "—",
-        "matched_name": "—",
-        "source_id": "—",
-        "program": "—",
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "reason": "score",
+        "score": 0.7372730769230769,
+        "primary_name": "OOO VOLGA GROUP",
+        "matched_name": "OOO VOLGA GROUP",
+        "source_id": "16806",
+        "program": "UKRAINE-EO13661, RUSSIA-EO14024",
         "verified": false
       },
       "us_csl": {
-        "tier": "NO_MATCH",
-        "reason": "none",
-        "score": 0.0,
-        "primary_name": "—",
-        "matched_name": "—",
-        "source_id": "—",
-        "program": "—",
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "reason": "score",
+        "score": 0.75133125,
+        "primary_name": "Volga Group",
+        "matched_name": "Volga Group",
+        "source_id": "175942889f72035dfd87e33cc12f23fd68f045c63501759d5a1379b3",
+        "program": "Entity List (EL) - Bureau of Industry and Security",
         "verified": false
       },
       "uk_csl": {
-        "tier": "NO_MATCH",
-        "reason": "none",
-        "score": 0.0,
-        "primary_name": "—",
-        "matched_name": "—",
-        "source_id": "—",
-        "program": "—",
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "reason": "score",
+        "score": 0.7580999999999998,
+        "primary_name": "VOLGA SHIPPING COMPANY",
+        "matched_name": "VOLGA SHIPPING COMPANY",
+        "source_id": "RUS1847",
+        "program": "The Russia (Sanctions) (EU Exit) Regulations 2019",
         "verified": false
       },
       "eu_csl": {
-        "tier": "NO_MATCH",
-        "reason": "none",
-        "score": 0.0,
-        "primary_name": "—",
-        "matched_name": "—",
-        "source_id": "—",
-        "program": "—",
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "reason": "score",
+        "score": 0.7284867187499998,
+        "primary_name": "JSC Volga Shipping",
+        "matched_name": "JSC Volga Shipping",
+        "source_id": "174811",
+        "program": "UKR",
         "verified": false
       },
       "un_csl": {
