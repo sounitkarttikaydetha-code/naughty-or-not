@@ -1,39 +1,31 @@
 """
-Configuration for screening tiering and normalisation.
-Loads settings from tiering_config.json with safe fallbacks.
+Configuration loader for screening tiering, normalization, and thresholds.
+Loads all rules and wordlists from tiering_config.json.
 """
 
 import json
-import os
 from pathlib import Path
-from typing import List, Set
+from typing import Any, Dict, List
 
 CONFIG_PATH = Path(__file__).parent / "tiering_config.json"
 
 
-def load_config() -> dict:
+def load_config() -> Dict[str, Any]:
     if CONFIG_PATH.exists():
         with open(CONFIG_PATH, "r", encoding="utf-8") as f:
             return json.load(f)
-    return {
-        "candidate_min_match": 0.65,
-        "potential_match_threshold": 0.80,
-        "require_exact_core_match": True,
-        "company_type_words": [
-            "Joint Stock Company",
-            "Limited Liability Company",
-            "Public Joint Stock Company",
-            "PJSC", "JSC", "OJSC", "CJSC", "PAO", "AO", "OOO", "ZAO", "OAO",
-            "LLC", "LLP", "Ltd", "Limited", "Pvt", "Private", "Public",
-            "Company", "Co", "Corp", "Corporation", "Inc", "AG", "GmbH",
-            "SA", "BV", "NV", "PLC", "FZE", "FZCO"
-        ]
-    }
+    return {}
 
 
 _config = load_config()
 
-CANDIDATE_MIN_MATCH: float = float(_config.get("candidate_min_match", 0.65))
+CANDIDATE_MIN_MATCH: float = float(_config.get("candidate_min_match", 0.60))
+POSSIBLE_MATCH_THRESHOLD: float = float(_config.get("possible_match_threshold", 0.70))
 POTENTIAL_MATCH_THRESHOLD: float = float(_config.get("potential_match_threshold", 0.80))
-REQUIRE_EXACT_CORE_MATCH: bool = bool(_config.get("require_exact_core_match", True))
+MIN_DISTINCTIVE_WORD_LEN: int = int(_config.get("min_distinctive_word_len", 4))
+
+WEAK_WORDS: List[str] = _config.get("weak_words", [])
+ALIAS_SPLIT_DELIMITERS: List[str] = _config.get("alias_split_delimiters", [])
 COMPANY_TYPE_WORDS: List[str] = _config.get("company_type_words", [])
+NAME_VARIANTS: Dict[str, str] = _config.get("name_variants", {})
+

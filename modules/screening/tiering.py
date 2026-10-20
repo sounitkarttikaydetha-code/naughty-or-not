@@ -1,18 +1,23 @@
 """
-Match Tiering Layer
-Performs candidate retrieval from Watchman (minMatch=0.65), entity normalization,
-core-name equivalence checking, and multi-tier categorization.
+Match Tiering Layer (v2)
+Performs candidate retrieval from Watchman (minMatch=0.60), alias splitting,
+weak word filtering, two-way core-name equivalence, person-specific validation,
+secondary identifier conflict checks, and multi-tier categorization.
 """
 
 import re
 import unicodedata
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from modules.screening.config import (
+    ALIAS_SPLIT_DELIMITERS,
     CANDIDATE_MIN_MATCH,
     COMPANY_TYPE_WORDS,
+    MIN_DISTINCTIVE_WORD_LEN,
+    NAME_VARIANTS,
+    POSSIBLE_MATCH_THRESHOLD,
     POTENTIAL_MATCH_THRESHOLD,
-    REQUIRE_EXACT_CORE_MATCH,
+    WEAK_WORDS,
 )
 from modules.watchman.client import WatchmanClient
 
@@ -25,14 +30,96 @@ TIER_NOT_CHECKED = "NOT_CHECKED"                    # ⚪
 SOURCE_LISTS = ["us_ofac", "us_csl", "uk_csl", "eu_csl", "un_csl"]
 
 
+def split_alias_parts(text: str) -> List[str]:
+    """
+    Split a name/alias string on brackets and d/b/a, a.k.a., f.k.a., etc.
+    Treats each extracted part as a separate standalone alias candidate.
+    """
+    if not text:
+        return []
+
+    # 1. Extract bracketed parts: (...) [...] {...}
+    brackets = re.findall(r"[\(\[\{]([^\)\]\}]+)[\)\]\}]", text)
+    outside = re.sub(r"[\(\[\{][^\)\]\}]*[\)\]\}]", " ", text)
+    parts = [outside] + brackets
+
+    # 2. Split on d/b/a, a.k.a., f.k.a., formerly, etc.
+    split_pattern = r"(?:\b(?:d/?b/?a|dba|aka|fka|formerly|also known as)\b|a\.k\.a\.|f\.k\.a\.)"
+    split_regex = re.compile(split_pattern, re.IGNORECASE)
+
+    results: List[str] = []
+    for p in parts:
+        subparts = split_regex.split(p)
+        for s in subparts:
+            cleaned = s.strip(" .,;:-_")
+            if cleaned and cleaned not in results:
+                results.append(cleaned)
+
+    return results if results else [text.strip()]
+
+
+def extract_all_aliases(entity: Dict[str, Any]) -> List[str]:
+    """
+    Extract all raw aliases across schemas and expand them using alias splitting.
+    """
+    raw_names: List[str] = []
+
+    # Primary Name
+    pname = entity.get("name")
+    if pname:
+        raw_names.append(pname)
+
+    # Business altNames
+    bus = entity.get("business") or {}
+    for a in bus.get("altNames") or []:
+        if a and a not in raw_names:
+            raw_names.append(a)
+
+    # Person altNames
+    person = entity.get("person") or {}
+    for a in person.get("altNames") or []:
+        if a and a not in raw_names:
+            raw_names.append(a)
+
+    # sourceData fields (UK CSL, EU CSL, US OFAC)
+    sd = entity.get("sourceData") or {}
+    if isinstance(sd, dict):
+        for field in ["Names", "nameAliasWholeNames"]:
+            for a in sd.get(field) or []:
+                if a and a not in raw_names:
+                    raw_names.append(a)
+
+        sdn_name = sd.get("sdnName")
+        if sdn_name and sdn_name not in raw_names:
+            raw_names.append(sdn_name)
+
+        # Remarks (often contain a.k.a. '...')
+        remarks = sd.get("remarks") or ""
+        if remarks:
+            aka_matches = re.findall(r"a\.k\.a\.\s*['\"]([^'\"]+)['\"]", remarks, re.IGNORECASE)
+            for aka in aka_matches:
+                if aka and aka not in raw_names:
+                    raw_names.append(aka)
+
+    # Expand every raw name through alias splitting
+    expanded_aliases: List[str] = []
+    for name in raw_names:
+        parts = split_alias_parts(name)
+        for part in parts:
+            if part and part not in expanded_aliases:
+                expanded_aliases.append(part)
+
+    return expanded_aliases if expanded_aliases else ([pname] if pname else [])
+
+
 def normalize_name(text: str) -> List[str]:
     """
     Normalise a name or alias string:
     - Lowercase
     - Fold accents / diacritics
-    - Remove company-type phrases and words
+    - Remove multi-word and single-word company-type designations
     - Remove punctuation
-    - Return list of core name tokens
+    - Return list of core tokens
     """
     if not text:
         return []
@@ -57,147 +144,309 @@ def normalize_name(text: str) -> List[str]:
     # 5. Tokenize
     tokens = s.split()
 
-    # 6. Remove single-word company-type words
+    # 6. Remove single-word company-type words and apply transliteration name variants
     single_word_set = {
         w.lower() for w in COMPANY_TYPE_WORDS if " " not in w and "-" not in w
     }
-    core_tokens = [w for w in tokens if w and w not in single_word_set]
+    core_tokens = [
+        NAME_VARIANTS.get(w, w)
+        for w in tokens
+        if w and w not in single_word_set
+    ]
 
     return core_tokens
 
 
-def core_name_match(
-    query: str,
-    candidate_name: str,
-    aliases: Optional[List[str]] = None,
-    require_exact: Optional[bool] = None,
+def check_core_name_match(
+    q_words: List[str],
+    c_words: List[str],
+    is_person: bool = False,
 ) -> Tuple[bool, str]:
     """
-    Check if the core name of query matches candidate_name or any of its aliases.
-
-    :param query: Input search query string
-    :param candidate_name: Primary name of the candidate entity
-    :param aliases: Optional list of alternate names / aliases
-    :param require_exact: If True, core words must match exactly (set equality).
-                          If False, all query words must be present in candidate words (subset).
-    :return: (is_match, matched_name_or_alias)
+    Check core-name equivalence between query tokens and candidate tokens.
+    Returns (is_match, match_type):
+      match_type in ["core_name_equal", "core_name_forward", "core_name_reverse", "partial_name_person", ""]
     """
-    if require_exact is None:
-        require_exact = REQUIRE_EXACT_CORE_MATCH
-
-    q_words = normalize_name(query)
-    if not q_words:
-        return False, candidate_name
+    if not q_words or not c_words:
+        return False, ""
 
     q_set = set(q_words)
+    c_set = set(c_words)
+    weak_set = {w.lower() for w in WEAK_WORDS}
 
-    # Check primary name first
-    names_to_check = [candidate_name]
-    if aliases:
-        names_to_check.extend(aliases)
+    # Rule 4: A core-name pass needs at least one shared non-weak word
+    shared_non_weak = (q_set & c_set) - weak_set
+    if not shared_non_weak:
+        return False, ""
 
-    for target in names_to_check:
-        if not target:
-            continue
-        c_words = normalize_name(target)
-        if not c_words:
-            continue
-        c_set = set(c_words)
+    # Exact equality (ignoring word order)
+    if q_set == c_set:
+        return True, "core_name_equal"
 
-        if require_exact:
-            # Exact core name equality: all query tokens equal all candidate tokens
-            if q_set == c_set:
-                return True, target
+    # Forward subset check: q_set is subset of c_set
+    if q_set.issubset(c_set):
+        if is_person:
+            # Person rule: partial subset match is partial_name_person (Rule 5)
+            return True, "partial_name_person"
         else:
-            # Subset mode: every remaining query word is present in remaining candidate words
-            if q_set.issubset(c_set):
-                return True, target
+            # Organisation rule: candidate's extra words MUST only be weak words (Rule 4)
+            # If candidate has extra non-weak words (e.g. "3D" in "Indigo 3D", "Express" in "Air India Express"),
+            # it is a different entity and fails forward core_name match.
+            extra_words = c_set - q_set
+            extra_distinctive = extra_words - weak_set
+            if not extra_distinctive:
+                return True, "core_name_forward"
+            # Extra distinctive words exist -> forward core name fails
 
-    return False, candidate_name
+    # Reverse subset check: c_set is subset of q_set (Rule 1)
+    if c_set.issubset(q_set):
+        # Candidate core must have at least 1 distinctive word of 4 or more chars
+        distinctive_candidate_words = [
+            w for w in c_set if len(w) >= MIN_DISTINCTIVE_WORD_LEN and w not in weak_set
+        ]
+        if distinctive_candidate_words:
+            if is_person:
+                return True, "partial_name_person"
+            else:
+                return True, "core_name_reverse"
+
+    return False, ""
 
 
-def extract_aliases(entity: Dict[str, Any]) -> List[str]:
-    """Extract all available aliases from a Watchman entity payload."""
-    aliases = []
-    # Business altNames
-    bus = entity.get("business") or {}
-    for a in bus.get("altNames") or []:
-        if a and a not in aliases:
-            aliases.append(a)
-
-    # Person altNames
+def check_secondary_identifier_conflict(
+    entity: Dict[str, Any],
+    dob: Optional[str] = None,
+    yob: Optional[str] = None,
+    nationality: Optional[str] = None,
+) -> bool:
+    """
+    Check if user-provided DOB/YOB or nationality conflicts with candidate data.
+    Missing candidate data never conflicts.
+    Returns True if there is a CLEAR conflict.
+    """
     person = entity.get("person") or {}
-    for a in person.get("altNames") or []:
-        if a and a not in aliases:
-            aliases.append(a)
-
-    # Source data whole names (e.g. EU CSL)
     sd = entity.get("sourceData") or {}
-    if isinstance(sd, dict):
-        for a in sd.get("nameAliasWholeNames") or []:
-            if a and a not in aliases:
-                aliases.append(a)
 
-    return aliases
+    # 1. DOB / Year of Birth check
+    target_year = None
+    if yob:
+        target_year = str(yob).strip()
+    elif dob:
+        m = re.search(r"\b(19\d\d|20\d\d)\b", str(dob))
+        if m:
+            target_year = m.group(1)
+
+    if target_year:
+        cand_dates: List[str] = []
+        if person.get("birthDate"):
+            cand_dates.append(str(person.get("birthDate")))
+        if isinstance(sd, dict):
+            if sd.get("DOB"):
+                cand_dates.append(str(sd.get("DOB")))
+            for bd in sd.get("birthDates") or []:
+                cand_dates.append(str(bd))
+            for by in sd.get("birthYears") or []:
+                cand_dates.append(str(by))
+
+        cand_years = set()
+        for cd in cand_dates:
+            matches = re.findall(r"\b(19\d\d|20\d\d)\b", cd)
+            for yr in matches:
+                cand_years.add(yr)
+
+        if cand_years and target_year not in cand_years:
+            return True
+
+    # 2. Nationality check
+    if nationality:
+        user_nat = nationality.strip().lower()
+        cand_nats: List[str] = []
+        if person.get("placeOfBirth"):
+            cand_nats.append(str(person.get("placeOfBirth")).lower())
+        if isinstance(sd, dict):
+            for field in ["Nationality", "CountryOfBirth"]:
+                val = sd.get(field)
+                if val:
+                    cand_nats.append(str(val).lower())
+            for c in sd.get("addressCountryDescriptions") or []:
+                cand_nats.append(str(c).lower())
+
+        if cand_nats:
+            # Check if any candidate country string contains or matches user nationality
+            match_found = any(user_nat in cn or cn in user_nat for cn in cand_nats)
+            if not match_found:
+                return True
+
+    return False
 
 
-def tier_entity(
+def extract_program_info(entity: Dict[str, Any]) -> str:
+    """Extract sanctions programme or sub-list (e.g. 'Denied Persons List')."""
+    sd = entity.get("sourceData") or {}
+    if not isinstance(sd, dict):
+        sd = {}
+
+    # US CSL source or programs
+    csl_source = sd.get("Source")
+    if csl_source:
+        return csl_source
+
+    # UK CSL Regime
+    regime = sd.get("Regime")
+    if regime:
+        return regime
+
+    # OFAC programs
+    sinfo = entity.get("sanctionsInfo") or {}
+    if isinstance(sinfo, dict) and sinfo.get("programs"):
+        return ", ".join(sinfo.get("programs"))
+
+    if sd.get("program"):
+        prog = sd.get("program")
+        return ", ".join(prog) if isinstance(prog, list) else str(prog)
+
+    if sd.get("entityRegulationProgramme"):
+        return sd.get("entityRegulationProgramme")
+
+    return sd.get("Programs") or entity.get("sourceList", "")
+
+
+def tier_single_entity(
     query: str,
     entity: Dict[str, Any],
-    require_exact: Optional[bool] = None,
-) -> Dict[str, Any]:
+    query_type: Optional[str] = None,
+    dob: Optional[str] = None,
+    yob: Optional[str] = None,
+    nationality: Optional[str] = None,
+) -> Optional[Dict[str, Any]]:
     """
-    Assign a tier and evaluation metadata to a single entity candidate.
+    Tier a single candidate entity against the query.
+    Returns None if discarded by Rule 6 (< 0.70 without core-name match).
     """
+    if not query or not query.strip():
+        return None
+
     score = float(entity.get("match", 0.0))
     primary_name = entity.get("name", "")
-    aliases = extract_aliases(entity)
+    all_aliases = extract_all_aliases(entity)
 
-    is_core_match, matched_name = core_name_match(
-        query, primary_name, aliases, require_exact=require_exact
-    )
-
-    # Determine tier and reason
-    if score >= POTENTIAL_MATCH_THRESHOLD and is_core_match:
-        tier = TIER_POTENTIAL_MATCH
-        reason = "score_and_core_name"
-    elif score >= POTENTIAL_MATCH_THRESHOLD:
-        tier = TIER_POTENTIAL_MATCH
-        reason = "score"
-    elif is_core_match:
-        tier = TIER_POTENTIAL_MATCH
-        reason = "core_name"
-    elif score >= CANDIDATE_MIN_MATCH:
-        tier = TIER_POSSIBLE_MATCH
-        reason = "score"
+    if query_type:
+        is_person = (query_type.lower() == "person")
     else:
-        tier = TIER_NO_MATCH
-        reason = "none"
+        is_person = (
+            entity.get("entityType") == "person"
+            or bool(entity.get("person"))
+        )
+
+    q_words = normalize_name(query)
+
+    # Evaluate primary name and all aliases
+    best_match_type = ""
+    best_matched_name = primary_name
+
+    priority_map = {
+        "core_name_equal": 4,
+        "core_name_forward": 3,
+        "core_name_reverse": 3,
+        "partial_name_person": 2,
+        "": 0,
+    }
+
+    for candidate_alias in all_aliases:
+        c_words = normalize_name(candidate_alias)
+        is_m, m_type = check_core_name_match(q_words, c_words, is_person=is_person)
+        if is_m:
+            if priority_map.get(m_type, 0) > priority_map.get(best_match_type, 0):
+                best_match_type = m_type
+                best_matched_name = candidate_alias
+
+    core_pass = best_match_type in [
+        "core_name_equal",
+        "core_name_forward",
+        "core_name_reverse",
+    ]
+
+    # Rule 6: Candidates scoring 0.60–0.70 kept ONLY if a core-name check passes
+    if score < POSSIBLE_MATCH_THRESHOLD and not (core_pass or best_match_type == "partial_name_person"):
+        return None
+
+    # Determine Tier and Reason
+    tier = TIER_NO_MATCH
+    reason = "none"
+
+    if is_person:
+        # Rule 5: Person Rule
+        if score >= POTENTIAL_MATCH_THRESHOLD:
+            tier = TIER_POTENTIAL_MATCH
+            reason = (
+                "score_and_core_name" if best_match_type == "core_name_equal" else "score"
+            )
+        elif best_match_type == "core_name_equal":
+            tier = TIER_POTENTIAL_MATCH
+            reason = "core_name"
+        elif best_match_type == "partial_name_person":
+            tier = TIER_POSSIBLE_MATCH
+            reason = "partial_name_person"
+        elif score >= POSSIBLE_MATCH_THRESHOLD:
+            tier = TIER_POSSIBLE_MATCH
+            reason = "score"
+
+        # Secondary identifier conflict check
+        if tier == TIER_POTENTIAL_MATCH:
+            if check_secondary_identifier_conflict(entity, dob=dob, yob=yob, nationality=nationality):
+                tier = TIER_POSSIBLE_MATCH
+                reason = "secondary_identifier_conflict"
+
+    else:
+        # Organisation / Entity Rule
+        if score >= POTENTIAL_MATCH_THRESHOLD and best_match_type == "core_name_reverse":
+            tier = TIER_POTENTIAL_MATCH
+            reason = "score_and_core_name_reverse"
+        elif best_match_type == "core_name_reverse":
+            tier = TIER_POTENTIAL_MATCH
+            reason = "core_name_reverse"
+        elif score >= POTENTIAL_MATCH_THRESHOLD and core_pass:
+            tier = TIER_POTENTIAL_MATCH
+            reason = "score_and_core_name"
+        elif core_pass:
+            tier = TIER_POTENTIAL_MATCH
+            reason = "core_name"
+        elif score >= POTENTIAL_MATCH_THRESHOLD:
+            tier = TIER_POTENTIAL_MATCH
+            reason = "score"
+        elif score >= POSSIBLE_MATCH_THRESHOLD:
+            tier = TIER_POSSIBLE_MATCH
+            reason = "score"
 
     return {
         "tier": tier,
         "reason": reason,
         "score": score,
         "primary_name": primary_name,
-        "matched_name": matched_name,
+        "matched_name": best_matched_name,
+        "entity_type": "person" if is_person else (entity.get("entityType") or "organisation"),
+        "program": extract_program_info(entity),
         "source_list": entity.get("sourceList", ""),
         "source_id": entity.get("sourceID", ""),
+        "core_pass": core_pass or (best_match_type == "partial_name_person"),
         "entity": entity,
     }
 
 
-def screen_query_per_list(
+def screen_query_all_lists(
     query: str,
     client: Optional[WatchmanClient] = None,
-    require_exact: Optional[bool] = None,
+    query_type: Optional[str] = None,
+    dob: Optional[str] = None,
+    yob: Optional[str] = None,
+    nationality: Optional[str] = None,
 ) -> Dict[str, Dict[str, Any]]:
     """
-    Screen a query against Watchman and return the best hit per source list.
-
-    :param query: Name to screen
-    :param client: Optional WatchmanClient instance
-    :param require_exact: Optional override for exact core match
-    :return: Dict mapping source_list -> best_hit_dict
+    Screen a query across all 5 lists, applying all rules.
+    Returns for each list:
+      - 'best_hit': Dict with top hit metadata
+      - 'red_hits': All POTENTIAL_MATCH (🔴) hits
+      - 'orange_hits': Top 3 POSSIBLE_MATCH_REVIEW (🟠) hits
     """
     if client is None:
         client = WatchmanClient()
@@ -206,14 +455,21 @@ def screen_query_per_list(
 
     if not query or not query.strip():
         for src in SOURCE_LISTS:
-            results_by_source[src] = {
+            empty_hit = {
                 "tier": TIER_NO_MATCH,
                 "reason": "none",
                 "score": 0.0,
                 "primary_name": "—",
                 "matched_name": "—",
+                "entity_type": query_type or "organisation",
+                "program": "—",
                 "source_list": src,
                 "source_id": "—",
+            }
+            results_by_source[src] = {
+                "best_hit": empty_hit,
+                "red_hits": [],
+                "orange_hits": [],
             }
         return results_by_source
 
@@ -225,49 +481,105 @@ def screen_query_per_list(
     }
 
     for src in SOURCE_LISTS:
+        # Rule 6: Candidate retrieval at minMatch=0.60
         resp = client.search(
             name=query, min_match=CANDIDATE_MIN_MATCH, source=src
         )
 
         if resp.get("status") == "unavailable":
-            results_by_source[src] = {
+            unavail_hit = {
                 "tier": TIER_NOT_CHECKED,
                 "reason": "watchman_unavailable",
                 "score": 0.0,
                 "primary_name": "—",
                 "matched_name": "—",
+                "entity_type": query_type or "organisation",
+                "program": "—",
                 "source_list": src,
                 "source_id": "—",
                 "error": resp.get("error"),
             }
+            results_by_source[src] = {
+                "best_hit": unavail_hit,
+                "red_hits": [],
+                "orange_hits": [],
+            }
             continue
 
         raw_entities = resp.get("results", {}).get("entities") or []
-        if not raw_entities:
-            results_by_source[src] = {
+        evaluated_candidates: List[Dict[str, Any]] = []
+
+        for ent in raw_entities:
+            tiered = tier_single_entity(
+                query=query,
+                entity=ent,
+                query_type=query_type,
+                dob=dob,
+                yob=yob,
+                nationality=nationality,
+            )
+            if tiered is not None:
+                evaluated_candidates.append(tiered)
+
+        if not evaluated_candidates:
+            no_match_hit = {
                 "tier": TIER_NO_MATCH,
                 "reason": "none",
                 "score": 0.0,
                 "primary_name": "—",
                 "matched_name": "—",
+                "entity_type": query_type or "organisation",
+                "program": "—",
                 "source_list": src,
                 "source_id": "—",
             }
+            results_by_source[src] = {
+                "best_hit": no_match_hit,
+                "red_hits": [],
+                "orange_hits": [],
+            }
             continue
 
-        # Evaluate each candidate and select the best hit
-        evaluated_candidates = [
-            tier_entity(query, ent, require_exact=require_exact)
-            for ent in raw_entities
-        ]
-
-        # Sort by tier priority desc, then by score desc
+        # Rule 7: Sort by tier, then by core-name pass, then by score
         evaluated_candidates.sort(
-            key=lambda x: (tier_order.get(x["tier"], 0), x["score"]),
+            key=lambda x: (
+                tier_order.get(x["tier"], 0),
+                1 if x["core_pass"] else 0,
+                x["score"],
+            ),
             reverse=True,
         )
 
+        red_hits = [h for h in evaluated_candidates if h["tier"] == TIER_POTENTIAL_MATCH]
+        orange_hits = [h for h in evaluated_candidates if h["tier"] == TIER_POSSIBLE_MATCH][:3]
+
         best_hit = evaluated_candidates[0]
-        results_by_source[src] = best_hit
+
+        results_by_source[src] = {
+            "best_hit": best_hit,
+            "red_hits": red_hits,
+            "orange_hits": orange_hits,
+        }
 
     return results_by_source
+
+
+# Backward-compatible wrapper for previous smoke runner
+def screen_query_per_list(
+    query: str,
+    client: Optional[WatchmanClient] = None,
+    query_type: Optional[str] = None,
+    dob: Optional[str] = None,
+    yob: Optional[str] = None,
+    nationality: Optional[str] = None,
+) -> Dict[str, Dict[str, Any]]:
+    """Backward compatible wrapper returning best_hit per source."""
+    full_results = screen_query_all_lists(
+        query=query,
+        client=client,
+        query_type=query_type,
+        dob=dob,
+        yob=yob,
+        nationality=nationality,
+    )
+    return {src: data["best_hit"] for src, data in full_results.items()}

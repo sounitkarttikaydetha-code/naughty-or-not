@@ -1,0 +1,992 @@
+{
+  "Sberbank": {
+    "query_type": "organisation",
+    "lists": {
+      "us_ofac": {
+        "tier": "POTENTIAL_MATCH",
+        "reason": "core_name",
+        "score": 0.6621683522727271,
+        "primary_name": "JOINT STOCK COMPANY SBERBANK",
+        "matched_name": "JOINT STOCK COMPANY SBERBANK",
+        "source_id": "18715",
+        "program": "UKRAINE-EO13662, RUSSIA-EO14024",
+        "verified": false
+      },
+      "us_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "reason": "core_name",
+        "score": 0.6621683522727271,
+        "primary_name": "JOINT STOCK COMPANY SBERBANK",
+        "matched_name": "JOINT STOCK COMPANY SBERBANK",
+        "source_id": "18715",
+        "program": "Sectoral Sanctions Identifications List (SSI) - Treasury Department",
+        "verified": false
+      },
+      "uk_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "reason": "core_name",
+        "score": 0.6904124999999999,
+        "primary_name": "PJSC Sberbank (Public Joint-Stock Company Sberbank)",
+        "matched_name": "PJSC Sberbank",
+        "source_id": "RUS0256",
+        "program": "The Russia (Sanctions) (EU Exit) Regulations 2019",
+        "verified": false
+      },
+      "eu_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "reason": "core_name",
+        "score": 0.6904124999999999,
+        "primary_name": "Сбербанк",
+        "matched_name": "Sberbank",
+        "source_id": "142064",
+        "program": "UKR",
+        "verified": false
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      }
+    }
+  },
+  "Sberbank of Russia": {
+    "query_type": "organisation",
+    "lists": {
+      "us_ofac": {
+        "tier": "POTENTIAL_MATCH",
+        "reason": "score_and_core_name",
+        "score": 0.8122499999999999,
+        "primary_name": "PUBLIC JOINT STOCK COMPANY SBERBANK OF RUSSIA",
+        "matched_name": "PUBLIC JOINT STOCK COMPANY SBERBANK OF RUSSIA",
+        "source_id": "17018",
+        "program": "UKRAINE-EO13662, RUSSIA-EO14024",
+        "verified": false
+      },
+      "us_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "reason": "score_and_core_name",
+        "score": 0.8122499999999999,
+        "primary_name": "PUBLIC JOINT STOCK COMPANY SBERBANK OF RUSSIA",
+        "matched_name": "PUBLIC JOINT STOCK COMPANY SBERBANK OF RUSSIA",
+        "source_id": "17018",
+        "program": "Sectoral Sanctions Identifications List (SSI) - Treasury Department",
+        "verified": false
+      },
+      "uk_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "reason": "core_name",
+        "score": 0.6904124999999999,
+        "primary_name": "PJSC Sberbank (Public Joint-Stock Company Sberbank)",
+        "matched_name": "PJSC Sberbank of Russia",
+        "source_id": "RUS0256",
+        "program": "The Russia (Sanctions) (EU Exit) Regulations 2019",
+        "verified": false
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      }
+    }
+  },
+  "VTB Bank": {
+    "query_type": "organisation",
+    "lists": {
+      "us_ofac": {
+        "tier": "POTENTIAL_MATCH",
+        "reason": "score_and_core_name",
+        "score": 0.8122499999999999,
+        "primary_name": "VTB BANK PUBLIC JOINT STOCK COMPANY",
+        "matched_name": "VTB BANK PUBLIC JOINT STOCK COMPANY",
+        "source_id": "17013",
+        "program": "UKRAINE-EO13662, IRAN-EO13902, RUSSIA-EO14024",
+        "verified": false
+      },
+      "us_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "reason": "score_and_core_name",
+        "score": 0.8122499999999999,
+        "primary_name": "VTB BANK PUBLIC JOINT STOCK COMPANY",
+        "matched_name": "VTB BANK PUBLIC JOINT STOCK COMPANY",
+        "source_id": "17013",
+        "program": "Sectoral Sanctions Identifications List (SSI) - Treasury Department",
+        "verified": false
+      },
+      "uk_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "reason": "core_name",
+        "score": 0.7679454545454545,
+        "primary_name": "VTB Bank (Public Joint-Stock Company)",
+        "matched_name": "VTB Bank",
+        "source_id": "RUS0250",
+        "program": "The Russia (Sanctions) (EU Exit) Regulations 2019",
+        "verified": false
+      },
+      "eu_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "reason": "core_name",
+        "score": 0.6904124999999999,
+        "primary_name": "ВТБ/Внешторгбанк",
+        "matched_name": "VTB Bank",
+        "source_id": "139001",
+        "program": "UKR",
+        "verified": false
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      }
+    }
+  },
+  "S7 Airlines": {
+    "query_type": "airline",
+    "lists": {
+      "us_ofac": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "reason": "score",
+        "score": 0.7549147058823529,
+        "primary_name": "S. GROUP AIRLINES LTD",
+        "matched_name": "S. GROUP AIRLINES LTD",
+        "source_id": "48388",
+        "program": "BELARUS-EO14038",
+        "verified": false
+      },
+      "us_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "reason": "score",
+        "score": 0.764470588235294,
+        "primary_name": "Ukraine Mediterranean Airlines",
+        "matched_name": "Ukraine Mediterranean Airlines",
+        "source_id": "e06e1dfc8b1e9f120dc340b25cf241f001d715c4c2c9bd0d6982c2c8",
+        "program": "Entity List (EL) - Bureau of Industry and Security",
+        "verified": false
+      },
+      "uk_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "reason": "score_and_core_name",
+        "score": 0.8122499999999999,
+        "primary_name": "JSC Siberia Airlines",
+        "matched_name": "S7 Airlines",
+        "source_id": "RUS2426",
+        "program": "The Russia (Sanctions) (EU Exit) Regulations 2019",
+        "verified": false
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      }
+    }
+  },
+  "Siberia Airlines": {
+    "query_type": "airline",
+    "lists": {
+      "us_ofac": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "us_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "uk_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "reason": "core_name",
+        "score": 0.7919437499999998,
+        "primary_name": "JSC Siberia Airlines",
+        "matched_name": "JSC Siberia Airlines",
+        "source_id": "RUS2426",
+        "program": "The Russia (Sanctions) (EU Exit) Regulations 2019",
+        "verified": false
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      }
+    }
+  },
+  "Aeroflot": {
+    "query_type": "airline",
+    "lists": {
+      "us_ofac": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "us_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "reason": "core_name",
+        "score": 0.7716375,
+        "primary_name": "PJSC AEROFLOT",
+        "matched_name": "PJSC AEROFLOT",
+        "source_id": "1d6ca9a675764b253af523e62f0e69833a69c554e54d1128a1593c7a",
+        "program": "Denied Persons List (DPL) - Bureau of Industry and Security",
+        "verified": false
+      },
+      "uk_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "reason": "core_name",
+        "score": 0.7716375,
+        "primary_name": "PJSC Aeroflot",
+        "matched_name": "PJSC Aeroflot",
+        "source_id": "RUS1444",
+        "program": "The Russia (Sanctions) (EU Exit) Regulations 2019",
+        "verified": false
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      }
+    }
+  },
+  "Azur Air": {
+    "query_type": "airline",
+    "lists": {
+      "us_ofac": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "us_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "reason": "score_and_core_name",
+        "score": 0.8122499999999999,
+        "primary_name": "AZUR AIR",
+        "matched_name": "AZUR AIR",
+        "source_id": "642715d1625402f8a5ae7b84f0c9ea70f3e92cfed8c56fea57790f63",
+        "program": "Denied Persons List (DPL) - Bureau of Industry and Security",
+        "verified": false
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      }
+    }
+  },
+  "UTair": {
+    "query_type": "airline",
+    "lists": {
+      "us_ofac": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "us_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "reason": "core_name",
+        "score": 0.7284867187499998,
+        "primary_name": "UTAIR AVIATION JSC,",
+        "matched_name": "UTAIR AVIATION JSC",
+        "source_id": "1c9ad49f655038f54ce330ad4f09c62d5ff6546ef3ea31654271b330",
+        "program": "Denied Persons List (DPL) - Bureau of Industry and Security",
+        "verified": false
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "eu_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "reason": "score_and_core_name",
+        "score": 0.8122499999999999,
+        "primary_name": "UTAIR",
+        "matched_name": "UTAIR",
+        "source_id": "171617",
+        "program": "UKR",
+        "verified": false
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      }
+    }
+  },
+  "Jaipur International Airport Limited": {
+    "query_type": "organisation",
+    "lists": {
+      "us_ofac": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "us_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      }
+    }
+  },
+  "Adani Airport Holdings Limited": {
+    "query_type": "organisation",
+    "lists": {
+      "us_ofac": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "us_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      }
+    }
+  },
+  "Air India": {
+    "query_type": "airline",
+    "lists": {
+      "us_ofac": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "us_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      }
+    }
+  },
+  "IndiGo": {
+    "query_type": "airline",
+    "lists": {
+      "us_ofac": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "reason": "score",
+        "score": 0.7635149999999999,
+        "primary_name": "LIMITED LIABILITY COMPANY INDIGO 3D",
+        "matched_name": "LIMITED LIABILITY COMPANY INDIGO 3D",
+        "source_id": "48863",
+        "program": "RUSSIA-EO14024",
+        "verified": false
+      },
+      "us_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      }
+    }
+  },
+  "InterGlobe Aviation Limited": {
+    "query_type": "airline",
+    "lists": {
+      "us_ofac": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "us_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      }
+    }
+  },
+  "Siberian Wellness": {
+    "query_type": "organisation",
+    "lists": {
+      "us_ofac": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "us_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      }
+    }
+  },
+  "Rajesh Kumar": {
+    "query_type": "person",
+    "lists": {
+      "us_ofac": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "reason": "partial_name_person",
+        "score": 0.7741757812499999,
+        "primary_name": "Rajesh GUPTA",
+        "matched_name": "Rajesh Kumar GUPTA",
+        "source_id": "27586",
+        "program": "GLOMAG",
+        "verified": false
+      },
+      "us_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "uk_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "reason": "partial_name_person",
+        "score": 0.7741757812499999,
+        "primary_name": "GUPTA Rajesh Kumar",
+        "matched_name": "GUPTA Rajesh Kumar",
+        "source_id": "GAC0018",
+        "program": "The Global Anti-Corruption Sanctions Regulations 2021",
+        "verified": false
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      }
+    }
+  },
+  "Mohammed Khan": {
+    "query_type": "person",
+    "lists": {
+      "us_ofac": {
+        "tier": "POTENTIAL_MATCH",
+        "reason": "score_and_core_name",
+        "score": 0.8122499999999999,
+        "primary_name": "Haji Asad Khan Zarkari MOHAMMADHASNI",
+        "matched_name": "Mohammed KHAN",
+        "source_id": "10898",
+        "program": "SDNTK",
+        "verified": false
+      },
+      "us_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "reason": "partial_name_person",
+        "score": 0.7346994642857142,
+        "primary_name": "Mohammad Jan Khan Mangal",
+        "matched_name": "Mohammad Jan Khan Mangal",
+        "source_id": "1b5d453ba5e47d3a629994479eaa6f7a736134c0cc108262c9405d13",
+        "program": "Entity List (EL) - Bureau of Industry and Security",
+        "verified": false
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      }
+    }
+  },
+  "Sky Bank": {
+    "query_type": "organisation",
+    "lists": {
+      "us_ofac": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "us_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      }
+    }
+  },
+  "Volga Logistics": {
+    "query_type": "organisation",
+    "lists": {
+      "us_ofac": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "us_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "reason": "none",
+        "score": 0.0,
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "program": "—",
+        "verified": false
+      }
+    }
+  }
+}

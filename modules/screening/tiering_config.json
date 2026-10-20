@@ -1,7 +1,37 @@
 {
-  "candidate_min_match": 0.65,
+  "candidate_min_match": 0.60,
+  "possible_match_threshold": 0.70,
   "potential_match_threshold": 0.80,
-  "require_exact_core_match": true,
+  "min_distinctive_word_len": 4,
+  "weak_words": [
+    "airlines",
+    "airline",
+    "airways",
+    "air",
+    "aviation",
+    "aero",
+    "bank",
+    "group",
+    "holdings",
+    "holding",
+    "international",
+    "logistics",
+    "trading",
+    "services",
+    "global",
+    "industries",
+    "enterprises"
+  ],
+  "alias_split_delimiters": [
+    "d/b/a",
+    "dba",
+    "a.k.a.",
+    "aka",
+    "f.k.a.",
+    "fka",
+    "formerly",
+    "also known as"
+  ],
   "company_type_words": [
     "Joint Stock Company",
     "Limited Liability Company",
@@ -36,5 +66,10 @@
     "PLC",
     "FZE",
     "FZCO"
-  ]
+  ],
+  "name_variants": {
+    "mohammed": "mohammad",
+    "muhammad": "mohammad",
+    "mohamed": "mohammad"
+  }
 }
