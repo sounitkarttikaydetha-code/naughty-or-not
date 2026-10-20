@@ -29,3 +29,13 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## ReportLab PDF Generation Library
+
+ReportLab is licensed under the BSD License:
+Copyright (c) 2000-2024, ReportLab Inc.
+All rights reserved.
+
+### Licensing Note & DarkGarden GPL Font Exclusion
+ReportLab distribution packages bundle an optional font `DarkGarden` (`DarkGarden-Regular.afm`) licensed under the GNU General Public License v2 (GPLv2). Sanction checK uses standard PostScript/PDF core fonts (Helvetica) exclusively and explicitly excludes all DarkGarden files in `build.spec` and runtime font registries, ensuring no copyleft font assets are distributed in binary packages.
+
