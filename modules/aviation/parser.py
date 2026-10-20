@@ -154,8 +154,17 @@ def check_and_refresh_sources(force: bool = False) -> None:
 
     save_meta(meta)
 
+    # Auto-sync raw index when sources refresh (Decision 1)
+    try:
+        from modules.raw_search.indexer import build_full_raw_index
+        build_full_raw_index()
+        logger.info("Auto-synced raw search index after source refresh.")
+    except Exception as sync_err:
+        logger.warning(f"Failed to auto-sync raw index after source refresh: {sync_err}")
+
 
 def refresh_all(force: bool = False) -> Dict[str, Any]:
+
     """Manual refresh button / application startup check.
     Checks each source: if older than 24h (or force=True), refreshes.
     If older than 7 days and refresh failed, marks STALE.

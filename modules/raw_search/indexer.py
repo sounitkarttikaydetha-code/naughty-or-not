@@ -55,20 +55,35 @@ def init_db(con: sqlite3.Connection) -> None:
     );
     """)
 
-    # FTS5 virtual table with unicode61 tokenizer
-    cur.execute("""
-    CREATE VIRTUAL TABLE raw_index USING fts5(
-        source UNINDEXED,
-        record_id,
-        primary_name,
-        all_names,
-        all_text,
-        source_url UNINDEXED,
-        list_date UNINDEXED,
-        tokenize='unicode61 remove_diacritics 2'
-    );
-    """)
+    # FTS5 virtual table with trigram tokenizer (with fallback to unicode61)
+    try:
+        cur.execute("""
+        CREATE VIRTUAL TABLE raw_index USING fts5(
+            source UNINDEXED,
+            record_id,
+            primary_name,
+            all_names,
+            all_text,
+            source_url UNINDEXED,
+            list_date UNINDEXED,
+            tokenize='trigram'
+        );
+        """)
+    except sqlite3.OperationalError:
+        cur.execute("""
+        CREATE VIRTUAL TABLE raw_index USING fts5(
+            source UNINDEXED,
+            record_id,
+            primary_name,
+            all_names,
+            all_text,
+            source_url UNINDEXED,
+            list_date UNINDEXED,
+            tokenize='unicode61 remove_diacritics 2'
+        );
+        """)
     con.commit()
+
 
 
 def parse_ofac_sdn(path: Path) -> List[Tuple[str, str, str, str, str, str, str]]:
