@@ -1,6 +1,10 @@
 @echo off
 setlocal enabledelayedexpansion
 
+:: Ensure working directory is always the script directory (project root)
+cd /d "%~dp0"
+set "PYTHONPATH=%~dp0;%PYTHONPATH%"
+
 echo =======================================================
 echo          Starting Naughty or not (Sanction checK)      
 echo =======================================================
@@ -56,4 +60,4 @@ goto wait_watchman_loop
 echo [4/4] Launching Sanction checK Streamlit interface at http://127.0.0.1:8501...
 start http://127.0.0.1:8501
 call .venv\Scripts\activate.bat
-streamlit run app/main.py
+streamlit run app/main.py --server.port 8501 --server.address 127.0.0.1
