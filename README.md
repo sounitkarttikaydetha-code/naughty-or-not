@@ -61,6 +61,13 @@
    pip install -r requirements.txt
    ```
 
+6. **Initialize Local Data & Raw Index:**
+   ```bash
+   python scripts/init_data.py
+   ```
+   This downloads/caches the official aviation and India registers and compiles the local SQLite FTS5 search index.
+
+
 ---
 
 ### B. Company Laptop (Corporate Network / Real Screening)
