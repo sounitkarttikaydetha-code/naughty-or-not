@@ -89,8 +89,9 @@ sources:
   - id: eu_air_safety
     authority: European Commission, DG MOVE
     landing_page: https://transport.ec.europa.eu/transport-themes/eu-air-safety-list_en
-    file_url_resolved: https://transport.ec.europa.eu/document/download/7414988e-6e85-455b-8c8d-aece8e932aa9_en?filename=air-safety-list.pdf
+    file_url_resolved: https://transport.ec.europa.eu/document/download/3195fabb-7575-4db9-85b9-ec5a77b481aa_en?filename=air-safety-list.pdf
     publication_date: "2026-06-09"
+
     last_checked: "2026-10-20"
     sha256: 7d9323517302108170675fb13c21925f19d9680f3fccceee30dfe99bd5cc94da
     parser: modules.aviation.parser.parse_eu_air_safety_list

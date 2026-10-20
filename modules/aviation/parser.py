@@ -31,7 +31,7 @@ SOURCES = {
     },
     "eu_air_safety_list": {
         "name": "EU Air Safety List",
-        "url": "https://transport.ec.europa.eu/document/download/7414988e-6e85-455b-8c8d-aece8e932aa9_en?filename=air-safety-list.pdf",
+        "url": "https://transport.ec.europa.eu/document/download/3195fabb-7575-4db9-85b9-ec5a77b481aa_en?filename=air-safety-list.pdf",
         "publication_date": "2026-06-09",
         "local_file": DATA_DIR / "eu_air_safety_list.pdf",
     },
@@ -143,10 +143,41 @@ def check_and_refresh_sources(force: bool = False) -> None:
                 # Not modified
                 entry["last_checked"] = now_iso
                 meta[key] = entry
+            elif e.code == 404 and key == "eu_air_safety_list":
+                logger.info("EU Air Safety List URL returned 404; resolving latest download link from landing page...")
+                resolved_ok = False
+                try:
+                    landing_url = "https://transport.ec.europa.eu/transport-themes/eu-air-safety-list_en"
+                    l_req = urllib.request.Request(landing_url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"})
+                    with urllib.request.urlopen(l_req, timeout=15) as l_resp:
+                        l_html = l_resp.read().decode("utf-8", errors="ignore")
+                        match = re.search(r'/document/download/[a-f0-9\-]+_en\?filename=air-safety-list\.pdf', l_html)
+                        if match:
+                            resolved_url = "https://transport.ec.europa.eu" + match.group(0)
+                            logger.info(f"Resolved new EU Air Safety List URL: {resolved_url}")
+                            dl_req = urllib.request.Request(resolved_url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"})
+                            with urllib.request.urlopen(dl_req, timeout=20) as dl_resp:
+                                content = dl_resp.read()
+                                with open(info["local_file"], "wb") as f:
+                                    f.write(content)
+                                entry.update({
+                                    "last_checked": now_iso,
+                                    "sha256": hashlib.sha256(content).hexdigest(),
+                                    "url": resolved_url,
+                                })
+                                meta[key] = entry
+                                resolved_ok = True
+                except Exception as res_err:
+                    logger.warning(f"Failed to auto-resolve EU Air Safety List URL: {res_err}")
+                if not resolved_ok:
+                    logger.warning(f"HTTP {e.code} while checking {key}: {e}. Retaining local copy.")
+                    entry["last_checked"] = now_iso
+                    meta[key] = entry
             else:
                 logger.warning(f"HTTP {e.code} while checking {key}: {e}")
                 entry["last_checked"] = now_iso
                 meta[key] = entry
+
         except Exception as e:
             logger.warning(f"Error checking {key}: {e}. Retaining local copy.")
             entry["last_checked"] = now_iso
