@@ -125,6 +125,7 @@ The BIS aircraft list is shown as 🔴 because it is an export-control restricti
 - The API is called only when the checkbox is ticked. One search counts as one call.
 - The screen shows a "Credits used (this session / total logged)" counter, calculated from the log.
 - If no API key is set, the checkbox is disabled with the tooltip "Add OPENSANCTIONS_API_KEY to .env".
+- **Bulk data licensing notice**: If bulk data loading is ever enabled (via `OPENSANCTIONS_BULK_ENABLED=true`), the UI must show: `"OpenSanctions data is licensed under CC BY-NC 4.0; commercial use requires a licence from opensanctions.org"` on the screen where bulk data is configured or used. By default, bulk data loading is strictly disabled in code.
 
 ## 7. Out of scope (phase 1)
 
