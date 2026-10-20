@@ -124,3 +124,16 @@ def test_reconciliation_entity_counts():
     unl = parse_unlawful_associations()
     assert unl["status"] == "OK"
     assert len(unl["entities"]) >= 23  # 23 base rows expanded with sub-groups and fronts
+
+
+def test_raw_index_india_counts():
+    """Verify that raw indexer parses all 44 Section 3 unlawful associations (Finding A-13)."""
+    from modules.raw_search.indexer import parse_india_records
+    records = parse_india_records()
+    ua_records = [r for r in records if r[0] == "in_mha_unlawful_assoc"]
+    fs_records = [r for r in records if r[0] == "in_mha_first_schedule"]
+    ind_records = [r for r in records if r[0] == "in_mha_fourth_schedule"]
+    assert len(ua_records) == 44, f"Expected 44 unlawful associations in raw index, got {len(ua_records)}"
+    assert len(fs_records) == 48, f"Expected 48 First Schedule organisations in raw index, got {len(fs_records)}"
+    assert len(ind_records) == 80, f"Expected 80 Fourth Schedule individuals in raw index, got {len(ind_records)}"
+

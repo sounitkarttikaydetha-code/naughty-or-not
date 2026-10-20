@@ -405,8 +405,9 @@ def parse_india_records() -> List[Tuple[str, str, str, str, str, str, str]]:
             "2026-07-04"
         ))
 
-    # 3. Unlawful Associations
-    ua = parse_unlawful_associations(Path("data/india/unlawful_associations.html"))
+    # 3. Unlawful Associations (all pages: 44 entities)
+    all_pages_path = Path("data/india/unlawful_associations_all_pages.html")
+    ua = parse_unlawful_associations(all_pages_path if all_pages_path.is_file() else None)
     for ent in ua.get("entities", []):
         eid = ent.get("id", "")
         name = ent.get("name", "")
