@@ -90,6 +90,24 @@ The tool **flags** potential matches only. Verifying a match and escalating it s
 
 Each row can be expanded to show all matches: listed name, matched alias, type, programme or regime, countries, date of birth, listing date, reference ID and remarks.
 
+**Reason Code Taxonomy**:
+Every hit in Section A and Section B carries an explicit reason code documenting why the candidate was assigned its tier:
+
+| Reason Code | Tier | Description |
+|---|---|---|
+| `exact_full` | 🔴 Potential Match | Exact normalized string identity between query and candidate primary name or alias. |
+| `core_name` | 🔴 Potential Match | Substantial core name equivalence after discarding non-distinctive generic words (>= 0.80). |
+| `score` | 🔴 / 🟠 | High algorithmic similarity score (>= 0.80 for 🔴, 0.70–0.79 for 🟠). |
+| `score_rev` | 🟠 Possible Match | Reverse-direction similarity where target tokens cover query tokens. |
+| `fuzzy_word` | 🟠 Possible Match | Single-word fuzzy match (similarity >= 0.90, token length >= 5). |
+| `token_pass` | ℹ️ Sub-threshold | Retrieval candidate above display floor (0.50/0.45) but below match threshold (< 0.60 or < 0.70). |
+| `weak_reverse` | ℹ️ Sub-threshold | Reverse match where shared tokens consist predominantly of weak generic or geographic words. |
+| `type_mismatch_cap` | 🟠 Possible Match | High-scoring match downgraded to review due to incompatible entity types (e.g., Vessel vs Person). |
+| `mha_core_match` | 🔴 Potential Match | Exact or primary core-name match against Indian MHA UAPA terrorist register. |
+| `mha_partial` | 🟠 Possible Match | High partial or sub-group correlation on Indian MHA UAPA list. |
+| `opensanctions_score`| 🔴 / 🟠 | Multi-property scored match from OpenSanctions API integration. |
+
+
 **Section B — Aviation** (Airline and Aircraft searches only). This section is **always shown separately from sanctions**:
 
 | Check | Result |
