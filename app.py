@@ -143,7 +143,15 @@ st.title("Sanction checK")
 st.caption("Comprehensive multi-source compliance screening across global sanctions, aviation safety, country risk, and raw text records.")
 
 # Mode Tabs: Screened search | Raw search | Manual check
-tab_screened, tab_raw, tab_manual = st.tabs(["🔍 Screened search", "📄 Raw search", "📋 Manual check"])
+is_raw_tab = (st.query_params.get("tab") == "raw")
+is_manual_tab = (st.query_params.get("tab") == "manual")
+
+if is_raw_tab:
+    tab_raw, tab_screened, tab_manual = st.tabs(["📄 Raw search", "🔍 Screened search", "📋 Manual check"])
+elif is_manual_tab:
+    tab_manual, tab_screened, tab_raw = st.tabs(["📋 Manual check", "🔍 Screened search", "📄 Raw search"])
+else:
+    tab_screened, tab_raw, tab_manual = st.tabs(["🔍 Screened search", "📄 Raw search", "📋 Manual check"])
 
 
 # =========================================================================
@@ -153,16 +161,12 @@ with tab_screened:
     qp_type = st.query_params.get("search_type")
     type_options = ["Person", "Organisation", "Airline", "Aircraft", "Vessel"]
     default_idx = type_options.index(qp_type) if qp_type in type_options else 1
-    if qp_type and qp_type in type_options:
-        st.session_state["search_type_select"] = qp_type
-
     col_top1, col_top2 = st.columns([1, 2])
     with col_top1:
         search_type = st.selectbox(
             "Search Type",
             type_options,
             index=default_idx,
-            key="search_type_select",
         )
 
     # Inputs Form
@@ -670,7 +674,10 @@ with tab_screened:
             all_cands = ldata.get("all_candidates", [])
             below_cands = [c for c in all_cands if c.get("tier") == "BELOW_THRESHOLD"]
             if below_cands:
-                with st.expander(f"ℹ️ Show candidates below threshold ({len(below_cands)}) — [{list_id}]", expanded=False):
+                with st.expander(
+                    f"ℹ️ Show candidates below threshold ({len(below_cands)}) — [{list_id}]",
+                    expanded=(st.query_params.get("expand_info") == "true"),
+                ):
                     st.caption("Shown for information — below match threshold. These candidates do not affect the list result or overall banner.")
                     if len(all_cands) >= 25:
                         st.info("Showing top 25 — more may exist; refine the search.")
@@ -776,7 +783,7 @@ with tab_raw:
 
         raw_submitted = st.form_submit_button("🔎 Execute Raw Search", type="primary")
 
-    if raw_submitted:
+    if raw_submitted or (st.query_params.get("raw_autorun") == "true" and raw_q.strip()):
         if not raw_q.strip():
             st.error("Please enter a search query.")
         else:

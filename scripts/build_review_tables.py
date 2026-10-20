@@ -49,10 +49,12 @@ EXPANDED_AIRLINE_QUERIES = [
 SOURCE_ORDER = ["us_ofac", "us_csl", "uk_csl", "eu_csl", "un_csl", "in_mha"]
 
 
-def format_hit_cell(hit: dict) -> str:
+def format_hit_cell(res_data: dict) -> str:
+    hit = res_data.get("best_hit", {}) if isinstance(res_data, dict) else {}
     tier = hit.get("tier")
     score = hit.get("score", 0.0)
     reason = hit.get("reason", "none")
+    below_count = hit.get("below_threshold_count") or len(res_data.get("info_hits", [])) if isinstance(res_data, dict) else 0
     if tier == "POTENTIAL_MATCH":
         icon = "🔴"
     elif tier == "POSSIBLE_MATCH_REVIEW":
@@ -61,7 +63,8 @@ def format_hit_cell(hit: dict) -> str:
         icon = "✅"
     else:
         icon = "⚪"
-    return f"{icon} {score:.4f} ({reason})"
+    info_suffix = f" +{below_count}ℹ️" if below_count > 0 else ""
+    return f"{icon} {score:.4f} ({reason}){info_suffix}"
 
 
 def main():
@@ -86,8 +89,8 @@ def main():
 
         cells = []
         for src in ["us_ofac", "us_csl", "uk_csl", "eu_csl", "un_csl"]:
-            hit = w_res.get(src, {}).get("best_hit", {})
-            cells.append(format_hit_cell(hit))
+            res_data = w_res.get(src, {})
+            cells.append(format_hit_cell(res_data))
 
         # Format India MHA hit
         mha_tier = in_res.get("tier", "NO_MATCH")

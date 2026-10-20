@@ -608,21 +608,6 @@ def generate_raw_reports(
             r.get("verify_url", "—"),
         ])
 
-    if manual_checks:
-        ws_mc = wb.create_sheet(title="Manual Official Checks")
-        ws_mc.append(["Source ID", "Authority", "Status / Result", "User Comment", "Official Verification Link"])
-        for cell in ws_mc[1]:
-            cell.font = Font(bold=True)
-            cell.fill = PatternFill(start_color="ECEFF1", end_color="ECEFF1", fill_type="solid")
-        for m in manual_checks:
-            ws_mc.append([
-                m.get("source", "—"),
-                m.get("authority", "—"),
-                m.get("result", "Not checked"),
-                m.get("comment", ""),
-                m.get("verify_url", "—"),
-            ])
-
     wb.save(excel_path)
     return pdf_path, excel_path
 

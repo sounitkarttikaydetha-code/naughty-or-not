@@ -111,24 +111,19 @@ async def main():
 
         searches = [
             (
-                "01_airline_aeroflot.png",
-                f"http://localhost:{STREAMLIT_PORT}/?search_type=Airline&query=Aeroflot&autorun=true",
-                9.0,
+                "05_raw_search_rus2426.png",
+                f"http://localhost:{STREAMLIT_PORT}/?tab=raw&raw_query=RUS2426&raw_autorun=true&autorun=true",
+                7.0,
             ),
             (
-                "02_aircraft_ra73093.png",
-                f"http://localhost:{STREAMLIT_PORT}/?search_type=Aircraft&query=RA-73093&autorun=true",
-                5.0,
+                "06_volga_logistics_info_expanded.png",
+                f"http://localhost:{STREAMLIT_PORT}/?search_type=Organisation&query=Volga%20Logistics&autorun=true&expand_info=true",
+                7.0,
             ),
             (
-                "03_organisation_jaipur_airport.png",
-                f"http://localhost:{STREAMLIT_PORT}/?search_type=Organisation&query=Jaipur%20International%20Airport%20Limited&autorun=true",
-                6.0,
-            ),
-            (
-                "04_person_mohammed_khan.png",
-                f"http://localhost:{STREAMLIT_PORT}/?search_type=Person&query=Mohammed%20Khan&dob=1980&autorun=true",
-                6.0,
+                "07_s7_airline_search.png",
+                f"http://localhost:{STREAMLIT_PORT}/?search_type=Airline&query=S7&autorun=true",
+                7.0,
             ),
         ]
 
