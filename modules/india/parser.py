@@ -302,9 +302,10 @@ def parse_fourth_schedule(html_path: Optional[Path] = None) -> Dict[str, Any]:
 
     entities: List[Dict[str, Any]] = []
 
-    for idx, row in enumerate(raw_records, 1):
-        # Row has aliases separated by '@'
-        # Example: 'Hafiz Muhammad Saeed @ Hafiz Mohammad Sahib @ ... @ Hafiz Saeed ...'
+    total_records = len(raw_records)
+    for i, row in enumerate(raw_records):
+        # MHA list is published in reverse chronological order (entry 80 down to entry 1)
+        mha_sno = total_records - i
         parts = [p.strip().rstrip(".").strip() for p in row.split("@") if p.strip()]
         if not parts:
             continue
@@ -312,9 +313,9 @@ def parse_fourth_schedule(html_path: Optional[Path] = None) -> Dict[str, Any]:
         aliases = [p for p in parts[1:] if p and p != primary]
 
         entities.append({
-            "id": f"IN-UAPA-IND-{idx}",
+            "id": f"IN-UAPA-IND-{mha_sno}",
             "schema": "Person",
-            "authority_id": str(idx),
+            "authority_id": str(mha_sno),
             "name": primary,
             "aliases": aliases,
             "parent_organization": None,

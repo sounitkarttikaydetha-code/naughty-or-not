@@ -371,8 +371,16 @@ def parse_eu_air_safety_list(pdf_path: Optional[Path] = None) -> Dict[str, Any]:
                     airline_name = before_icao.strip(' "\'\t')
 
                 if len(airline_name) > 2 and len(state) > 2:
+                    clean_name = re.sub(
+                        r'^(.*?designator\s*|.*?THE UNION, WITH EXCEPTIONS1\s*|.*?Where an airline which is currently.*?(AIRLINES|ALGERIA)\s*)',
+                        '',
+                        airline_name,
+                        flags=re.IGNORECASE
+                    ).strip(' "\'\t')
+                    if not clean_name:
+                        clean_name = airline_name
                     result["annex_a"].append({
-                        "airline": airline_name,
+                        "airline": clean_name,
                         "aoc_number": aoc,
                         "icao_code": icao,
                         "state": state

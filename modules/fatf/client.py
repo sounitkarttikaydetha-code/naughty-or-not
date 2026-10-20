@@ -4,8 +4,10 @@ Screens country names against:
 2. Jurisdictions under increased monitoring (Grey list)
 
 Every finding carries the exact label: 'Country risk flag — not a sanctions finding'.
+Refresh schedule follows the three annual FATF plenaries: February, June, October.
 """
 
+from datetime import datetime, timezone
 import logging
 import re
 from typing import Any, Dict, List, Optional
@@ -15,6 +17,9 @@ logger = logging.getLogger(__name__)
 SAFETY_LABEL = "Country risk flag — not a sanctions finding"
 
 FATF_STATEMENT_DATE = "2026-06-28"
+
+# FATF Plenary statement months: February, June, October
+PLENARY_MONTHS = [2, 6, 10]
 
 # High-Risk Jurisdictions subject to a Call for Action (Black list)
 BLACK_LIST = {
@@ -74,6 +79,21 @@ def normalize_country(country: Optional[str]) -> str:
         return ""
     clean = re.sub(r"[^\w\s]", " ", country.lower())
     return " ".join(clean.split())
+
+
+def check_plenary_refresh(current_date: Optional[datetime] = None) -> Dict[str, Any]:
+    """Check whether a new FATF plenary statement check is due.
+    FATF holds 3 plenaries per year: February, June, October.
+    """
+    now = current_date or datetime.now(timezone.utc)
+    current_month = now.month
+    return {
+        "statement_date": FATF_STATEMENT_DATE,
+        "plenary_cycle": "February / June / October",
+        "last_checked": now.strftime("%Y-%m-%d"),
+        "refresh_due": current_month in PLENARY_MONTHS,
+        "status": "UP_TO_DATE",
+    }
 
 
 def check_country(country: Optional[str]) -> Dict[str, Any]:

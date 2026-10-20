@@ -13,6 +13,8 @@ from modules.screening.config import (
     ALIAS_SPLIT_DELIMITERS,
     CANDIDATE_MIN_MATCH,
     COMPANY_TYPE_WORDS,
+    ENABLE_COUNTRY_WORDS_GUARD,
+    COUNTRY_WORDS,
     MIN_DISTINCTIVE_WORD_LEN,
     NAME_VARIANTS,
     POSSIBLE_MATCH_THRESHOLD,
@@ -157,11 +159,6 @@ def normalize_name(text: str) -> List[str]:
     return core_tokens
 
 
-COUNTRY_WORDS = {
-    "india", "russia", "russian", "iran", "iraq", "iraqi", "china", "chinese",
-    "usa", "us", "uk", "uae", "afghanistan", "syria", "korea", "dprk", "cuba",
-    "belarus", "myanmar", "sudan", "venezuela", "yemen"
-}
 
 
 def check_core_name_match(
@@ -205,9 +202,10 @@ def check_core_name_match(
 
     # Reverse subset check: c_set is subset of q_set (Rule 1)
     if c_set.issubset(q_set):
-        # Candidate core must have at least 1 distinctive word of 4 or more chars (not weak and not a country)
+        country_set = {w.lower() for w in COUNTRY_WORDS} if ENABLE_COUNTRY_WORDS_GUARD else set()
+        # Candidate core must have at least 1 distinctive word of 4 or more chars
         distinctive_candidate_words = [
-            w for w in c_set if len(w) >= MIN_DISTINCTIVE_WORD_LEN and w not in weak_set and w not in COUNTRY_WORDS
+            w for w in c_set if len(w) >= MIN_DISTINCTIVE_WORD_LEN and w not in weak_set and w not in country_set
         ]
         if distinctive_candidate_words:
             if is_person:
@@ -383,7 +381,11 @@ def tier_single_entity(
 
     if is_person:
         # Rule 5: Person Rule
-        if score >= POTENTIAL_MATCH_THRESHOLD:
+        # A partial name match (e.g. 'Rajesh Kumar' ⊂ 'Rajesh Kumar GUPTA') is strictly 🟠 partial_name_person
+        if best_match_type == "partial_name_person":
+            tier = TIER_POSSIBLE_MATCH
+            reason = "partial_name_person"
+        elif score >= POTENTIAL_MATCH_THRESHOLD:
             tier = TIER_POTENTIAL_MATCH
             reason = (
                 "score_and_core_name" if best_match_type == "core_name_equal" else "score"
@@ -391,9 +393,6 @@ def tier_single_entity(
         elif best_match_type == "core_name_equal":
             tier = TIER_POTENTIAL_MATCH
             reason = "core_name"
-        elif best_match_type == "partial_name_person":
-            tier = TIER_POSSIBLE_MATCH
-            reason = "partial_name_person"
         elif score >= POSSIBLE_MATCH_THRESHOLD:
             tier = TIER_POSSIBLE_MATCH
             reason = "score"
@@ -430,6 +429,8 @@ def tier_single_entity(
         "tier_icon": "🔴" if tier == TIER_POTENTIAL_MATCH else ("🟠" if tier == TIER_POSSIBLE_MATCH else ("✅" if tier == TIER_NO_MATCH else "⚪")),
         "reason": reason,
         "score": score,
+        "watchman_raw_score": score,
+        "tier_reason": reason,
         "score_source": entity.get("score_source", "query"),
         "primary_name": primary_name,
         "matched_name": best_matched_name,
@@ -561,6 +562,8 @@ def screen_query_all_lists(
                 "tier_icon": "✅",
                 "reason": "none",
                 "score": 0.0,
+                "watchman_raw_score": 0.0,
+                "tier_reason": "none",
                 "score_source": "query",
                 "primary_name": "—",
                 "matched_name": "—",

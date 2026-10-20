@@ -95,7 +95,8 @@
         "matched_name": "Sberbank",
         "source_id": "142064",
         "program": "UKR",
-        "verified": false
+        "verified": true,
+        "evidence": "list_record_id: 142064"
       },
       "un_csl": {
         "tier": "NO_MATCH",
@@ -140,7 +141,8 @@
         "matched_name": "VTB Bank",
         "source_id": "RUS0250",
         "program": "The Russia (Sanctions) (EU Exit) Regulations 2019",
-        "verified": false
+        "verified": true,
+        "evidence": "list_record_id: RUS0250"
       },
       "eu_csl": {
         "tier": "POTENTIAL_MATCH",
@@ -195,7 +197,8 @@
         "matched_name": "S7 Airlines",
         "source_id": "RUS2426",
         "program": "The Russia (Sanctions) (EU Exit) Regulations 2019",
-        "verified": false
+        "verified": true,
+        "evidence": "list_record_id: RUS2426"
       },
       "eu_csl": {
         "tier": "NO_MATCH",
@@ -250,7 +253,8 @@
         "matched_name": "JSC Siberia Airlines",
         "source_id": "RUS2426",
         "program": "The Russia (Sanctions) (EU Exit) Regulations 2019",
-        "verified": false
+        "verified": true,
+        "evidence": "list_record_id: RUS2426"
       },
       "eu_csl": {
         "tier": "NO_MATCH",
@@ -305,7 +309,8 @@
         "matched_name": "PJSC Aeroflot",
         "source_id": "RUS1444",
         "program": "The Russia (Sanctions) (EU Exit) Regulations 2019",
-        "verified": false
+        "verified": true,
+        "evidence": "list_record_id: RUS1444"
       },
       "eu_csl": {
         "tier": "NO_MATCH",
@@ -350,7 +355,8 @@
         "matched_name": "AZUR AIR",
         "source_id": "642715d1625402f8a5ae7b84f0c9ea70f3e92cfed8c56fea57790f63",
         "program": "Denied Persons List (DPL) - Bureau of Industry and Security",
-        "verified": false
+        "verified": true,
+        "evidence": "list_record_id: 642715d1625402f8a5ae7b84f0c9ea70f3e92cfed8c56fea57790f63"
       },
       "uk_csl": {
         "tier": "NO_MATCH",
@@ -425,7 +431,8 @@
         "matched_name": "UTAIR",
         "source_id": "171617",
         "program": "UKR",
-        "verified": false
+        "verified": true,
+        "evidence": "list_record_id: 171617"
       },
       "un_csl": {
         "tier": "NO_MATCH",

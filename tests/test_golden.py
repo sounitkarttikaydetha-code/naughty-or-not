@@ -53,9 +53,15 @@ class TestGoldenRegression(unittest.TestCase):
                 if exp.get("verified") is True:
                     verified_count += 1
                     actual_tier = actual_results.get(src, {}).get("best_hit", {}).get("tier")
-                    if actual_tier != exp.get("tier"):
+                    expected_tier = exp.get("tier")
+                    # Must be 🔴 or 🟠, and must match expected tier
+                    if actual_tier not in ["POTENTIAL_MATCH", "POSSIBLE_MATCH_REVIEW"]:
                         mismatches.append(
-                            f"[{query_name}] on '{src}': expected '{exp.get('tier')}', got '{actual_tier}'"
+                            f"[{query_name}] on '{src}': expected 🔴 or 🟠 ('{expected_tier}'), but got '{actual_tier}' (Evidence: {exp.get('evidence')})"
+                        )
+                    elif actual_tier != expected_tier:
+                        mismatches.append(
+                            f"[{query_name}] on '{src}': expected '{expected_tier}', got '{actual_tier}' (Evidence: {exp.get('evidence')})"
                         )
 
         if mismatches:

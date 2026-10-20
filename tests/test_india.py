@@ -26,13 +26,30 @@ def test_the_resistance_front_with_parent(india_client):
 
 
 def test_hafiz_saeed_individual(india_client):
-    """'Hafiz Saeed' must return 🔴 POTENTIAL_MATCH (Fourth Schedule individual)."""
+    """'Hafiz Saeed' must return 🔴 POTENTIAL_MATCH with MHA official serial number #2."""
     res = india_client.screen("Hafiz Saeed")
     assert res["tier_icon"] == "🔴"
     assert res["tier"] == "POTENTIAL_MATCH"
     assert res["top_match"] is not None
+    assert res["top_match"]["authority_id"] == "2"
     assert "Fourth Schedule" in res["schedule"]
     assert any("Hafiz Saeed" in (m["matched_name"] or "") for m in res["matches"])
+
+
+def test_mha_fourth_schedule_ids(india_client):
+    """Verify official MHA serial numbers for 3 other key individuals:
+    - Masood Azhar: #1
+    - Dawood Ibrahim: #4
+    - Mohammed Shaheed Faisal: #80
+    """
+    res_azhar = india_client.screen("Masood Azhar")
+    assert res_azhar["top_match"]["authority_id"] == "1"
+
+    res_dawood = india_client.screen("Dawood Ibrahim")
+    assert res_dawood["top_match"]["authority_id"] == "4"
+
+    res_faisal = india_client.screen("Mohammed Shaheed Faisal")
+    assert res_faisal["top_match"]["authority_id"] == "80"
 
 
 def test_revolutionary_peoples_front_with_parent(india_client):

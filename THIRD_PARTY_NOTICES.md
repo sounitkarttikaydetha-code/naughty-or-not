@@ -6,6 +6,7 @@ This project incorporates material or logic derived from third-party open-source
 
 Portions of the India MHA data mapping, sub-group splitting, and crawler extraction patterns in `modules/india/` are derived from or inspired by OpenSanctions (`zavod` crawler for `in_mha_banned`), available at:
 https://github.com/opensanctions/opensanctions
+Source commit: `bed2bdb6a9762d18a54ef455b1b1d9839375e7c4`
 
 ### MIT License
 

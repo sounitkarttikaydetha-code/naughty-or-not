@@ -106,6 +106,16 @@ class TestMatchTieringLayerV2(unittest.TestCase):
         # Because query is a person and core words are a subset of candidate words, Person Rule 5 triggers 🟠 partial_name_person
         self.assertEqual(res["tier"], TIER_POSSIBLE_MATCH)
         self.assertEqual(res["reason"], "partial_name_person")
+        self.assertNotEqual(res["tier"], TIER_POTENTIAL_MATCH)
+
+        # High-score regression test: even with score 0.88 or 0.95, person partial match MUST NOT become 🔴
+        dummy_high_score = dict(dummy_uk_gupta)
+        dummy_high_score["match"] = 0.8800
+        res_high = tier_single_entity("Rajesh Kumar", dummy_high_score, query_type="person")
+        self.assertIsNotNone(res_high)
+        self.assertEqual(res_high["tier"], TIER_POSSIBLE_MATCH)
+        self.assertEqual(res_high["reason"], "partial_name_person")
+        self.assertNotEqual(res_high["tier"], TIER_POTENTIAL_MATCH)
 
     def test_4_weak_generic_words(self):
         """

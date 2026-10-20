@@ -28,4 +28,6 @@ WEAK_WORDS: List[str] = _config.get("weak_words", [])
 ALIAS_SPLIT_DELIMITERS: List[str] = _config.get("alias_split_delimiters", [])
 COMPANY_TYPE_WORDS: List[str] = _config.get("company_type_words", [])
 NAME_VARIANTS: Dict[str, str] = _config.get("name_variants", {})
+ENABLE_COUNTRY_WORDS_GUARD: bool = bool(_config.get("enable_country_words_guard", False))
+COUNTRY_WORDS: List[str] = _config.get("country_words", [])
 

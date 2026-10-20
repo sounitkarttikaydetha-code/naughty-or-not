@@ -71,5 +71,11 @@
     "mohammed": "mohammad",
     "muhammad": "mohammad",
     "mohamed": "mohammad"
-  }
+  },
+  "enable_country_words_guard": false,
+  "country_words": [
+    "india", "russia", "russian", "iran", "iraq", "iraqi", "china", "chinese",
+    "usa", "us", "uk", "uae", "afghanistan", "syria", "korea", "dprk", "cuba",
+    "belarus", "myanmar", "sudan", "venezuela", "yemen"
+  ]
 }

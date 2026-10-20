@@ -20,6 +20,8 @@ from modules.aviation.parser import (
 logger = logging.getLogger(__name__)
 
 SAFETY_LABEL = "Safety flag — not a sanctions finding"
+BIS_EXPORT_CONTROL_LABEL = "Export-control restriction (US EAR) — verify before providing any service"
+
 DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "aviation"
 ALIAS_FILE = DATA_DIR / "airline_aliases.csv"
 
@@ -41,11 +43,13 @@ def normalize_token(s: Optional[str]) -> str:
 WEAK_WORDS = {
     "air", "airlines", "airline", "airways", "aviation", "aero", "group", "holdings",
     "holding", "international", "services", "company", "co", "ltd", "llc", "jsc", "pjsc",
-    "joint", "stock", "public", "limited", "the", "and", "of",
+    "joint", "stock", "public", "limited", "the", "and", "of", "carrier", "carriers",
+    "generic",
     # Geographic words that shouldn't alone correlate two different national carriers
     "iran", "russia", "russian", "iraq", "iraqi", "afghan", "afghanistan", "angola",
     "algeria", "zimbabwe", "congo", "libya", "libyan", "nepal", "sudan", "suriname"
 }
+
 
 def distinctive_match(query: str, target: str) -> bool:
     """Check if query and target share a distinctive non-weak word of length >= 4,
@@ -58,48 +62,45 @@ def distinctive_match(query: str, target: str) -> bool:
         return True
 
     # Tokenize into words
-    q_words = {w for w in re.findall(r'[a-zA-Z0-9]+', query.lower()) if len(w) >= 3 and w not in WEAK_WORDS}
-    t_words = {w for w in re.findall(r'[a-zA-Z0-9]+', target.lower()) if len(w) >= 3 and w not in WEAK_WORDS}
+    q_words = [w.lower() for w in re.split(r'[^a-zA-Z0-9]', query) if w]
+    t_words = [w.lower() for w in re.split(r'[^a-zA-Z0-9]', target) if w]
 
-    shared = q_words & t_words
-    return len(shared) > 0
+    # Distinctive non-weak words with length >= 4
+    q_distinctive = {w for w in q_words if w not in WEAK_WORDS and len(w) >= 4}
+    t_distinctive = {w for w in t_words if w not in WEAK_WORDS and len(w) >= 4}
+
+    if q_distinctive and t_distinctive and (q_distinctive & t_distinctive):
+        return True
+
+    # Check substring containment if long enough
+    if len(q_norm) >= 4 and len(t_norm) >= 4:
+        if q_norm in t_norm or t_norm in q_norm:
+            # Avoid generic short prefixes matching
+            if q_words and q_words[0] not in WEAK_WORDS:
+                return True
+
+    return False
 
 
 class AviationClient:
-    """Client for screening aircraft registrations, MSNs, and airline operators."""
+    """Screening client for Aviation safety and export controls."""
 
-    def __init__(self, auto_refresh: bool = False):
-        if auto_refresh:
-            try:
-                check_and_refresh_sources(force=False)
-            except Exception as e:
-                logger.warning(f"Failed to auto-refresh aviation sources: {e}")
-
-        self.aliases = self._load_aliases()
+    def __init__(self):
+        self.aliases: List[Dict[str, str]] = []
+        self._load_aliases()
         self._load_data()
 
-    def _load_aliases(self) -> List[Dict[str, Any]]:
-        """Load airline aliases seed table."""
-        aliases = []
+    def _load_aliases(self) -> None:
+        """Load curated airline aliases mapping to official names and codes."""
         if not ALIAS_FILE.is_file():
             logger.warning(f"Airline aliases file not found at {ALIAS_FILE}")
-            return aliases
-
+            return
         try:
-            with open(ALIAS_FILE, "r", encoding="utf-8") as f:
+            with open(ALIAS_FILE, mode="r", encoding="utf-8") as f:
                 reader = csv.DictReader(f)
-                for row in reader:
-                    aliases_list = [a.strip() for a in row.get("aliases", "").split(";") if a.strip()]
-                    aliases.append({
-                        "canonical_airline": row.get("canonical airline", "").strip(),
-                        "aliases": aliases_list,
-                        "icao": row.get("ICAO", "").strip().upper(),
-                        "iata": row.get("IATA", "").strip().upper(),
-                        "country": row.get("country", "").strip(),
-                    })
+                self.aliases = [row for row in reader]
         except Exception as e:
             logger.error(f"Error loading airline aliases: {e}")
-        return aliases
 
     def _load_data(self) -> None:
         """Load and cache parsed data from local copies."""
@@ -112,29 +113,37 @@ class AviationClient:
         name: Optional[str] = None,
         icao: Optional[str] = None,
         iata: Optional[str] = None
-    ) -> Optional[Dict[str, Any]]:
-        """Resolve airline name, ICAO, or IATA against airline_aliases.csv."""
-        name_clean = name.strip() if name else ""
-        name_norm = normalize_token(name_clean)
-        icao_clean = icao.strip().upper() if icao else ""
-        iata_clean = iata.strip().upper() if iata else ""
+    ) -> Optional[Dict[str, str]]:
+        """Resolve airline alias / code to canonical name and details."""
+        clean_name = normalize_token(name)
+        clean_icao = icao.strip().upper() if icao else None
+        clean_iata = iata.strip().upper() if iata else None
 
-        for entry in self.aliases:
-            if icao_clean and entry["icao"] == icao_clean:
-                return entry
-            if iata_clean and entry["iata"] == iata_clean:
-                return entry
-            if name_norm:
-                if normalize_token(entry["canonical_airline"]) == name_norm:
-                    return entry
-                for alias in entry["aliases"]:
-                    if normalize_token(alias) == name_norm:
-                        return entry
-                    # Substring check for full distinctive phrases
-                    if len(name_norm) >= 4 and name_norm in normalize_token(alias):
-                        return entry
-                    if len(normalize_token(alias)) >= 4 and normalize_token(alias) in name_norm:
-                        return entry
+        for row in self.aliases:
+            canon = row.get("canonical airline") or row.get("canonical_airline") or ""
+            aliases_str = row.get("aliases") or row.get("alias") or ""
+            row_icao = (row.get("ICAO") or row.get("icao") or "").upper()
+            row_iata = (row.get("IATA") or row.get("iata") or "").upper()
+            row_country = row.get("country", "")
+
+            ret_val = {
+                "canonical_airline": canon,
+                "country": row_country,
+                "icao": row_icao,
+                "iata": row_iata,
+                "source_url": row.get("source_url", ""),
+            }
+
+            if clean_icao and row_icao == clean_icao:
+                return ret_val
+            if clean_iata and row_iata == clean_iata:
+                return ret_val
+
+            all_names = [canon] + [a.strip() for a in aliases_str.split(';') if a.strip()]
+            for n in all_names:
+                if clean_name and (clean_name == normalize_token(n) or clean_name == normalize_token(canon)):
+                    return ret_val
+
         return None
 
     def check_aircraft(
@@ -150,6 +159,8 @@ class AviationClient:
           - Tail match (current or previous) -> 🔴 POTENTIAL_MATCH
           - MSN only -> 🟠 POSSIBLE_MATCH_REVIEW ('confirm aircraft type')
           - MSN + matching type or operator -> 🔴 POTENTIAL_MATCH
+        Label: 'Export-control restriction (US EAR) — verify before providing any service'
+        Clean result carries NO flag label.
         """
         # Check source failure
         if self.bis_data.get("status") == "FAILED":
@@ -159,7 +170,7 @@ class AviationClient:
                 "finding": "SOURCE_UNAVAILABLE",
                 "error": self.bis_data.get("error", "Source unparseable"),
                 "last_good_date": self.bis_data.get("last_good_date"),
-                "safety_label": SAFETY_LABEL,
+                "label": BIS_EXPORT_CONTROL_LABEL,
             }
 
         try:
@@ -172,7 +183,7 @@ class AviationClient:
                     "tier_icon": "✅",
                     "findings": [],
                     "message": "No registration or MSN provided",
-                    "safety_label": SAFETY_LABEL,
+                    "label": None,
                 }
 
             # 1. Guard against removals: NEVER match removed aircraft
@@ -186,7 +197,7 @@ class AviationClient:
                         "finding": "REMOVAL",
                         "findings": [],
                         "note": f"Aircraft {registration or msn} was officially removed from BIS list.",
-                        "safety_label": SAFETY_LABEL,
+                        "label": None,
                     }
 
             # 2. Match against active aircraft
@@ -217,7 +228,7 @@ class AviationClient:
                     "tier_icon": "🔴",
                     "finding": "EXPORT_CONTROL",
                     "reason": f"Matched BIS list via {primary['matched_field']}",
-                    "safety_label": SAFETY_LABEL,
+                    "label": BIS_EXPORT_CONTROL_LABEL,
                     "matched_records": reg_matched_records,
                     "record": primary,
                 }
@@ -239,7 +250,7 @@ class AviationClient:
                         "tier_icon": "🔴",
                         "finding": "EXPORT_CONTROL",
                         "reason": "MSN and matching aircraft type/operator",
-                        "safety_label": SAFETY_LABEL,
+                        "label": BIS_EXPORT_CONTROL_LABEL,
                         "matched_records": msn_matched_records,
                         "record": primary,
                     }
@@ -250,7 +261,7 @@ class AviationClient:
                         "finding": "EXPORT_CONTROL",
                         "reason": "confirm aircraft type",
                         "message": "MSN matched. Confirm aircraft type or operator to verify.",
-                        "safety_label": SAFETY_LABEL,
+                        "label": BIS_EXPORT_CONTROL_LABEL,
                         "matched_records": msn_matched_records,
                         "record": primary,
                     }
@@ -261,7 +272,7 @@ class AviationClient:
                 "finding": "CLEAN",
                 "findings": [],
                 "message": "No match found on BIS aircraft list",
-                "safety_label": SAFETY_LABEL,
+                "label": None,
             }
         except Exception as e:
             logger.error(f"Error checking aircraft {registration}/{msn}: {e}")
@@ -270,7 +281,7 @@ class AviationClient:
                 "tier_icon": "⚪",
                 "finding": "ERROR",
                 "error": str(e),
-                "safety_label": SAFETY_LABEL,
+                "label": BIS_EXPORT_CONTROL_LABEL,
             }
 
     def check_airline(
@@ -281,7 +292,12 @@ class AviationClient:
         aoc_state: Optional[str] = None
     ) -> Dict[str, Any]:
         """Screen an airline against EU Air Safety List (Annex A, Annex B) and FAA IASA Cat 2.
+        Result types for safety findings:
+          - SAFETY_BAN (Annex A or State-level ban)
+          - SAFETY_RESTRICTED (Annex B)
+          - SAFETY_OVERSIGHT (FAA IASA Category 2)
         All safety findings carry: 'Safety flag — not a sanctions finding'.
+        Clean result carries NO flag label.
         """
         # Check source failures
         if self.eu_data.get("status") == "FAILED" or self.faa_data.get("status") == "FAILED":
@@ -304,8 +320,6 @@ class AviationClient:
             lookup_country = aoc_state.strip() if aoc_state else (resolved["country"] if resolved else "")
 
             findings = []
-            highest_tier = "NO_MATCH"
-            tier_icon = "✅"
 
             # 2. Check EU Air Safety List Annex B (Restricted)
             for item in self.eu_data.get("annex_b", []):
@@ -317,6 +331,7 @@ class AviationClient:
                 if name_match or icao_match:
                     findings.append({
                         "finding": "SAFETY_RESTRICTED",
+                        "tier": "SAFETY_RESTRICTED",
                         "tier_icon": "⚠️",
                         "source": "EU Air Safety List (Annex B)",
                         "airline": item.get("airline"),
@@ -327,8 +342,6 @@ class AviationClient:
                         "permitted_aircraft_types": item.get("permitted_aircraft_types"),
                         "safety_label": SAFETY_LABEL
                     })
-                    highest_tier = "POSSIBLE_MATCH_REVIEW"
-                    tier_icon = "⚠️"
 
             # 3. Check EU Air Safety List Annex A (Banned)
             annex_a_match = False
@@ -341,6 +354,7 @@ class AviationClient:
                 if name_match or icao_match:
                     findings.append({
                         "finding": "SAFETY_BAN",
+                        "tier": "SAFETY_BAN",
                         "tier_icon": "⚠️",
                         "source": "EU Air Safety List (Annex A)",
                         "airline": item.get("airline"),
@@ -350,8 +364,6 @@ class AviationClient:
                         "safety_label": SAFETY_LABEL
                     })
                     annex_a_match = True
-                    highest_tier = "POSSIBLE_MATCH_REVIEW"
-                    tier_icon = "⚠️"
                     break
 
             # 4. Check EU Air Safety List State-Level Ban (16 states with all air carriers banned)
@@ -361,14 +373,13 @@ class AviationClient:
                        normalize_token(lookup_country) in normalize_token(b_state):
                         findings.append({
                             "finding": "SAFETY_BAN",
+                            "tier": "SAFETY_BAN",
                             "tier_icon": "⚠️",
                             "source": "EU Air Safety List (State-level ban)",
                             "state": lookup_country,
                             "airline": lookup_name or name,
                             "safety_label": SAFETY_LABEL
                         })
-                        highest_tier = "POSSIBLE_MATCH_REVIEW"
-                        tier_icon = "⚠️"
                         break
 
             # 5. Check FAA IASA (Category 2 Oversight)
@@ -379,6 +390,7 @@ class AviationClient:
                        normalize_token(c_name) in normalize_token(lookup_country):
                         findings.append({
                             "finding": "SAFETY_OVERSIGHT",
+                            "tier": "SAFETY_OVERSIGHT",
                             "tier_icon": "⚠️",
                             "source": "FAA IASA Category 2",
                             "country": c_name,
@@ -386,14 +398,21 @@ class AviationClient:
                             "airline": lookup_name or name,
                             "safety_label": SAFETY_LABEL
                         })
-                        highest_tier = "POSSIBLE_MATCH_REVIEW"
-                        tier_icon = "⚠️"
                         break
 
             if findings:
+                # Severity order: SAFETY_BAN > SAFETY_RESTRICTED > SAFETY_OVERSIGHT
+                finding_types = [f["finding"] for f in findings]
+                if "SAFETY_BAN" in finding_types:
+                    highest_tier = "SAFETY_BAN"
+                elif "SAFETY_RESTRICTED" in finding_types:
+                    highest_tier = "SAFETY_RESTRICTED"
+                else:
+                    highest_tier = "SAFETY_OVERSIGHT"
+
                 return {
                     "tier": highest_tier,
-                    "tier_icon": tier_icon,
+                    "tier_icon": "⚠️",
                     "resolved_airline": resolved,
                     "findings": findings,
                     "safety_label": SAFETY_LABEL
@@ -405,7 +424,7 @@ class AviationClient:
                 "resolved_airline": resolved,
                 "findings": [],
                 "message": "Clean — no aviation safety bans or oversight flags found",
-                "safety_label": SAFETY_LABEL
+                "safety_label": None
             }
 
         except Exception as e:
@@ -417,4 +436,3 @@ class AviationClient:
                 "error": str(e),
                 "safety_label": SAFETY_LABEL
             }
-

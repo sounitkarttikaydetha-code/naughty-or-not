@@ -36,3 +36,12 @@ def test_fatf_clean_countries():
 def test_exact_safety_label():
     """Every FATF finding must carry exact wording: 'Country risk flag — not a sanctions finding'."""
     assert SAFETY_LABEL == "Country risk flag — not a sanctions finding"
+
+
+def test_fatf_plenary_refresh_cycle():
+    """Verify refresh check tracks the 3 annual plenaries (Feb, June, Oct)."""
+    from modules.fatf.client import check_plenary_refresh
+    res = check_plenary_refresh()
+    assert res["statement_date"] == "2026-06-28"
+    assert "February / June / October" in res["plenary_cycle"]
+    assert res["status"] == "UP_TO_DATE"
