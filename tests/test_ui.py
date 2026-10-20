@@ -157,6 +157,26 @@ class TestSanctionCheckUI(unittest.TestCase):
             infos = [i.value for i in at.info]
             self.assertTrue(any("INCOMPLETE" in i for i in infos))
 
+    def test_simulated_india_down_incomplete_banner(self):
+        """Simulate India MHA list failure -> must produce ⚪ Incomplete banner, never false clean."""
+        with patch("modules.watchman.client.WatchmanClient.search", return_value={"status": "ok", "results": {"entities": []}}), \
+             patch("modules.india.client.IndiaClient.screen", return_value={"tier": "NOT_CHECKED", "status": "FAILED", "finding": "SOURCE_UNAVAILABLE"}):
+            at = AppTest.from_file(APP_FILE, default_timeout=30)
+            at.session_state["acknowledged"] = True
+            at.run(timeout=15)
+
+            at.selectbox[0].select("Organisation")
+            at.run(timeout=15)
+
+            at.text_input[0].input("Clean Control Company")
+            at.button[0].click().run(timeout=30)
+            self.assertFalse(at.exception)
+
+            infos = [i.value for i in at.info]
+            self.assertTrue(any("INCOMPLETE" in i for i in infos), f"Expected INCOMPLETE banner, got: {infos}")
+
+
+
 
 
 if __name__ == "__main__":

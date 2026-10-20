@@ -347,12 +347,15 @@ with tab_screened:
             in_type = "INDIVIDUAL" if search_type == "Person" else "ORGANIZATION"
             in_res = india_client.screen(primary_query, search_type=in_type)
             in_tier = in_res.get("tier", "NO_MATCH")
+            in_status = "FAILED" if (in_tier == "NOT_CHECKED" or in_res.get("status") == "FAILED" or in_res.get("finding") == "SOURCE_UNAVAILABLE") else "OK"
+            if in_status == "FAILED":
+                is_incomplete = True
 
             source_statuses.append({
                 "id": "in_mha",
                 "authority": "MHA (India UAPA)",
-                "date": "2026-10-01",
-                "status": "OK",
+                "date": in_res.get("last_good_date", "2026-10-01"),
+                "status": in_status,
                 "tier": in_tier,
                 "below_count": 0,
             })
@@ -492,6 +495,17 @@ with tab_screened:
                     aoc_state=aoc_input or country_input or None,
                     icao=id_input or None,
                 )
+                av_status = "FAILED" if (av_res.get("tier") == "NOT_CHECKED" or av_res.get("finding") == "SOURCE_UNAVAILABLE" or av_res.get("status") == "FAILED") else "OK"
+                if av_status == "FAILED":
+                    is_incomplete = True
+                source_statuses.append({
+                    "id": "eu_air_safety",
+                    "authority": "EU Air Safety (EC)",
+                    "date": av_res.get("last_good_date", "current"),
+                    "status": av_status,
+                    "tier": av_res.get("tier", "NO_MATCH"),
+                    "below_count": 0,
+                })
                 for hit in av_res.get("findings", []):
                     aviation_hits.append(hit)
                     if overall_tier != "POTENTIAL_MATCH":
@@ -502,6 +516,17 @@ with tab_screened:
                     msn=msn_input or None,
                     operator=operator_input or None,
                 )
+                av_status = "FAILED" if (av_res.get("tier") == "NOT_CHECKED" or av_res.get("finding") == "SOURCE_UNAVAILABLE" or av_res.get("status") == "FAILED") else "OK"
+                if av_status == "FAILED":
+                    is_incomplete = True
+                source_statuses.append({
+                    "id": "bis_aircraft",
+                    "authority": "US BIS (Export Admin)",
+                    "date": av_res.get("last_good_date", "current"),
+                    "status": av_status,
+                    "tier": av_res.get("tier", "NO_MATCH"),
+                    "below_count": 0,
+                })
                 for hit in av_res.get("findings", []):
                     aviation_hits.append(hit)
                     if hit.get("result_type") == "EAR_RESTRICTION":
@@ -513,6 +538,17 @@ with tab_screened:
         country_to_check = nat_input or country_input or aoc_input or flag_input
         if use_country_risk and country_to_check:
             fatf_res = fatf_client.screen_country(country_to_check)
+            fatf_status = "FAILED" if (fatf_res.get("tier") == "NOT_CHECKED" or fatf_res.get("status") == "FAILED" or fatf_res.get("finding") == "SOURCE_UNAVAILABLE") else "OK"
+            if fatf_status == "FAILED":
+                is_incomplete = True
+            source_statuses.append({
+                "id": "fatf",
+                "authority": "FATF High-Risk & Monitored",
+                "date": "2026-10-01",
+                "status": fatf_status,
+                "tier": fatf_res.get("tier", "NO_MATCH"),
+                "below_count": 0,
+            })
             finding = fatf_res.get("finding")
             if finding in ["FATF_HIGH_RISK", "FATF_INCREASED_MONITORING"]:
                 is_black = (finding == "FATF_HIGH_RISK")
@@ -524,6 +560,7 @@ with tab_screened:
                 })
                 if overall_tier != "POTENTIAL_MATCH":
                     overall_tier = "POSSIBLE_MATCH_REVIEW"
+
 
         # Overall banner calculation
         if is_incomplete:
