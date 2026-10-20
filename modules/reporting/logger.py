@@ -27,6 +27,7 @@ def get_db_connection() -> sqlite3.Connection:
             timestamp TEXT NOT NULL,
             windows_user TEXT,
             machine_name TEXT,
+            mode TEXT DEFAULT 'screened',
             search_type TEXT,
             inputs TEXT,
             threshold TEXT,
@@ -38,7 +39,8 @@ def get_db_connection() -> sqlite3.Connection:
             opensanctions_used TEXT,
             report_file_name TEXT,
             app_version TEXT,
-            acknowledged INTEGER
+            acknowledged INTEGER,
+            comment TEXT
         )
     """)
     conn.execute("""
@@ -50,6 +52,16 @@ def get_db_connection() -> sqlite3.Connection:
             app_version TEXT
         )
     """)
+    # Ensure mode and comment columns exist for backward compatibility
+    try:
+        cur = conn.cursor()
+        cols = [c[1] for c in cur.execute("PRAGMA table_info(screening_logs);").fetchall()]
+        if "mode" not in cols:
+            conn.execute("ALTER TABLE screening_logs ADD COLUMN mode TEXT DEFAULT 'screened';")
+        if "comment" not in cols:
+            conn.execute("ALTER TABLE screening_logs ADD COLUMN comment TEXT;")
+    except Exception as e:
+        pass
     conn.commit()
     return conn
 
@@ -162,3 +174,77 @@ def get_total_opensanctions_credits() -> int:
         return len(lines)
     except Exception:
         return 0
+
+
+def log_raw_search(
+    query: str,
+    options: Dict[str, Any],
+    result_count: int,
+    user: Optional[str] = None,
+    report_file_name: Optional[str] = None,
+    app_version: str = APP_VERSION,
+) -> None:
+    """Log a raw search query with mode='raw'."""
+    user = user or getpass.getuser()
+    machine = platform.node()
+    now_iso = datetime.now(timezone.utc).isoformat()
+    inputs_json = json.dumps({"query": query, "options": options})
+
+    conn = get_db_connection()
+    try:
+        conn.execute(
+            """
+            INSERT INTO screening_logs (
+                timestamp, windows_user, machine_name, mode, search_type, inputs,
+                threshold, source, result, top_match, score, list_version,
+                opensanctions_used, report_file_name, app_version, acknowledged
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                now_iso, user, machine, "raw", "raw_search", inputs_json,
+                "none", "raw_index", f"{result_count} hits", query, float(result_count), "current",
+                "N", report_file_name or "—", app_version, 1,
+            ),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def log_manual_check(
+    name: str,
+    source: str,
+    result: str,
+    comment: str = "",
+    user: Optional[str] = None,
+    report_file_name: Optional[str] = None,
+    app_version: str = APP_VERSION,
+) -> None:
+    """Log a manual check result with mode='manual'."""
+    user = user or getpass.getuser()
+    machine = platform.node()
+    now_iso = datetime.now(timezone.utc).isoformat()
+    inputs_json = json.dumps({"name": name, "source": source})
+
+    conn = get_db_connection()
+    try:
+        conn.execute(
+            """
+            INSERT INTO screening_logs (
+                timestamp, windows_user, machine_name, mode, search_type, inputs,
+                threshold, source, result, top_match, score, list_version,
+                opensanctions_used, report_file_name, app_version, acknowledged, comment
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                now_iso, user, machine, "manual", "manual_check", inputs_json,
+                "none", source, result, name, 0.0, "current",
+                "N", report_file_name or "—", app_version, 1, comment,
+            ),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
