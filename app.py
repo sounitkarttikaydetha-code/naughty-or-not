@@ -33,6 +33,7 @@ from modules.reporting.logger import (
     log_search,
     log_raw_search,
     log_manual_check,
+    get_manual_checks_for_entity,
     get_total_opensanctions_credits,
     APP_VERSION,
 )
@@ -778,6 +779,19 @@ with tab_screened:
                 st.caption(f"*Our copy is dated {fatf_info.get('publication_date')}. The official site may be more recent.*")
         else:
             st.write("✅ No elevated FATF country risk flags.")
+
+        # Section D — Historical Manual Check Audit Trail (Decision 3)
+        past_checks = get_manual_checks_for_entity(primary_query)
+        if past_checks:
+            st.divider()
+            with st.expander(f"📋 Prior Manual Verification History ({len(past_checks)} recorded)", expanded=True):
+                st.caption("Historical analyst check decisions for this counterparty from screening audit trail:")
+                for chk in past_checks:
+                    badge = "🔴" if "Match" in chk.get("result", "") else "✅"
+                    st.markdown(f"**{badge} {chk.get('result')}** on `{chk.get('source')}` by `{chk.get('user')}` at `{chk.get('timestamp')[:16]}`")
+                    if chk.get("comment"):
+                        st.caption(f"Remarks: _{chk.get('comment')}_")
+
 
 
 # =========================================================================

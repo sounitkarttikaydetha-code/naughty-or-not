@@ -276,3 +276,37 @@ def log_manual_check(
     finally:
         conn.close()
 
+
+
+def get_manual_checks_for_entity(name: str, limit: int = 10) -> List[Dict[str, Any]]:
+    """Retrieve historical manual check records matching entity name."""
+    if not name or not name.strip():
+        return []
+    clean_name = name.strip()
+    conn = get_db_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT timestamp, windows_user, source, result, comment, report_file_name
+            FROM screening_logs
+            WHERE mode = 'manual' AND LOWER(top_match) = LOWER(?)
+            ORDER BY id DESC
+            LIMIT ?
+            """,
+            (clean_name, limit),
+        )
+        rows = cur.fetchall()
+        return [
+            {
+                "timestamp": r[0],
+                "user": r[1],
+                "source": r[2],
+                "result": r[3],
+                "comment": r[4] or "",
+                "report_file_name": r[5] or "—",
+            }
+            for r in rows
+        ]
+    finally:
+        conn.close()
