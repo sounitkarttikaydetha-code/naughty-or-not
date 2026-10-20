@@ -41,25 +41,30 @@
    Watchman will download and index the configured lists (`us_ofac, us_csl, eu_csl, uk_csl, un_csl`).
 
 4. **Verify Watchman Service:**
-   - Health check:
+   - Health check (use `curl.exe` in Windows PowerShell to invoke native binary instead of PowerShell alias):
      ```bash
-     curl http://localhost:8084/ping
+     curl.exe http://localhost:8084/ping
      ```
    - List info check:
      ```bash
-     curl http://localhost:8084/v2/listinfo
+     curl.exe http://localhost:8084/v2/listinfo
      ```
 
 5. **Python Environment Setup:**
    ```bash
    py -3.12 -m venv .venv
-   # Windows PowerShell:
-   .venv\Scripts\Activate.ps1
+   # Alternatively: python -m venv .venv
+
+   # Windows PowerShell (if script execution is restricted):
+   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+   .\.venv\Scripts\Activate.ps1
+
    # Linux/macOS:
    source .venv/bin/activate
 
    pip install -r requirements.txt
    ```
+
 
 6. **Initialize Local Data & Raw Index:**
    ```bash
