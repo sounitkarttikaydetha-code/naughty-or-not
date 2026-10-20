@@ -34,7 +34,7 @@
 - IndiGo on us_ofac: 🟠 (0.7635) — False positive review flag on Russian LLC INDIGO 3D (distinctive token "3D" blocks 🔴).
 - Rajesh Kumar on us_ofac & uk_csl: 🟠 (0.7742) — Near-miss review flag on Gupta brothers' alias (Rajesh Kumar GUPTA).
 
-## 4. OpenSanctions Live Results vs Watchman & Credits
+## 4. OpenSanctions Live Results, GitHub Findings & Credits
 | Query | Watchman Top Hit | OpenSanctions Top Hit | Score | OS Tier |
 |---|---|---|---|---|
 | Aeroflot | 🔴 us_csl/uk_csl (0.7716, PJSC Aeroflot) | 🔴 PJSC Aeroflot (NK-LVyjEWp4GKdvHCQBysu8tQ) | 0.8772 | 🔴 POTENTIAL_MATCH |
@@ -42,6 +42,7 @@
 | Jaipur Int Airport | ✅ NO_MATCH across all lists | ✅ NO_MATCH (0 candidates) | 0.0000 | ✅ NO_MATCH |
 
 - Credits consumed: 3 credits | Total API calls: 3 | Rate: 1 credit per query | Audit log: logs/opensanctions_usage.csv
+- GitHub Repo Findings: opensanctions/opensanctions contains crawlers (zavod/FtM) highly useful as parsing blueprints for T3/T4, but bulk data and self-hosted yente require a commercial license for enterprise operations. Hosted API avoids bulk licensing.
 
 ## 5. Test Pass/Fail Counts & Commit Hashes
 - Test results: 12 passed, 0 failed across test_tiering, test_opensanctions, test_golden, and test_watchman_client.
@@ -51,7 +52,8 @@
 - Commit a73e5b7: Initial commit: project skeleton for Sanction checK
 
 ## 6. Open Decisions for You
-1. Golden set verification: Toggle verified flags from false to true in tests/golden_set.json as you audit official gazettes.
-2. Siberia Airlines stem: Keep stem distinct (gives 🟠/✅ on US CSL, 🔴 on UK CSL) or add custom mapping for Siberia/Siberian.
-3. OpenSanctions UI details: Decide whether to display OpenSanctions match explanation features in expandable UI rows.
-4. Secondary ID workflow: Confirm whether counterparty DOB and nationality should be mandatory or optional inputs in UI.
+1. Golden set verification: Toggle verified flags from false to true in tests/golden_set.json as official checks complete.
+2. OpenSanctions deployment model: Confirm keeping hosted API with credit guard vs self-hosting yente (requires commercial data license).
+3. OpenSanctions crawler reuse: Approve borrowing open-source scraper logic from opensanctions/crawlers/ as reference for T3 (Aviation) and T4 (India MHA).
+4. Siberia Airlines stem: Keep stem distinct (gives 🟠/✅ on US CSL, 🔴 on UK CSL) or add custom mapping for Siberia/Siberian.
+5. OpenSanctions UI details: Decide whether to display OpenSanctions match explanation features in expandable UI rows.
