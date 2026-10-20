@@ -30,9 +30,21 @@ def test_bulk_refuses_when_explicitly_false(monkeypatch):
         load_bulk()
 
 
-def test_bulk_allowed_when_enabled(monkeypatch):
-    """When OPENSANCTIONS_BULK_ENABLED is true, bulk loader proceeds with licence notice."""
+def test_bulk_refuses_when_permission_ref_missing(monkeypatch):
+    """When enabled is true but permission ref is missing, must refuse to run."""
     monkeypatch.setenv("OPENSANCTIONS_BULK_ENABLED", "true")
+    monkeypatch.delenv("OPENSANCTIONS_BULK_PERMISSION_REF", raising=False)
+    assert not is_bulk_enabled()
+
+    with pytest.raises(BulkDataDisabledError) as exc_info:
+        load_bulk()
+    assert "OPENSANCTIONS_BULK_PERMISSION_REF" in str(exc_info.value)
+
+
+def test_bulk_allowed_when_enabled_and_permission_set(monkeypatch):
+    """When OPENSANCTIONS_BULK_ENABLED is true and permission ref is set, loader proceeds."""
+    monkeypatch.setenv("OPENSANCTIONS_BULK_ENABLED", "true")
+    monkeypatch.setenv("OPENSANCTIONS_BULK_PERMISSION_REF", "COMMERCIAL-LIC-2026-X1")
     assert is_bulk_enabled()
 
     res = load_bulk()

@@ -28,20 +28,29 @@ class BulkDataDisabledError(PermissionError):
 
 
 def is_bulk_enabled() -> bool:
-    """Check whether OPENSANCTIONS_BULK_ENABLED is set to true."""
+    """Check whether OPENSANCTIONS_BULK_ENABLED is true AND permission reference is set."""
     val = os.getenv("OPENSANCTIONS_BULK_ENABLED", "false").strip().lower()
-    return val in ["true", "1", "yes"]
+    enabled = val in ["true", "1", "yes"]
+    perm_ref = os.getenv("OPENSANCTIONS_BULK_PERMISSION_REF", "").strip()
+    return enabled and bool(perm_ref)
 
 
 def load_bulk(file_path: Optional[Path] = None) -> Dict[str, Any]:
     """Load bulk entities from OpenSanctions FollowTheMoney JSON.
-    Refuses to execute if OPENSANCTIONS_BULK_ENABLED is not set to true.
+    Refuses to execute if OPENSANCTIONS_BULK_ENABLED is not set to true or permission ref missing.
     """
     if not is_bulk_enabled():
-        msg = (
-            f"OpenSanctions bulk loading is disabled by default. {LICENCE_NOTICE}. "
-            "To enable, set OPENSANCTIONS_BULK_ENABLED=true in .env with a valid commercial licence."
-        )
+        val = os.getenv("OPENSANCTIONS_BULK_ENABLED", "false").strip().lower()
+        perm_ref = os.getenv("OPENSANCTIONS_BULK_PERMISSION_REF", "").strip()
+        if val in ["true", "1", "yes"] and not perm_ref:
+            msg = (
+                f"OpenSanctions bulk loading requires OPENSANCTIONS_BULK_PERMISSION_REF to be set. {LICENCE_NOTICE}."
+            )
+        else:
+            msg = (
+                f"OpenSanctions bulk loading is disabled by default. {LICENCE_NOTICE}. "
+                "To enable, set OPENSANCTIONS_BULK_ENABLED=true and OPENSANCTIONS_BULK_PERMISSION_REF in .env."
+            )
         logger.warning(msg)
         raise BulkDataDisabledError(msg)
 
