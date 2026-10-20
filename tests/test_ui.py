@@ -175,6 +175,30 @@ class TestSanctionCheckUI(unittest.TestCase):
             infos = [i.value for i in at.info]
             self.assertTrue(any("INCOMPLETE" in i for i in infos), f"Expected INCOMPLETE banner, got: {infos}")
 
+    def test_tab_switch_preserves_results_without_name_error(self):
+        """Simulate switching to Raw Search tab when previous results exist in session_state."""
+        at = AppTest.from_file(APP_FILE, default_timeout=30)
+        at.session_state["acknowledged"] = True
+        at.session_state["last_results"] = {
+            "banner_text": "✅ NO MATCH — Clean on all checked sources",
+            "banner_type": "success",
+            "search_type": "Organisation",
+            "primary_query": "Test Corporation",
+            "dob_entered": False,
+            "nat_entered": False,
+            "sanctions_hits": [],
+            "source_statuses": [{"id": "us_ofac", "tier": "NO_MATCH", "status": "OK", "below_count": 0}],
+            "per_list_data": {},
+            "aviation_hits": [],
+            "country_risk_hits": [],
+            "pdf_path": "",
+            "excel_path": "",
+        }
+        at.query_params["tab"] = "raw"
+        at.run(timeout=15)
+        self.assertFalse(at.exception, f"AppTest raised unexpected exception: {at.exception}")
+
+
 
 
 

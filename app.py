@@ -796,8 +796,10 @@ with tab_screened:
             st.write("✅ No elevated FATF country risk flags.")
 
         # Section D — Historical Manual Check Audit Trail (Decision 3)
-        past_checks = get_manual_checks_for_entity(primary_query)
+        history_query = res.get("primary_query") or ""
+        past_checks = get_manual_checks_for_entity(history_query) if history_query else []
         if past_checks:
+
             st.divider()
             with st.expander(f"📋 Prior Manual Verification History ({len(past_checks)} recorded)", expanded=True):
                 st.caption("Historical analyst check decisions for this counterparty from screening audit trail:")
