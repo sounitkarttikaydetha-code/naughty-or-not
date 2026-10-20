@@ -109,12 +109,28 @@ class TestMatchTieringLayerV2(unittest.TestCase):
 
     def test_4_weak_generic_words(self):
         """
-        4. Weak generic words:
+        4. Weak generic words (T1.4 correction):
+        - A core-name pass is blocked only if every shared word is a weak word.
+        - Weak words in listed name but not in query do not block a pass.
+        - 'UTair' vs 'UTAIR AVIATION JSC' -> 🔴 core_name.
         - 'IndiGo' vs 'Indigo 3D' -> not 🔴.
         - 'S7 Airlines' vs 'S. Group Airlines' -> not 🔴.
-        - 'Aeroflot' vs 'PJSC Aeroflot' -> still 🔴.
+        - 'Aeroflot' vs 'PJSC Aeroflot' -> 🔴.
         """
-        # A. IndiGo vs Indigo 3D (extra distinctive token '3D' prevents forward subset match)
+        # A. UTair vs UTAIR AVIATION JSC -> 🔴 core_name
+        dummy_utair = {
+            "name": "UTAIR AVIATION JSC,",
+            "match": 0.7285,
+            "sourceList": "us_csl",
+            "sourceID": "1c9ad49f",
+            "entityType": "organisation",
+        }
+        res_utair = tier_single_entity("UTair", dummy_utair)
+        self.assertIsNotNone(res_utair)
+        self.assertEqual(res_utair["tier"], TIER_POTENTIAL_MATCH)
+        self.assertEqual(res_utair["reason"], "core_name")
+
+        # B. IndiGo vs Indigo 3D (extra distinctive token '3D' prevents forward subset match)
         dummy_indigo = {
             "name": "LIMITED LIABILITY COMPANY INDIGO 3D",
             "match": 0.7635,
@@ -128,7 +144,7 @@ class TestMatchTieringLayerV2(unittest.TestCase):
         self.assertEqual(res_indigo["tier"], TIER_POSSIBLE_MATCH)
         self.assertEqual(res_indigo["reason"], "score")
 
-        # B. S7 Airlines vs S. Group Airlines (shared word 'airlines' is weak; no shared non-weak word)
+        # C. S7 Airlines vs S. Group Airlines (shared word 'airlines' is weak; no shared non-weak word)
         dummy_s_group = {
             "name": "S. GROUP AIRLINES LTD",
             "match": 0.7549,
@@ -142,7 +158,7 @@ class TestMatchTieringLayerV2(unittest.TestCase):
         self.assertEqual(res_s7["tier"], TIER_POSSIBLE_MATCH)
         self.assertEqual(res_s7["reason"], "score")
 
-        # C. Aeroflot vs PJSC Aeroflot (still 🔴)
+        # D. Aeroflot vs PJSC Aeroflot (still 🔴)
         dummy_aeroflot = {
             "name": "PJSC Aeroflot",
             "match": 0.7716,
@@ -224,7 +240,7 @@ class TestMatchTieringLayerV2(unittest.TestCase):
         self.assertEqual(eu_hit["matched_name"], "Sberbank")
 
     def test_8_s7_airlines_on_us_csl_live(self):
-        """T1.3 Item 2: 'S7 Airlines' on us_csl must return 'SIBERIAN AIRLINES D/B/A S7 AIRLINES'."""
+        """T1.3/T1.4: 'S7 Airlines' on us_csl must return 'SIBERIAN AIRLINES D/B/A S7 AIRLINES'."""
         from modules.screening.tiering import screen_query_all_lists
         res = screen_query_all_lists("S7 Airlines", query_type="airline")
         csl_hit = res["us_csl"]["best_hit"]
@@ -232,6 +248,16 @@ class TestMatchTieringLayerV2(unittest.TestCase):
         self.assertEqual(csl_hit["primary_name"], "SIBERIAN AIRLINES D/B/A S7 AIRLINES")
         self.assertEqual(csl_hit["matched_name"], "S7 AIRLINES")
         self.assertEqual(csl_hit["reason"], "core_name")
+        self.assertAlmostEqual(csl_hit["score"], 0.4971, places=3)
+        self.assertEqual(csl_hit.get("score_source"), "query")
+
+    def test_9_siberia_airlines_on_us_csl_stem_difference(self):
+        """T1.4 Item 3: 'Siberia Airlines' vs 'SIBERIAN AIRLINES' stem difference -> NO_MATCH on us_csl."""
+        from modules.screening.tiering import screen_query_all_lists
+        res = screen_query_all_lists("Siberia Airlines", query_type="airline")
+        csl_hit = res["us_csl"]["best_hit"]
+        self.assertEqual(csl_hit["tier"], TIER_NO_MATCH)
+        self.assertEqual(csl_hit["tier_icon"], "✅")
 
 
 

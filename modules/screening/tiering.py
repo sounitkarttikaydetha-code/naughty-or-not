@@ -157,6 +157,13 @@ def normalize_name(text: str) -> List[str]:
     return core_tokens
 
 
+COUNTRY_WORDS = {
+    "india", "russia", "russian", "iran", "iraq", "iraqi", "china", "chinese",
+    "usa", "us", "uk", "uae", "afghanistan", "syria", "korea", "dprk", "cuba",
+    "belarus", "myanmar", "sudan", "venezuela", "yemen"
+}
+
+
 def check_core_name_match(
     q_words: List[str],
     c_words: List[str],
@@ -165,7 +172,7 @@ def check_core_name_match(
     """
     Check core-name equivalence between query tokens and candidate tokens.
     Returns (is_match, match_type):
-      match_type in ["core_name_equal", "core_name_forward", "core_name_reverse", "partial_name_person", ""]
+      match_type in ["core_name_equal", "core_name", "core_name_forward", "core_name_reverse", "partial_name_person", ""]
     """
     if not q_words or not c_words:
         return False, ""
@@ -174,9 +181,11 @@ def check_core_name_match(
     c_set = set(c_words)
     weak_set = {w.lower() for w in WEAK_WORDS}
 
-    # Rule 4: A core-name pass needs at least one shared non-weak word
-    shared_non_weak = (q_set & c_set) - weak_set
-    if not shared_non_weak:
+    # Rule 2: A core-name pass is blocked ONLY if every shared word is a weak word
+    shared = q_set & c_set
+    if not shared:
+        return False, ""
+    if shared.issubset(weak_set):
         return False, ""
 
     # Exact equality (ignoring word order)
@@ -184,20 +193,21 @@ def check_core_name_match(
         return True, "core_name_equal"
 
     # Forward subset check: q_set is subset of c_set (candidate has extra words)
+    # Weak words that appear in the listed name but not in the query do not block a pass.
     if q_set.issubset(c_set):
         if is_person:
-            # Person rule: partial subset match is partial_name_person (Rule 5)
             return True, "partial_name_person"
         else:
-            # Organisation rule: weak words must never promote a match.
-            # Extra words in candidate mean it is not an exact core match.
+            extra_cand_words = c_set - q_set
+            if extra_cand_words.issubset(weak_set):
+                return True, "core_name"
             return False, ""
 
     # Reverse subset check: c_set is subset of q_set (Rule 1)
     if c_set.issubset(q_set):
-        # Candidate core must have at least 1 distinctive word of 4 or more chars
+        # Candidate core must have at least 1 distinctive word of 4 or more chars (not weak and not a country)
         distinctive_candidate_words = [
-            w for w in c_set if len(w) >= MIN_DISTINCTIVE_WORD_LEN and w not in weak_set
+            w for w in c_set if len(w) >= MIN_DISTINCTIVE_WORD_LEN and w not in weak_set and w not in COUNTRY_WORDS
         ]
         if distinctive_candidate_words:
             if is_person:
@@ -341,6 +351,7 @@ def tier_single_entity(
 
     priority_map = {
         "core_name_equal": 4,
+        "core_name": 3,
         "core_name_forward": 3,
         "core_name_reverse": 3,
         "partial_name_person": 2,
@@ -357,6 +368,7 @@ def tier_single_entity(
 
     core_pass = best_match_type in [
         "core_name_equal",
+        "core_name",
         "core_name_forward",
         "core_name_reverse",
     ]
@@ -415,8 +427,10 @@ def tier_single_entity(
 
     return {
         "tier": tier,
+        "tier_icon": "🔴" if tier == TIER_POTENTIAL_MATCH else ("🟠" if tier == TIER_POSSIBLE_MATCH else ("✅" if tier == TIER_NO_MATCH else "⚪")),
         "reason": reason,
         "score": score,
+        "score_source": entity.get("score_source", "query"),
         "primary_name": primary_name,
         "matched_name": best_matched_name,
         "entity_type": "person" if is_person else (entity.get("entityType") or "organisation"),
@@ -452,8 +466,10 @@ def screen_query_all_lists(
         for src in SOURCE_LISTS:
             empty_hit = {
                 "tier": TIER_NO_MATCH,
+                "tier_icon": "✅",
                 "reason": "none",
                 "score": 0.0,
+                "score_source": "query",
                 "primary_name": "—",
                 "matched_name": "—",
                 "entity_type": query_type or "organisation",
@@ -497,15 +513,19 @@ def screen_query_all_lists(
             for ee in extra_entities:
                 sid = ee.get("sourceID")
                 if sid and sid not in entity_map:
-                    entity_map[sid] = ee
+                    ee_copy = dict(ee)
+                    ee_copy["score_source"] = "token_pass"
+                    entity_map[sid] = ee_copy
 
         merged_raw_entities = list(entity_map.values())
 
         if resp.get("status") == "unavailable" and not merged_raw_entities:
             unavail_hit = {
                 "tier": TIER_NOT_CHECKED,
+                "tier_icon": "⚪",
                 "reason": "watchman_unavailable",
                 "score": 0.0,
+                "score_source": "query",
                 "primary_name": "—",
                 "matched_name": "—",
                 "entity_type": query_type or "organisation",
@@ -538,8 +558,10 @@ def screen_query_all_lists(
         if not evaluated_candidates:
             no_match_hit = {
                 "tier": TIER_NO_MATCH,
+                "tier_icon": "✅",
                 "reason": "none",
                 "score": 0.0,
+                "score_source": "query",
                 "primary_name": "—",
                 "matched_name": "—",
                 "entity_type": query_type or "organisation",
