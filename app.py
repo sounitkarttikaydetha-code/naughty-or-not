@@ -799,9 +799,9 @@ with tab_screened:
         history_query = res.get("primary_query") or ""
         past_checks = get_manual_checks_for_entity(history_query) if history_query else []
         if past_checks:
-
             st.divider()
             with st.expander(f"📋 Prior Manual Verification History ({len(past_checks)} recorded)", expanded=True):
+
                 st.caption("Historical analyst check decisions for this counterparty from screening audit trail:")
                 for chk in past_checks:
                     badge = "🔴" if "Match" in chk.get("result", "") else "✅"
