@@ -7,24 +7,29 @@
 - **Operating System:** Windows 10 or Windows 11 (64-bit).
 - **Permissions:** Standard User account. **No local administrator rights are required.**
 
-### Installation Steps
-1. Navigate to the private GitHub repository Releases page:
-   `https://github.com/<org>/naughty-or-not/releases/tag/v1.0.1`
-2. Download both files to your Downloads folder:
-   - `NaughtyOrNot_Setup_v1.0.1.exe`
+### Option A: Windows Installer (.exe)
+1. Navigate to the GitHub repository Releases page:
+   `https://github.com/sounitkarttikaydetha-code/naughty-or-not/releases`
+2. Download:
+   - `NaughtyOrNot_Setup_v1.0.2.exe`
    - `SHA256.txt`
 3. Verify the cryptographic SHA-256 integrity hash:
-   - Open PowerShell and run:
-     ```powershell
-     Get-FileHash .\NaughtyOrNot_Setup_v1.0.1.exe -Algorithm SHA256
-     ```
-   - Compare the output hash against the hash listed in `SHA256.txt`. The hashes must match identically.
-4. Run `NaughtyOrNot_Setup_v1.0.1.exe`:
-   - The installer automatically installs per-user to:
-     `%LOCALAPPDATA%\Programs\NaughtyOrNot`
-   - No UAC administrator prompt will appear.
-5. On completion, launch "Naughty or not" from the Desktop shortcut or Start Menu.
-6. The first-run initialization will prepare the bundled lists and text search index.
+   ```powershell
+   Get-FileHash .\NaughtyOrNot_Setup_v1.0.2.exe -Algorithm SHA256
+   ```
+4. Run `NaughtyOrNot_Setup_v1.0.2.exe`:
+   - Installs per-user to `%LOCALAPPDATA%\Programs\NaughtyOrNot` (no admin rights required).
+5. Launch from the Desktop or Start Menu shortcut.
+
+### Option B: Zero-Install Portable Version (.zip)
+1. Download `NaughtyOrNot_v1.0.2_Portable.zip` from Releases.
+2. Verify SHA-256 checksum against `SHA256.txt`:
+   ```powershell
+   Get-FileHash .\NaughtyOrNot_v1.0.2_Portable.zip -Algorithm SHA256
+   ```
+3. Extract the `.zip` archive to any location (Desktop, Downloads, or a USB drive).
+4. Double-click `Naughty or not.exe` to run immediately.
+5. **Zero-Trace USB Mode:** To keep all audit logs, databases, and lists contained on your USB stick without leaving any files on the host computer, create an empty file named `.portable` inside the unzipped folder alongside `Naughty or not.exe`.
 
 ### Uninstallation
 - To uninstall, use Windows Settings > Apps > Installed apps > "Naughty or not" > Uninstall.

@@ -72,6 +72,10 @@ jobs:
         run: |
           python scripts/dev/release_hygiene_check.py dist/NaughtyOrNot
 
+      - name: Run Desktop Bundle Smoke Test
+        run: |
+          python scripts/dev/bundle_smoke_test.py dist/NaughtyOrNot
+
       - name: Set up Inno Setup
         run: |
           choco install innosetup --no-progress
@@ -94,7 +98,11 @@ jobs:
           "$hash  $($installer.Name)" | Out-File -FilePath "dist\installer\SHA256.txt" -Encoding ascii
           Write-Host "Installer SHA-256: $hash"
 
-          $zipName = "NaughtyOrNot_v1.0.2_Portable.zip"
+          $version = "1.0.2"
+          if ($env:GITHUB_REF -match "refs/tags/v(.*)") {
+            $version = $Matches[1]
+          }
+          $zipName = "NaughtyOrNot_v${version}_Portable.zip"
           $zipPath = "dist\installer\$zipName"
           Write-Host "Creating portable archive: $zipName"
           Compress-Archive -Path "dist\NaughtyOrNot\*" -DestinationPath $zipPath -Force
@@ -105,6 +113,16 @@ jobs:
           echo "INSTALLER_PATH=$($installer.FullName)" >> $env:GITHUB_OUTPUT
           echo "INSTALLER_NAME=$($installer.Name)" >> $env:GITHUB_OUTPUT
           echo "SHA256_HASH=$hash" >> $env:GITHUB_OUTPUT
+
+      - name: Upload Build Artifacts (Installer & Portable Zip)
+        uses: actions/upload-artifact@v4
+        with:
+          name: NaughtyOrNot-Windows-Build
+          path: |
+            dist/installer/*.exe
+            dist/installer/*.zip
+            dist/installer/SHA256.txt
+          if-no-files-found: error
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2

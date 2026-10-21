@@ -4,6 +4,16 @@
 
 ---
 
+## Quick Start for Windows Users (No Python / Docker Required)
+
+Download pre-built standalone packages directly from **[GitHub Releases](https://github.com/sounitkarttikaydetha-code/naughty-or-not/releases)**:
+- **Portable Version (NaughtyOrNot_v1.0.2_Portable.zip)**: Download, unzip, and double-click Naughty or not.exe. Runs anywhere (including USB drives) without installation. Add an empty .portable file to enable zero-trace local data storage.
+- **Installer Version (NaughtyOrNot_Setup_v1.0.2.exe)**: Standard per-user setup wizard with Desktop and Start Menu shortcuts. No administrative privileges required.
+
+See [DEPLOY.md](DEPLOY.md) for full deployment instructions and cryptographic checksum verification.
+
+---
+
 ## About
 
 Internal sanctions screening aid prepared under the Sanctions Compliance Policy. Test version. Not for transaction decisions. Uses only official public sources. OpenSanctions data CC BY-NC 4.0 — commercial use requires a licence.
