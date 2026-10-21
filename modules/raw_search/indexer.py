@@ -10,7 +10,7 @@ import sqlite3
 import sys
 import unicodedata
 import xml.etree.ElementTree as ET
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 # Ensure project root is in sys.path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -482,7 +482,10 @@ def parse_fatf_records() -> List[Tuple[str, str, str, str, str, str, str]]:
     return records
 
 
-def build_full_raw_index(db_path: Path = INDEX_DB_PATH) -> Dict[str, Any]:
+def build_full_raw_index(
+    db_path: Path = INDEX_DB_PATH,
+    progress_callback: Optional[Callable[[int, int, str], None]] = None,
+) -> Dict[str, Any]:
     """
     Build the SQLite FTS5 database from all raw files.
     Returns summary dict with counts per source.
@@ -512,7 +515,9 @@ def build_full_raw_index(db_path: Path = INDEX_DB_PATH) -> Dict[str, Any]:
     from datetime import datetime, timezone
     now_iso = datetime.now(timezone.utc).isoformat()
 
-    for src_id, file_path_str, parse_fn in parsers:
+    for idx, (src_id, file_path_str, parse_fn) in enumerate(parsers):
+        if progress_callback:
+            progress_callback(idx, len(parsers), src_id)
         p = Path(file_path_str)
         if not p.is_file() and "data/raw" in file_path_str:
             cur.execute(

@@ -2,8 +2,13 @@ name: Build & Release Windows Desktop App
 
 on:
   push:
+    branches:
+      - main
     tags:
       - 'v*'
+  pull_request:
+    branches:
+      - main
 
 jobs:
   test_and_build:
@@ -27,6 +32,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
+
+      - name: Initialize Sanctions Data
+        run: |
+          python scripts/init_data.py
 
       - name: Run Full Test Suite
         env:

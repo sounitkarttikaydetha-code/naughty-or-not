@@ -58,7 +58,7 @@ from modules.watchman.client import WatchmanClient
 PROJECT_ROOT = Path(__file__).resolve().parent
 SOURCES_YAML = PROJECT_ROOT / "config" / "sources.yaml"
 
-from modules.common.paths import get_reports_dir, get_logs_dir, get_app_data_dir
+from modules.common.paths import get_reports_dir, get_logs_dir, get_app_data_dir, get_index_db_path
 from modules.common.list_updater import init_lists_from_seed, ensure_text_search_index, get_lists_date
 from modules.common.reasons import translate_reason
 from modules.opensanctions.key_manager import (
@@ -172,7 +172,17 @@ if not st.session_state.os_key_dialog_done:
 # 4. First-run list initialization & text search index
 if not st.session_state.first_run_init_done:
     init_lists_from_seed()
-    with st.spinner("Preparing text search… this happens once"):
+    index_path = get_index_db_path()
+    if not (index_path.is_file() and index_path.stat().st_size > 1000):
+        prog_bar = st.progress(0, text="Preparing lists / text search… this happens once")
+
+        def on_progress(idx, total, name):
+            pct = int((idx / max(1, total)) * 100)
+            prog_bar.progress(pct, text=f"Preparing lists / text search… this happens once ({idx}/{total} {name})")
+
+        ensure_text_search_index(progress_callback=on_progress)
+        prog_bar.progress(100, text="Preparing lists / text search… complete!")
+    else:
         ensure_text_search_index()
     st.session_state.first_run_init_done = True
 
@@ -191,11 +201,27 @@ def load_sources_registry() -> Dict[str, Any]:
 source_reg = load_sources_registry()
 source_dict = {s["id"]: s for s in source_reg.get("sources", [])}
 
+FRIENDLY_SOURCE_NAMES = {
+    "us_ofac": "US Treasury (OFAC)",
+    "us_csl": "US Consolidated Screening List",
+    "uk_csl": "UK Sanctions List",
+    "eu_csl": "EU Financial Sanctions",
+    "un_csl": "UN Security Council Sanctions",
+    "bis_aircraft": "BIS Identified Aircraft",
+    "bis_tdo": "BIS Denial Orders",
+    "eu_air_safety": "EU Air Safety List",
+    "faa_iasa": "FAA IASA Safety Assessments",
+    "in_mha_first_schedule": "India MHA Terrorist Orgs (1st Sch)",
+    "in_mha_fourth_schedule": "India MHA Terrorist Individuals (4th Sch)",
+    "in_mha_unlawful_assoc": "India MHA Unlawful Associations",
+    "fatf_jurisdictions": "FATF High-Risk & Monitored Jurisdictions",
+    "os_bulk": "OpenSanctions (Bulk)",
+}
 
 # Sidebar: Status, OpenSanctions, List Freshness & Support
 with st.sidebar:
     st.title("Source Status")
-    st.caption(f"Naughty or not v{APP_VERSION} | Node: {platform.node()}")
+    st.caption(f"Naughty or not v{APP_VERSION}")
 
     # OpenSanctions Status
     active_key = get_session_key()
@@ -220,11 +246,13 @@ with st.sidebar:
     st.subheader("Source Freshness")
     for s in source_reg.get("sources", []):
         sid = s.get("id")
+        fname = FRIENDLY_SOURCE_NAMES.get(sid, sid)
         auth = s.get("authority")
         pdate = s.get("publication_date", "—")
         status = s.get("status", "OK")
         badge = "🟢" if status == "OK" else ("🟠" if status == "STALE" else ("⚪" if status in ["UNAVAILABLE", "NOT_CHECKED", "MISSING"] else "🔴"))
-        st.markdown(f"**{badge} {sid}** ({auth})\n*Pub: {pdate}*")
+        with st.expander(f"{badge} {fname}", expanded=False):
+            st.caption(f"**ID:** `{sid}`\n\n**Authority:** {auth}\n\n**Publication:** {pdate}\n\n**Status:** {status}")
 
     if st.button("🔄 Update lists"):
         with st.spinner("Updating sources..."):
@@ -362,13 +390,27 @@ with tab_screened:
                 flag_input = st.text_input("Flag State (optional)", placeholder="e.g. Russia")
 
         st.markdown("##### Screening Sources & Thresholds")
-        src_col1, src_col2, src_col3, src_col4, src_col5 = st.columns(5)
+        st.markdown(
+            """
+            <style>
+            div[data-testid="stCheckbox"] label span p {
+                white-space: normal !important;
+                word-break: normal !important;
+                line-height: 1.25;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
+        src_col1, src_col2, src_col3 = st.columns([1.6, 1.0, 1.0])
         with src_col1:
-            use_sanctions = st.checkbox("Official Sanctions Lists", value=True, disabled=True)
+            use_sanctions = st.checkbox("Official sanctions lists (always on)", value=True, disabled=True)
         with src_col2:
             use_india = st.checkbox("India (MHA)", value=True)
         with src_col3:
             use_aviation = st.checkbox("Aviation", value=(search_type in ["Airline", "Aircraft"]))
+
+        src_col4, src_col5 = st.columns([1.6, 2.0])
         with src_col4:
             use_country_risk = st.checkbox("Country risk (FATF)", value=True)
         with src_col5:
@@ -381,7 +423,7 @@ with tab_screened:
                 help="No key entered this session" if not os_key_present else "Opt-in API search (consumes credits)",
             )
 
-        st.caption("Thresholds: Potential Match >= 0.80 | Possible Match >= 0.70 | Sub-threshold core >= 0.60 | Display floor >= 0.50")
+        st.caption("Red = likely match · Amber = possible match · Grey list = shown for information")
         submitted = st.form_submit_button("🔍 Screen Entity", type="primary")
 
     if not submitted and st.query_params.get("autorun") == "true" and (tail_input or name_input):

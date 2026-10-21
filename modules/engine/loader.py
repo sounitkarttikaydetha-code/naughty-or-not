@@ -15,9 +15,10 @@ import hashlib
 import logging
 from pathlib import Path
 import re
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 import xml.etree.ElementTree as ET
 
+from modules.common.alias_splitter import split_alias_parts
 from modules.engine.name_prep import (
     prepare_name,
     reorder_sdn_name,
@@ -27,6 +28,32 @@ from modules.engine.name_prep import (
 logger = logging.getLogger(__name__)
 
 AKA_REGEX = re.compile(r"(?i)a\.k\.a\.\s+'([^']+)'")
+IMO_REGEX = re.compile(r"(?i)\bIMO\s*[:#-]?\s*(\d{7})\b")
+TAIL_REGEX = re.compile(r"(?i)\b(?:tail|registration)?\s*[:#-]?\s*([A-Z0-9]{1,3}-[A-Z0-9]{2,6})\b")
+MSN_REGEX = re.compile(r"(?i)\b(?:MSN|serial\s*(?:no|number)?)\s*[:#-]?\s*(\d+)\b")
+
+
+def extract_identifiers(text: str, source_id: str) -> Set[str]:
+    """Extract searchable identifiers: source ID, IMO, tail registration, and MSN."""
+    ids = set()
+    sid = source_id.strip().lower()
+    if sid:
+        ids.add(sid)
+        ids.add(sid.replace("-", "").replace("_", ""))
+
+    if text:
+        for imo in IMO_REGEX.findall(text):
+            ids.add(f"imo {imo}".lower())
+            ids.add(f"imo{imo}".lower())
+            ids.add(imo.lower())
+        for tail in TAIL_REGEX.findall(text):
+            ids.add(tail.lower())
+            ids.add(tail.lower().replace("-", ""))
+        for msn in MSN_REGEX.findall(text):
+            ids.add(f"msn {msn}".lower())
+            ids.add(f"msn{msn}".lower())
+            ids.add(msn.lower())
+    return ids
 
 
 class EntityRecord:
@@ -40,6 +67,7 @@ class EntityRecord:
         "alt_tokens_list",
         "historical_tokens_list",
         "raw_entity",
+        "identifiers",
     )
 
     def __init__(
@@ -53,6 +81,7 @@ class EntityRecord:
         alt_tokens_list: List[List[str]],
         historical_tokens_list: List[List[str]],
         raw_entity: Dict[str, Any],
+        identifiers: Optional[Set[str]] = None,
     ):
         self.source = source
         self.source_id = source_id
@@ -63,6 +92,7 @@ class EntityRecord:
         self.alt_tokens_list = alt_tokens_list
         self.historical_tokens_list = historical_tokens_list
         self.raw_entity = raw_entity
+        self.identifiers = identifiers or {source_id.lower()}
 
 
 def load_ofac_sdn(path: Path) -> Tuple[List[EntityRecord], str]:
@@ -118,21 +148,33 @@ def load_ofac_sdn(path: Path) -> Tuple[List[EntityRecord], str]:
                 mapped_type = "business"
                 disp_name = raw_name
 
-            norm_name, former = prepare_name(disp_name, mapped_type)
+            # Load-time alias splitting on listed name
+            disp_parts = split_alias_parts(disp_name)
+            primary_disp = disp_parts[0] if disp_parts else disp_name
+            extra_disp_alts = disp_parts[1:] if len(disp_parts) > 1 else []
 
-            # Combined alternate names from remarks (a.k.a.) and alt.csv
+            norm_name, former = prepare_name(primary_disp, mapped_type)
+
+            # Combined alternate names from alt.csv, remarks (a.k.a.), and load-time splitting
             alts_seen = set()
             alts_combined = []
 
+            for extra in extra_disp_alts:
+                if extra and extra.lower() != primary_disp.lower() and extra not in alts_seen:
+                    alts_seen.add(extra)
+                    alts_combined.append(extra)
+
             for a in alt_map.get(ent_num, []):
-                if a not in alts_seen:
-                    alts_seen.add(a)
-                    alts_combined.append(a)
+                for part in split_alias_parts(a):
+                    if part and part.lower() != primary_disp.lower() and part not in alts_seen:
+                        alts_seen.add(part)
+                        alts_combined.append(part)
 
             for a in AKA_REGEX.findall(remarks):
-                if a not in alts_seen:
-                    alts_seen.add(a)
-                    alts_combined.append(a)
+                for part in split_alias_parts(a):
+                    if part and part.lower() != primary_disp.lower() and part not in alts_seen:
+                        alts_seen.add(part)
+                        alts_combined.append(part)
 
             alt_tokens: List[List[str]] = []
             for a in alts_combined:
@@ -152,11 +194,11 @@ def load_ofac_sdn(path: Path) -> Tuple[List[EntityRecord], str]:
                 "sourceList": "us_ofac",
                 "source": "us_ofac",
                 "sourceID": ent_num,
-                "person": {"name": disp_name, "altNames": alts_combined} if mapped_type == "person" else None,
-                "business": {"name": disp_name, "altNames": alts_combined} if mapped_type == "business" else None,
+                "person": {"name": primary_disp, "altNames": alts_combined} if mapped_type == "person" else None,
+                "business": {"name": primary_disp, "altNames": alts_combined} if mapped_type == "business" else None,
+                "aircraft": {"name": primary_disp, "altNames": alts_combined} if mapped_type == "aircraft" else None,
+                "vessel": {"name": primary_disp, "altNames": alts_combined} if mapped_type == "vessel" else None,
                 "organization": None,
-                "aircraft": None,
-                "vessel": None,
                 "addresses": [],
                 "sourceData": {
                     "entityID": ent_num,
@@ -165,6 +207,8 @@ def load_ofac_sdn(path: Path) -> Tuple[List[EntityRecord], str]:
                     "remarks": remarks,
                 },
             }
+
+            all_ids = extract_identifiers(f"{raw_name} {remarks}", ent_num)
 
             records.append(
                 EntityRecord(
@@ -177,6 +221,7 @@ def load_ofac_sdn(path: Path) -> Tuple[List[EntityRecord], str]:
                     alt_tokens_list=alt_tokens,
                     historical_tokens_list=[remove_stopwords(f) for f in former if f],
                     raw_entity=raw_dict,
+                    identifiers=all_ids,
                 )
             )
     return records, list_hash
@@ -209,9 +254,28 @@ def load_us_csl(path: Path) -> Tuple[List[EntityRecord], str]:
             programs = [row[4].strip()] if len(row) > 4 and row[4].strip() else []
             remarks = row[20].strip() if len(row) > 20 else ""
 
-            norm_name, former = prepare_name(name, mapped_type)
-            alt_tokens: List[List[str]] = []
+            # Load-time alias splitting on listed name and alternate names
+            name_parts = split_alias_parts(name)
+            primary_name = name_parts[0] if name_parts else name
+            extra_alts = name_parts[1:] if len(name_parts) > 1 else []
+
+            alts_seen = set()
+            alts_combined = []
+
+            for ea in extra_alts:
+                if ea and ea.lower() != primary_name.lower() and ea not in alts_seen:
+                    alts_seen.add(ea)
+                    alts_combined.append(ea)
+
             for a in alt_names:
+                for part in split_alias_parts(a):
+                    if part and part.lower() != primary_name.lower() and part not in alts_seen:
+                        alts_seen.add(part)
+                        alts_combined.append(part)
+
+            norm_name, former = prepare_name(primary_name, mapped_type)
+            alt_tokens: List[List[str]] = []
+            for a in alts_combined:
                 anorm, aformer = prepare_name(a, mapped_type)
                 if anorm:
                     toks = remove_stopwords(anorm)
@@ -226,11 +290,11 @@ def load_us_csl(path: Path) -> Tuple[List[EntityRecord], str]:
                 "sourceList": "us_csl",
                 "source": "us_csl",
                 "sourceID": rec_id,
-                "person": {"name": name, "altNames": alt_names} if mapped_type == "person" else None,
-                "business": {"name": name, "altNames": alt_names} if mapped_type == "business" else None,
+                "person": {"name": primary_name, "altNames": alts_combined} if mapped_type == "person" else None,
+                "business": {"name": primary_name, "altNames": alts_combined} if mapped_type == "business" else None,
+                "aircraft": {"name": primary_name, "altNames": alts_combined} if mapped_type == "aircraft" else None,
+                "vessel": {"name": primary_name, "altNames": alts_combined} if mapped_type == "vessel" else None,
                 "organization": None,
-                "aircraft": None,
-                "vessel": None,
                 "addresses": [],
                 "sourceData": {
                     "id": rec_id,
@@ -239,6 +303,8 @@ def load_us_csl(path: Path) -> Tuple[List[EntityRecord], str]:
                     "remarks": remarks,
                 },
             }
+
+            all_ids = extract_identifiers(f"{name} {remarks}", rec_id)
 
             records.append(
                 EntityRecord(
@@ -251,6 +317,7 @@ def load_us_csl(path: Path) -> Tuple[List[EntityRecord], str]:
                     alt_tokens_list=alt_tokens,
                     historical_tokens_list=[remove_stopwords(f) for f in former if f],
                     raw_entity=raw_dict,
+                    identifiers=all_ids,
                 )
             )
     return records, list_hash
@@ -280,7 +347,6 @@ def load_uk_csl(path: Path) -> Tuple[List[EntityRecord], str]:
             col4 = row[4].strip() if len(row) > 4 else ""
             other_names = [row[i].strip() for i in range(5, 10) if len(row) > i and row[i].strip()]
             row_full_name = " ".join(filter(None, [col4] + other_names)).strip()
-            name_type = row[10].strip().lower() if len(row) > 10 else ""
 
             gender = row[41].strip().lower() if len(row) > 41 else ""
             dob = row[34].strip() if len(row) > 34 else ""
@@ -304,6 +370,7 @@ def load_uk_csl(path: Path) -> Tuple[List[EntityRecord], str]:
                     "entityType": mapped_type,
                     "alt_names": set(),
                     "programs": set(),
+                    "all_text": row_full_name,
                 }
             if mapped_type == "person":
                 groups[uid]["entityType"] = "person"
@@ -315,14 +382,34 @@ def load_uk_csl(path: Path) -> Tuple[List[EntityRecord], str]:
 
             if regime:
                 groups[uid]["programs"].add(regime)
+            groups[uid]["all_text"] += " " + " ".join(row)
 
     records: List[EntityRecord] = []
     for uid, d in groups.items():
         primary_name = d["name"]
-        norm_name, former = prepare_name(primary_name, d["entityType"])
+
+        # Load-time splitting
+        name_parts = split_alias_parts(primary_name)
+        norm_primary = name_parts[0] if name_parts else primary_name
+        extra_alts = name_parts[1:] if len(name_parts) > 1 else []
+
+        alts_seen = set()
+        alts_combined = []
+
+        for ea in extra_alts:
+            if ea and ea.lower() != norm_primary.lower() and ea not in alts_seen:
+                alts_seen.add(ea)
+                alts_combined.append(ea)
+
+        for a in d["alt_names"]:
+            for part in split_alias_parts(a):
+                if part and part.lower() != norm_primary.lower() and part not in alts_seen:
+                    alts_seen.add(part)
+                    alts_combined.append(part)
+
+        norm_name, former = prepare_name(norm_primary, d["entityType"])
         alt_tokens: List[List[str]] = []
-        alts_list = list(d["alt_names"])
-        for a in alts_list:
+        for a in alts_combined:
             anorm, aformer = prepare_name(a, d["entityType"])
             if anorm:
                 toks = remove_stopwords(anorm)
@@ -337,11 +424,11 @@ def load_uk_csl(path: Path) -> Tuple[List[EntityRecord], str]:
             "sourceList": "uk_csl",
             "source": "uk_csl",
             "sourceID": uid,
-            "person": {"name": primary_name, "altNames": alts_list} if d["entityType"] == "person" else None,
-            "business": {"name": primary_name, "altNames": alts_list} if d["entityType"] == "business" else None,
+            "person": {"name": norm_primary, "altNames": alts_combined} if d["entityType"] == "person" else None,
+            "business": {"name": norm_primary, "altNames": alts_combined} if d["entityType"] == "business" else None,
+            "aircraft": {"name": norm_primary, "altNames": alts_combined} if d["entityType"] == "aircraft" else None,
+            "vessel": {"name": norm_primary, "altNames": alts_combined} if d["entityType"] == "vessel" else None,
             "organization": None,
-            "aircraft": None,
-            "vessel": None,
             "addresses": [],
             "sourceData": {
                 "uniqueID": uid,
@@ -349,6 +436,8 @@ def load_uk_csl(path: Path) -> Tuple[List[EntityRecord], str]:
                 "program": list(d["programs"]),
             },
         }
+
+        all_ids = extract_identifiers(d["all_text"], uid)
 
         records.append(
             EntityRecord(
@@ -361,6 +450,7 @@ def load_uk_csl(path: Path) -> Tuple[List[EntityRecord], str]:
                 alt_tokens_list=alt_tokens,
                 historical_tokens_list=[remove_stopwords(f) for f in former if f],
                 raw_entity=raw_dict,
+                identifiers=all_ids,
             )
         )
     return records, list_hash
@@ -388,11 +478,30 @@ def load_eu_csl(path: Path) -> Tuple[List[EntityRecord], str]:
                 if whole:
                     names.append(whole)
             primary_name = names[0] if names else ""
-            alt_names = names[1:] if len(names) > 1 else []
+            raw_alt_names = names[1:] if len(names) > 1 else []
 
-            norm_name, former = prepare_name(primary_name, mapped_type)
+            # Load-time splitting
+            name_parts = split_alias_parts(primary_name)
+            norm_primary = name_parts[0] if name_parts else primary_name
+            extra_alts = name_parts[1:] if len(name_parts) > 1 else []
+
+            alts_seen = set()
+            alts_combined = []
+
+            for ea in extra_alts:
+                if ea and ea.lower() != norm_primary.lower() and ea not in alts_seen:
+                    alts_seen.add(ea)
+                    alts_combined.append(ea)
+
+            for a in raw_alt_names:
+                for part in split_alias_parts(a):
+                    if part and part.lower() != norm_primary.lower() and part not in alts_seen:
+                        alts_seen.add(part)
+                        alts_combined.append(part)
+
+            norm_name, former = prepare_name(norm_primary, mapped_type)
             alt_tokens: List[List[str]] = []
-            for a in alt_names:
+            for a in alts_combined:
                 anorm, aformer = prepare_name(a, mapped_type)
                 if anorm:
                     toks = remove_stopwords(anorm)
@@ -407,11 +516,11 @@ def load_eu_csl(path: Path) -> Tuple[List[EntityRecord], str]:
                 "sourceList": "eu_csl",
                 "source": "eu_csl",
                 "sourceID": logical_id,
-                "person": {"name": primary_name, "altNames": alt_names} if mapped_type == "person" else None,
-                "business": {"name": primary_name, "altNames": alt_names} if mapped_type == "business" else None,
+                "person": {"name": norm_primary, "altNames": alts_combined} if mapped_type == "person" else None,
+                "business": {"name": norm_primary, "altNames": alts_combined} if mapped_type == "business" else None,
+                "aircraft": {"name": norm_primary, "altNames": alts_combined} if mapped_type == "aircraft" else None,
+                "vessel": {"name": norm_primary, "altNames": alts_combined} if mapped_type == "vessel" else None,
                 "organization": None,
-                "aircraft": None,
-                "vessel": None,
                 "addresses": [],
                 "sourceData": {
                     "logicalId": logical_id,
@@ -419,6 +528,8 @@ def load_eu_csl(path: Path) -> Tuple[List[EntityRecord], str]:
                     "program": ["EU-SANCTIONS"],
                 },
             }
+
+            all_ids = extract_identifiers(ET.tostring(elem, encoding="utf-8").decode("utf-8", errors="ignore"), logical_id)
 
             records.append(
                 EntityRecord(
@@ -431,6 +542,7 @@ def load_eu_csl(path: Path) -> Tuple[List[EntityRecord], str]:
                     alt_tokens_list=alt_tokens,
                     historical_tokens_list=[remove_stopwords(f) for f in former if f],
                     raw_entity=raw_dict,
+                    identifiers=all_ids,
                 )
             )
             elem.clear()
@@ -456,16 +568,36 @@ def load_un_csl(path: Path) -> Tuple[List[EntityRecord], str]:
             fourth_name = item.findtext("FOURTH_NAME", "") or item.findtext(".//FOURTH_NAME", "") or ""
             full_name = " ".join(filter(None, [first_name, second_name, third_name, fourth_name])).strip()
 
-            aliases = []
+            raw_aliases = []
             for alias_node in item.iter():
                 if alias_node.tag.split("}")[-1] in ["INDIVIDUAL_ALIAS", "ENTITY_ALIAS"]:
                     alias_name = alias_node.findtext("ALIAS_NAME", "") or ""
                     if alias_name:
-                        aliases.append(alias_name)
+                        raw_aliases.append(alias_name)
             mapped_type = "person" if tag == "INDIVIDUAL" else "business"
-            norm_name, former = prepare_name(full_name, mapped_type)
+
+            # Load-time splitting
+            name_parts = split_alias_parts(full_name)
+            norm_primary = name_parts[0] if name_parts else full_name
+            extra_alts = name_parts[1:] if len(name_parts) > 1 else []
+
+            alts_seen = set()
+            alts_combined = []
+
+            for ea in extra_alts:
+                if ea and ea.lower() != norm_primary.lower() and ea not in alts_seen:
+                    alts_seen.add(ea)
+                    alts_combined.append(ea)
+
+            for a in raw_aliases:
+                for part in split_alias_parts(a):
+                    if part and part.lower() != norm_primary.lower() and part not in alts_seen:
+                        alts_seen.add(part)
+                        alts_combined.append(part)
+
+            norm_name, former = prepare_name(norm_primary, mapped_type)
             alt_tokens: List[List[str]] = []
-            for a in aliases:
+            for a in alts_combined:
                 anorm, aformer = prepare_name(a, mapped_type)
                 if anorm:
                     toks = remove_stopwords(anorm)
@@ -481,11 +613,11 @@ def load_un_csl(path: Path) -> Tuple[List[EntityRecord], str]:
                 "sourceList": "un_csl",
                 "source": "un_csl",
                 "sourceID": source_id,
-                "person": {"name": full_name, "altNames": aliases} if mapped_type == "person" else None,
-                "business": {"name": full_name, "altNames": aliases} if mapped_type == "business" else None,
+                "person": {"name": norm_primary, "altNames": alts_combined} if mapped_type == "person" else None,
+                "business": {"name": norm_primary, "altNames": alts_combined} if mapped_type == "business" else None,
+                "aircraft": {"name": norm_primary, "altNames": alts_combined} if mapped_type == "aircraft" else None,
+                "vessel": {"name": norm_primary, "altNames": alts_combined} if mapped_type == "vessel" else None,
                 "organization": None,
-                "aircraft": None,
-                "vessel": None,
                 "addresses": [],
                 "sourceData": {
                     "dataID": data_id,
@@ -493,6 +625,8 @@ def load_un_csl(path: Path) -> Tuple[List[EntityRecord], str]:
                     "program": ["UN-SANCTIONS"],
                 },
             }
+
+            all_ids = extract_identifiers(ET.tostring(item, encoding="utf-8").decode("utf-8", errors="ignore"), source_id)
 
             records.append(
                 EntityRecord(
@@ -505,6 +639,7 @@ def load_un_csl(path: Path) -> Tuple[List[EntityRecord], str]:
                     alt_tokens_list=alt_tokens,
                     historical_tokens_list=[remove_stopwords(f) for f in former if f],
                     raw_entity=raw_dict,
+                    identifiers=all_ids,
                 )
             )
     return records, list_hash

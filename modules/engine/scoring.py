@@ -238,10 +238,10 @@ def score_query_against_entity_names(
         if matching_terms < 2:
             best_match *= 0.80
 
-    # Close enough check on primary name
+    # Close enough check on matched name
     qn = query_name or " ".join(query_tokens)
-    pn = primary_name or " ".join(primary_tokens)
-    if not is_name_close_enough(qn, pn, query_tokens, primary_tokens):
+    matched_target_name = " ".join(best_tokens) if best_tokens != primary_tokens else (primary_name or " ".join(primary_tokens))
+    if not is_name_close_enough(qn, matched_target_name, query_tokens, best_tokens):
         best_match *= 0.85
 
     # Final score with name-only coverage penalty

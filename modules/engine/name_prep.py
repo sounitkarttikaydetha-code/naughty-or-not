@@ -87,7 +87,7 @@ def remove_stopwords(text: str) -> List[str]:
         if m and m.group(0) == w:
             tokens.append(w)
             continue
-        segments = re.findall(r"[^\W\d_]+", w)
+        segments = re.findall(r"[^\W_]+", w)
         for seg in segments:
             # Keep single-character initials (like A., M., etc.) matching Watchman's unknown-lang behavior
             if len(seg) == 1:

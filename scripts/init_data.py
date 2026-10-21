@@ -41,6 +41,34 @@ def ensure_directories():
     logger.info("Checked/created all required data directories.")
 
 
+def download_official_sanctions_lists(force: bool = False):
+    """Download official raw sanctions lists if missing or force=True."""
+    raw_dir = PROJECT_ROOT / "data" / "raw"
+    raw_dir.mkdir(parents=True, exist_ok=True)
+
+    sources_map = {
+        "us_ofac_sdn.csv": "https://www.treasury.gov/ofac/downloads/sdn.csv",
+        "us_csl.csv": "https://data.trade.gov/downloadable_consolidated_screening_list/v1/consolidated.csv",
+        "uk_csl.csv": "https://sanctionslist.fcdo.gov.uk/docs/UK-Sanctions-List.csv",
+        "eu_csl.xml": "https://webgate.ec.europa.eu/fsd/fsf/public/files/xmlFullSanctionsList_1_1/content?token=dG9rZW4tMjAxNw",
+        "un_csl.xml": "https://scsanctions.un.org/resources/xml/en/consolidated.xml",
+    }
+
+    import urllib.request
+
+    for fname, url in sources_map.items():
+        dest = raw_dir / fname
+        if force or not dest.exists() or dest.stat().st_size == 0:
+            logger.info(f"Downloading {fname} from official source...")
+            try:
+                req = urllib.request.Request(url, headers={"User-Agent": "SanctionCheck-Init/1.0"})
+                with urllib.request.urlopen(req, timeout=30) as resp, open(dest, "wb") as out:
+                    out.write(resp.read())
+                logger.info(f"Successfully saved {fname}")
+            except Exception as e:
+                logger.warning(f"Could not download {fname}: {e}")
+
+
 def bootstrap_data(force: bool = False, verify_only: bool = False):
     """Download/refresh official sources and build the FTS search index."""
     ensure_directories()
@@ -54,7 +82,10 @@ def bootstrap_data(force: bool = False, verify_only: bool = False):
         logger.info("Verification complete: configurations and directories present.")
         return 0
 
-    logger.info("1/2: Checking and refreshing aviation & government data sources...")
+    logger.info("1/3: Checking and refreshing raw sanctions lists...")
+    download_official_sanctions_lists(force=force)
+
+    logger.info("2/3: Checking and refreshing aviation & government data sources...")
     try:
         from modules.aviation.parser import check_and_refresh_sources
         check_and_refresh_sources(force=force)
@@ -62,7 +93,7 @@ def bootstrap_data(force: bool = False, verify_only: bool = False):
     except Exception as e:
         logger.warning(f"Aviation source refresh notice: {e}")
 
-    logger.info("2/2: Building raw text search index (FTS5)...")
+    logger.info("3/3: Building raw text search index (FTS5)...")
     try:
         from modules.raw_search.indexer import build_full_raw_index
         build_full_raw_index()

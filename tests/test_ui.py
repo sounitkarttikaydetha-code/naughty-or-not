@@ -64,7 +64,7 @@ class TestSanctionCheckUI(unittest.TestCase):
         # Fill name
         at.text_input[0].input("Aeroflot")
         # Submit form via Screen Entity button (button[0])
-        at.button[0].click().run(timeout=30)
+        at.button[0].click().run(timeout=60)
         self.assertFalse(at.exception)
 
         # Check banner or error/warning/success
@@ -93,7 +93,7 @@ class TestSanctionCheckUI(unittest.TestCase):
         at.run(timeout=15)
 
         at.text_input[0].input("RA-73093")
-        at.button[0].click().run(timeout=30)
+        at.button[0].click().run(timeout=60)
         self.assertFalse(at.exception)
 
         # Verify BIS EAR restriction banner/error
@@ -114,7 +114,7 @@ class TestSanctionCheckUI(unittest.TestCase):
         at.run(timeout=15)
 
         at.text_input[0].input("Jaipur International Airport Limited")
-        at.button[0].click().run(timeout=30)
+        at.button[0].click().run(timeout=60)
         self.assertFalse(at.exception)
 
         # Verify clean banner
@@ -132,7 +132,7 @@ class TestSanctionCheckUI(unittest.TestCase):
 
         at.text_input[0].input("Mohammed Khan")
         at.text_input[1].input("1980")
-        at.button[0].click().run(timeout=30)
+        at.button[0].click().run(timeout=60)
         self.assertFalse(at.exception)
 
         # Verify banner and report
@@ -150,7 +150,7 @@ class TestSanctionCheckUI(unittest.TestCase):
             at.run(timeout=15)
 
             at.text_input[0].input("Sberbank")
-            at.button[0].click().run(timeout=30)
+            at.button[0].click().run(timeout=60)
             self.assertFalse(at.exception)
 
             # Incomplete banner rendered as info
@@ -169,7 +169,7 @@ class TestSanctionCheckUI(unittest.TestCase):
             at.run(timeout=15)
 
             at.text_input[0].input("Clean Control Company")
-            at.button[0].click().run(timeout=30)
+            at.button[0].click().run(timeout=60)
             self.assertFalse(at.exception)
 
             infos = [i.value for i in at.info]

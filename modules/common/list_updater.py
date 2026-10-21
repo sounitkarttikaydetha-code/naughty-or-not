@@ -70,21 +70,18 @@ def get_lists_date() -> str:
     return "2026-10-18"
 
 
-def ensure_text_search_index(progress_callback: Optional[Callable[[str], None]] = None) -> bool:
+def ensure_text_search_index(progress_callback: Optional[Callable[[int, int, str], None]] = None) -> bool:
     """
     Build the SQLite FTS5 index if raw_index.db is missing.
-    Shows the user: 'Preparing text search… this happens once'.
+    Shows the user: 'Preparing lists / text search… this happens once'.
     """
     index_path = get_index_db_path()
     if index_path.is_file() and index_path.stat().st_size > 1000:
         return True
 
-    if progress_callback:
-        progress_callback("Preparing text search… this happens once")
-
     try:
         from modules.raw_search.indexer import build_full_raw_index
-        build_full_raw_index(db_path=index_path)
+        build_full_raw_index(db_path=index_path, progress_callback=progress_callback)
         return True
     except Exception as e:
         logger.error(f"Failed to build raw index on first run: {e}")

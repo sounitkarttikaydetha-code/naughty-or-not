@@ -7,6 +7,7 @@ Complies with Watchman's HTTP API response format and scoring semantics.
 from collections import defaultdict
 import logging
 from pathlib import Path
+import re
 import time
 from typing import Any, Dict, List, Optional, Set, Tuple
 
@@ -116,15 +117,17 @@ class PythonEngine:
         self.records_by_source: Dict[str, List[EntityRecord]] = {s: [] for s in LIST_SOURCES}
         self.token_index_by_source: Dict[str, Dict[str, List[int]]] = {s: defaultdict(list) for s in LIST_SOURCES}
         self.prefix_index_by_source: Dict[str, Dict[str, List[int]]] = {s: defaultdict(list) for s in LIST_SOURCES}
+        self.id_index_by_source: Dict[str, Dict[str, List[int]]] = {s: defaultdict(list) for s in LIST_SOURCES}
         self.hashes_by_source: Dict[str, str] = {s: "" for s in LIST_SOURCES}
         self.source_errors: Dict[str, str] = {}
         self.loaded_at: Optional[str] = None
         self._load_all_sources()
 
     def _build_indexes_for_source(self, src: str) -> None:
-        """Build token and 3-char prefix inverted indices for fast candidate retrieval."""
+        """Build token, prefix, and identifier inverted indices for fast candidate retrieval."""
         t_idx = defaultdict(list)
         p_idx = defaultdict(list)
+        id_idx = defaultdict(list)
         records = self.records_by_source.get(src, [])
         for idx, rec in enumerate(records):
             tokens: Set[str] = set(rec.primary_tokens)
@@ -138,8 +141,12 @@ class PythonEngine:
                 if len(t) >= 3:
                     p_idx[t[:3]].append(idx)
 
+            for ident in rec.identifiers:
+                id_idx[ident].append(idx)
+
         self.token_index_by_source[src] = dict(t_idx)
         self.prefix_index_by_source[src] = dict(p_idx)
+        self.id_index_by_source[src] = dict(id_idx)
 
     def _load_all_sources(self) -> None:
         """Load all 5 official sanctions lists."""
@@ -241,6 +248,21 @@ class PythonEngine:
         target_sources = [source] if (source and source in self.records_by_source) else LIST_SOURCES
         candidates: List[Tuple[float, EntityRecord]] = []
         target_type = type.lower() if type else None
+        seen_cand_ids = set()
+
+        # Check direct identifier match across target sources (Record ID, IMO, Tail, MSN)
+        q_raw_clean = name.strip().lower()
+        q_raw_alnum = re.sub(r"[^\w]", "", q_raw_clean)
+
+        for src in target_sources:
+            id_map = self.id_index_by_source.get(src, {})
+            matching_indices = set(id_map.get(q_raw_clean, [])) | set(id_map.get(q_raw_alnum, []))
+            for idx in matching_indices:
+                rec = self.records_by_source[src][idx]
+                if target_type and rec.entity_type != target_type:
+                    continue
+                candidates.append((1.0, rec))
+                seen_cand_ids.add((rec.source, rec.source_id))
 
         for src in target_sources:
             records = self.records_by_source.get(src, [])
@@ -256,6 +278,8 @@ class PythonEngine:
             selected_records = [records[i] for i in cand_indices]
 
             for rec in selected_records:
+                if (rec.source, rec.source_id) in seen_cand_ids:
+                    continue
                 if target_type and rec.entity_type != target_type:
                     continue
 

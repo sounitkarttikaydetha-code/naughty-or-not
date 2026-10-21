@@ -81,6 +81,54 @@ class TestGoldenRegression(unittest.TestCase):
         self.assertGreater(verified_count, 0, "Golden regression suite must verify at least one golden expectation")
         print(f"\n[Golden Regression] Verified entries checked: {verified_count} (all passed).")
 
+    def test_part1_golden_locks(self):
+        """
+        Part 1 item 4 golden locks:
+        - S7 (Airline) -> us_csl -> 🔴 'SIBERIAN AIRLINES D/B/A S7 AIRLINES', matched alias 'S7 AIRLINES'
+        - S7 Airlines (Airline) -> us_csl, uk_csl -> 🔴 on both
+        - Siberia Airlines (Airline) -> us_csl -> 🔴 via expanded_from
+        - Siberian Airlines (Organisation) -> us_csl -> 🔴
+        - S7 / Siberia Airlines -> us_ofac 'SIBERIA' record -> never 🔴
+        - Aeroflot Russian Airlines (Airline) -> us_csl, uk_csl -> 🔴
+        - Air India (Organisation) -> all lists -> never 🔴
+        """
+        # 1. S7 (Airline) on us_csl
+        res_s7 = screen_query_all_lists("S7", client=self.client, query_type="airline")
+        h_s7_csl = res_s7["us_csl"]["best_hit"]
+        self.assertEqual(h_s7_csl.get("tier"), "POTENTIAL_MATCH")
+        self.assertEqual(h_s7_csl.get("matched_name"), "S7 AIRLINES")
+        self.assertIn("SIBERIAN AIRLINES", h_s7_csl.get("primary_name", ""))
+        self.assertEqual(h_s7_csl.get("source_id"), "b04d5f6edf0e3b9ca1ff24074e5f382eb02ba47cf381db8217f9b8bd")
+
+        # 2. S7 Airlines (Airline) on us_csl and uk_csl
+        res_s7_air = screen_query_all_lists("S7 Airlines", client=self.client, query_type="airline")
+        self.assertEqual(res_s7_air["us_csl"]["best_hit"].get("tier"), "POTENTIAL_MATCH")
+        self.assertEqual(res_s7_air["uk_csl"]["best_hit"].get("tier"), "POTENTIAL_MATCH")
+
+        # 3. Siberia Airlines (Airline) on us_csl via expanded_from
+        res_sib_air = screen_query_all_lists("Siberia Airlines", client=self.client, query_type="airline")
+        h_sib_csl = res_sib_air["us_csl"]["best_hit"]
+        self.assertEqual(h_sib_csl.get("tier"), "POTENTIAL_MATCH")
+        self.assertIsNotNone(h_sib_csl.get("expanded_from"))
+
+        # 4. Siberian Airlines (Organisation) on us_csl
+        res_sib_org = screen_query_all_lists("Siberian Airlines", client=self.client, query_type="organisation")
+        self.assertEqual(res_sib_org["us_csl"]["best_hit"].get("tier"), "POTENTIAL_MATCH")
+
+        # 5. S7 / Siberia Airlines on us_ofac "SIBERIA" record: never 🔴
+        self.assertNotEqual(res_s7["us_ofac"]["best_hit"].get("tier"), "POTENTIAL_MATCH")
+        self.assertNotEqual(res_sib_air["us_ofac"]["best_hit"].get("tier"), "POTENTIAL_MATCH")
+
+        # 6. Aeroflot Russian Airlines (Airline) on us_csl and uk_csl: 🔴
+        res_aero = screen_query_all_lists("Aeroflot Russian Airlines", client=self.client, query_type="airline")
+        self.assertEqual(res_aero["us_csl"]["best_hit"].get("tier"), "POTENTIAL_MATCH")
+        self.assertEqual(res_aero["uk_csl"]["best_hit"].get("tier"), "POTENTIAL_MATCH")
+
+        # 7. Air India (Organisation) on all lists: never 🔴
+        res_ai = screen_query_all_lists("Air India", client=self.client, query_type="organisation")
+        for s in ["us_ofac", "us_csl", "uk_csl", "eu_csl", "un_csl"]:
+            self.assertNotEqual(res_ai[s]["best_hit"].get("tier"), "POTENTIAL_MATCH")
+
 
 if __name__ == "__main__":
     unittest.main()

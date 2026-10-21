@@ -118,6 +118,35 @@ def get_project_root() -> Path:
     return Path(__file__).resolve().parent
 
 
+def shutdown_cleanly():
+    """Flush and close SQLite log, raw index, and stop Streamlit cleanly before exit."""
+    try:
+        from modules.reporting.logger import DB_PATH
+        if DB_PATH.exists():
+            import sqlite3
+            with sqlite3.connect(str(DB_PATH)) as con:
+                con.execute("PRAGMA wal_checkpoint(FULL);")
+    except Exception:
+        pass
+
+    try:
+        from modules.common.paths import INDEX_DB_PATH
+        if INDEX_DB_PATH.exists():
+            import sqlite3
+            with sqlite3.connect(str(INDEX_DB_PATH)) as con:
+                con.execute("PRAGMA wal_checkpoint(FULL);")
+    except Exception:
+        pass
+
+    try:
+        from streamlit.web.server.server import Server
+        server = Server.get_current()
+        if server:
+            server.stop()
+    except Exception:
+        pass
+
+
 def main():
     # 1. Single instance check
     if not check_single_instance():
@@ -207,13 +236,15 @@ def main():
     )
 
     def on_closed():
-        # Clean process shutdown — ensures zero orphan processes
+        # Clean process shutdown — flush databases and stop server
+        shutdown_cleanly()
         os._exit(0)
 
     window.events.closed += on_closed
     webview.start(gui="edgechromium", icon=icon_str)
 
-    # Guarantee exit on window close
+    # Guarantee clean exit on window close
+    shutdown_cleanly()
     os._exit(0)
 
 
