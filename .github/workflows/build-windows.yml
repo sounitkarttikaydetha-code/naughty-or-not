@@ -10,6 +10,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
   test_and_build:
     name: Test, Verify & Package
@@ -70,7 +73,9 @@ jobs:
           python scripts/dev/release_hygiene_check.py dist/NaughtyOrNot
 
       - name: Set up Inno Setup
-        uses: MinisCode/setup-innosetup@v1
+        run: |
+          choco install innosetup --no-progress
+          echo "C:\Program Files (x86)\Inno Setup 6" >> $env:GITHUB_PATH
 
       - name: Compile Inno Setup Installer
         run: |
