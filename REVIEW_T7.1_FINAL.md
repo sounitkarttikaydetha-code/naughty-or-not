@@ -46,11 +46,11 @@
 
 ### Part 7 — GitHub and CI Build: PASS
 - **Repository Visibility:** CONFIRMED PRIVATE (`{"isPrivate":true}`).
-- **Workflow Run Status:** Run `39533918080` (main) passed green in 16m33s; Release run `39536112764` (tag `v1.0.1`) passed green in 17m56s.
-- **GitHub Release URL:** https://github.com/sounitkarttikaydetha-code/naughty-or-not/releases/tag/v1.0.1
-- **Installer Binary:** `NaughtyOrNot_Setup_v1.0.1.exe`
-- **Installer SHA-256:** `ce5483ecce26ef2037ca2963054a65258fb4c50be59399dbb65dc1ca76c9ade0`
-- **Release Assets:** `NaughtyOrNot_Setup_v1.0.1.exe`, `SHA256.txt`, `RELEASE_NOTES.md`, `USER_GUIDE.pdf`.
+- **Workflow Run Status:** Run `39541402646` (main) passed green; Release run `39541415258` (tag `v1.0.2`) passed green in 21m1s.
+- **GitHub Release URL:** https://github.com/sounitkarttikaydetha-code/naughty-or-not/releases/tag/v1.0.2
+- **Installer Binary:** `NaughtyOrNot_Setup_v1.0.2.exe` (SHA-256: `02d391ddf6c968fc4b2fda2b3da45ec2db866862104a146675f97f6556a577f6`)
+- **Portable Zip:** `NaughtyOrNot_v1.0.2_Portable.zip` (SHA-256: `65f44c450696d111cd75bbcf367d322619a471ef3830fa2e1fb1b2df1ca416ad`)
+- **Release Assets:** `NaughtyOrNot_Setup_v1.0.2.exe`, `NaughtyOrNot_v1.0.2_Portable.zip`, `SHA256.txt`, `RELEASE_NOTES.md`, `USER_GUIDE.pdf`.
 
 ### Targets NOT Met
 - All met. All Part 1–8 criteria, parity thresholds, fail-safe checks, and deployment requirements met.
