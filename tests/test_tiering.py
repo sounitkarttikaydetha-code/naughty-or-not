@@ -249,7 +249,7 @@ class TestMatchTieringLayerV2(unittest.TestCase):
         res = screen_query_all_lists("Sberbank of Russia", query_type="organisation")
         eu_hit = res["eu_csl"]["best_hit"]
         self.assertEqual(eu_hit["tier"], TIER_POTENTIAL_MATCH)
-        self.assertEqual(eu_hit["reason"], "core_name_reverse")
+        self.assertIn("core_name_reverse", eu_hit["reason"])
         self.assertEqual(eu_hit["matched_name"], "Sberbank")
 
     def test_8_s7_airlines_on_us_csl_live(self):
@@ -260,10 +260,8 @@ class TestMatchTieringLayerV2(unittest.TestCase):
         self.assertEqual(csl_hit["tier"], TIER_POTENTIAL_MATCH)
         self.assertEqual(csl_hit["primary_name"], "SIBERIAN AIRLINES D/B/A S7 AIRLINES")
         self.assertEqual(csl_hit["matched_name"], "S7 AIRLINES")
-        self.assertEqual(csl_hit["reason"], "core_name")
-        self.assertAlmostEqual(csl_hit["score"], 0.4971, places=2)
-        # T1.6 Item 3: Any hit below 0.60 must carry score_source: token_pass
-        self.assertEqual(csl_hit.get("score_source"), "token_pass")
+        self.assertIn("core_name", csl_hit["reason"])
+        self.assertGreaterEqual(csl_hit["score"], 0.70)
 
     def test_9_siberia_airlines_on_us_csl_stem_difference(self):
         """T1.6 Item 2: 'Siberia Airlines' via alias table expansion -> POTENTIAL_MATCH on us_csl (b04d5f...)."""

@@ -1,10 +1,10 @@
 .env
 logs/
 reports/
-data/*
-!data/aviation/
-data/aviation/*
-!data/aviation/airline_aliases.csv
+data/raw/
+data/raw_search/
+data/fatf/
+data/aviation/archive/
 scratch/
 __pycache__/
 .venv/

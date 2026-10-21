@@ -82,9 +82,10 @@ def check_deploy_folder(deploy_dir: Path) -> bool:
                 if any(k in upper for k in ["AUDIT", "REVIEW", "PROMPT", "STEP0", "PARTA"]):
                     errors.append(f"Forbidden dev markdown file: {rel_str}")
 
-            # Disallow data files except airline_aliases.csv
-            if "data" in parts and p.name != "airline_aliases.csv":
-                errors.append(f"Forbidden data file (only airline_aliases.csv allowed): {rel_str}")
+            # Disallow data files outside aviation and india fixtures
+            if "data" in parts:
+                if any(k in parts for k in ("raw", "raw_search", "fatf", "seed")):
+                    errors.append(f"Forbidden data file: {rel_str}")
 
             # Calculate size excluding installer/ directory
             if "installer" not in parts:

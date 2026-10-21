@@ -35,11 +35,12 @@ copy_clean_dir(SRC / ".github", DST / ".github")
 copy_clean_dir(SRC / ".streamlit", DST / ".streamlit")
 copy_clean_dir(SRC / "tests", DST / "tests")
 
-# 2. data/aviation/airline_aliases.csv
-(DST / "data" / "aviation").mkdir(parents=True, exist_ok=True)
-alias_src = SRC / "data" / "aviation" / "airline_aliases.csv"
-if alias_src.exists():
-    shutil.copy2(alias_src, DST / "data" / "aviation" / "airline_aliases.csv")
+# 2. data/aviation and data/india fixtures
+copy_clean_dir(SRC / "data" / "aviation", DST / "data" / "aviation")
+copy_clean_dir(SRC / "data" / "india", DST / "data" / "india")
+# Remove archive from deploy if present
+if (DST / "data" / "aviation" / "archive").exists():
+    shutil.rmtree(DST / "data" / "aviation" / "archive")
 
 # 3. scripts
 (DST / "scripts").mkdir(parents=True, exist_ok=True)

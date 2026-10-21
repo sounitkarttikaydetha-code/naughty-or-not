@@ -1,0 +1,26 @@
+{
+  "bis_aircraft": {
+    "last_checked": "2026-10-20T16:34:19.604282+00:00",
+    "etag": null,
+    "last_modified": null,
+    "sha256": "c31c6e62d2899ea4282a78c24ff4dd2c4544d630e37b419d866a1dc6ef69e56e",
+    "publication_date": "2025-10-10",
+    "url": "https://www.bis.gov/media/documents/2025.10.10-current-bis-list-commercial-private-aircraft-potential-violation-export-administration"
+  },
+  "eu_air_safety_list": {
+    "last_checked": "2026-10-20T16:34:19.604282+00:00",
+    "etag": null,
+    "last_modified": null,
+    "sha256": "7d9323517302108170675fb13c21925f19d9680f3fccceee30dfe99bd5cc94da",
+    "publication_date": "2026-06-09",
+    "url": "https://transport.ec.europa.eu/document/download/3195fabb-7575-4db9-85b9-ec5a77b481aa_en?filename=air-safety-list.pdf"
+  },
+  "faa_iasa": {
+    "last_checked": "2026-10-20T16:34:19.604282+00:00",
+    "etag": null,
+    "last_modified": "Wed, 23 Apr 2025 17:03:54 GMT",
+    "sha256": "73ef0e78c2d17454d89393f3eb1159081c9bc14833e32289da01cfd2e0b23294",
+    "publication_date": "2025-04-18",
+    "url": "https://www.faa.gov/sites/faa.gov/files/IASAWSR119r.pdf"
+  }
+}

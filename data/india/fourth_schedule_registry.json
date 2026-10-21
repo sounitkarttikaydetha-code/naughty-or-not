@@ -1,0 +1,713 @@
+[
+  {
+    "sno": 80,
+    "raw_title": "Mohammed Shaheed Faisal @ Ustad @ Muhandis @ Zakir",
+    "primary": "Mohammed Shaheed Faisal",
+    "aliases": [
+      "Ustad",
+      "Muhandis",
+      "Zakir"
+    ]
+  },
+  {
+    "sno": 79,
+    "raw_title": "Waseem Noor Jat @ Qari Waseem",
+    "primary": "Waseem Noor Jat",
+    "aliases": [
+      "Qari Waseem"
+    ]
+  },
+  {
+    "sno": 78,
+    "raw_title": "Rana Iftikhar @ Rana Waleed Atif @ Rana Iftikhar Hyderi @ Rana Iftikhar Ahmad @ Hydeer Khan",
+    "primary": "Rana Iftikhar",
+    "aliases": [
+      "Rana Waleed Atif",
+      "Rana Iftikhar Hyderi",
+      "Rana Iftikhar Ahmad",
+      "Hydeer Khan"
+    ]
+  },
+  {
+    "sno": 77,
+    "raw_title": "Qari Yaqub Sheikh @ Qari Mohammed Yaqub Sheikh @ Yaqoob Sheikh @ Qari Shaikh Muhammad Yaqoob @ Mohammad Yaqoob",
+    "primary": "Qari Yaqub Sheikh",
+    "aliases": [
+      "Qari Mohammed Yaqub Sheikh",
+      "Yaqoob Sheikh",
+      "Qari Shaikh Muhammad Yaqoob",
+      "Mohammad Yaqoob"
+    ]
+  },
+  {
+    "sno": 76,
+    "raw_title": "Owais Farooz @ Owais Ahmad Mir @ Owais Farooz Mir",
+    "primary": "Owais Farooz",
+    "aliases": [
+      "Owais Ahmad Mir",
+      "Owais Farooz Mir"
+    ]
+  },
+  {
+    "sno": 75,
+    "raw_title": "Molana Yousaf Taibi @ Mohammad Yousaf",
+    "primary": "Molana Yousaf Taibi",
+    "aliases": [
+      "Mohammad Yousaf"
+    ]
+  },
+  {
+    "sno": 74,
+    "raw_title": "Mohammad Yaqoob @ Abu Sumama @ Samama Ilyas @ Waris Ali",
+    "primary": "Mohammad Yaqoob",
+    "aliases": [
+      "Abu Sumama",
+      "Samama Ilyas",
+      "Waris Ali"
+    ]
+  },
+  {
+    "sno": 73,
+    "raw_title": "Maulana Saifullah Khalid @ Waliyul @ Mohd. Salim @ Wajid",
+    "primary": "Maulana Saifullah Khalid",
+    "aliases": [
+      "Waliyul",
+      "Mohd. Salim",
+      "Wajid"
+    ]
+  },
+  {
+    "sno": 72,
+    "raw_title": "Maulana Imdad Ullah Makki @ Maulana Imdad @ Imdad Bhai @ Maulana Imdadullah",
+    "primary": "Maulana Imdad Ullah Makki",
+    "aliases": [
+      "Maulana Imdad",
+      "Imdad Bhai",
+      "Maulana Imdadullah"
+    ]
+  },
+  {
+    "sno": 71,
+    "raw_title": "Hafiz Khalid Waleed @ Hafiz Khalid Naik @ Khalid Walid",
+    "primary": "Hafiz Khalid Waleed",
+    "aliases": [
+      "Hafiz Khalid Naik",
+      "Khalid Walid"
+    ]
+  },
+  {
+    "sno": 70,
+    "raw_title": "Ashfaq Ahmad @ Ishfaq Ahmad",
+    "primary": "Ashfaq Ahmad",
+    "aliases": [
+      "Ishfaq Ahmad"
+    ]
+  },
+  {
+    "sno": 69,
+    "raw_title": "Abdul Rauf @ Hafiz Adbul Rauf @ Hafiz Abdul Raouf @ Hafiz Abdur Rauf",
+    "primary": "Abdul Rauf",
+    "aliases": [
+      "Hafiz Adbul Rauf",
+      "Hafiz Abdul Raouf",
+      "Hafiz Abdur Rauf"
+    ]
+  },
+  {
+    "sno": 68,
+    "raw_title": "Nazir Ahmed Gujjar @ Munazil",
+    "primary": "Nazir Ahmed Gujjar",
+    "aliases": [
+      "Munazil"
+    ]
+  },
+  {
+    "sno": 67,
+    "raw_title": "Abid Quyoom Lone",
+    "primary": "Abid Quyoom Lone",
+    "aliases": []
+  },
+  {
+    "sno": 66,
+    "raw_title": "Bilal Ahmad Mir @ Ahmad Bhai",
+    "primary": "Bilal Ahmad Mir",
+    "aliases": [
+      "Ahmad Bhai"
+    ]
+  },
+  {
+    "sno": 65,
+    "raw_title": "Haroon Rashid Ganai @ Shunoo",
+    "primary": "Haroon Rashid Ganai",
+    "aliases": [
+      "Shunoo"
+    ]
+  },
+  {
+    "sno": 64,
+    "raw_title": "Ghulam Fareed @ Gulshan Kumar @ Fareed",
+    "primary": "Ghulam Fareed",
+    "aliases": [
+      "Gulshan Kumar",
+      "Fareed"
+    ]
+  },
+  {
+    "sno": 63,
+    "raw_title": "Firdous Ahmad Bhat",
+    "primary": "Firdous Ahmad Bhat",
+    "aliases": []
+  },
+  {
+    "sno": 62,
+    "raw_title": "Abdullah Jehadi @ Shah Nawaz @ Al Hijama",
+    "primary": "Abdullah Jehadi",
+    "aliases": [
+      "Shah Nawaz",
+      "Al Hijama"
+    ]
+  },
+  {
+    "sno": 61,
+    "raw_title": "Hafiz Abdul Shakoor @ Qari Zarrar",
+    "primary": "Hafiz Abdul Shakoor",
+    "aliases": [
+      "Qari Zarrar"
+    ]
+  },
+  {
+    "sno": 60,
+    "raw_title": "Mufti Muhammad Asghar Khan @ Abu Saad @ Saad Jimi",
+    "primary": "Mufti Muhammad Asghar Khan",
+    "aliases": [
+      "Abu Saad",
+      "Saad Jimi"
+    ]
+  },
+  {
+    "sno": 59,
+    "raw_title": "Mohammad Mussadiq @ Doctor @ Abdul Manan @ Sajjad @ Hamza @ Wahid Khan",
+    "primary": "Mohammad Mussadiq",
+    "aliases": [
+      "Doctor",
+      "Abdul Manan",
+      "Sajjad",
+      "Hamza",
+      "Wahid Khan"
+    ]
+  },
+  {
+    "sno": 58,
+    "raw_title": "Masood Ilyas Kashmiri @ Mufti Masood Ilyas @ Masood Ilyas @ Abu Mohammad @ M. Masood Ilyas",
+    "primary": "Masood Ilyas Kashmiri",
+    "aliases": [
+      "Mufti Masood Ilyas",
+      "Masood Ilyas",
+      "Abu Mohammad",
+      "M. Masood Ilyas"
+    ]
+  },
+  {
+    "sno": 57,
+    "raw_title": "Mohammad Qasim Gujjar @ Salman @ Suleman.",
+    "primary": "Mohammad Qasim Gujjar",
+    "aliases": [
+      "Salman",
+      "Suleman"
+    ]
+  },
+  {
+    "sno": 56,
+    "raw_title": "Satwinder Singh @ Satinderjit Singh @ Goldy Brar.",
+    "primary": "Satwinder Singh",
+    "aliases": [
+      "Satinderjit Singh",
+      "Goldy Brar"
+    ]
+  },
+  {
+    "sno": 55,
+    "raw_title": "Lakhbir Singh @Landa.",
+    "primary": "Lakhbir Singh",
+    "aliases": [
+      "Landa"
+    ]
+  },
+  {
+    "sno": 54,
+    "raw_title": "Harwinder Singh Sandhu @Rinda.",
+    "primary": "Harwinder Singh Sandhu",
+    "aliases": [
+      "Rinda"
+    ]
+  },
+  {
+    "sno": 53,
+    "raw_title": "Arshdeep Singh Gill @Arsh Dala.",
+    "primary": "Arshdeep Singh Gill",
+    "aliases": [
+      "Arsh Dala"
+    ]
+  },
+  {
+    "sno": 52,
+    "raw_title": "Dr. Asif Maqbool Dar.",
+    "primary": "Dr. Asif Maqbool Dar",
+    "aliases": []
+  },
+  {
+    "sno": 51,
+    "raw_title": "Arbaz Ahmad Mir.",
+    "primary": "Arbaz Ahmad Mir",
+    "aliases": []
+  },
+  {
+    "sno": 50,
+    "raw_title": "Mohammad Amin Khubaib.",
+    "primary": "Mohammad Amin Khubaib",
+    "aliases": []
+  },
+  {
+    "sno": 49,
+    "raw_title": "Aijaz Ahmad Ahangar.",
+    "primary": "Aijaz Ahmad Ahangar",
+    "aliases": []
+  },
+  {
+    "sno": 48,
+    "raw_title": "Sheikh Jameel-ur-Rehman.",
+    "primary": "Sheikh Jameel-ur-Rehman",
+    "aliases": []
+  },
+  {
+    "sno": 47,
+    "raw_title": "Bilal Ahmad Beigh @ Babar.",
+    "primary": "Bilal Ahmad Beigh",
+    "aliases": [
+      "Babar"
+    ]
+  },
+  {
+    "sno": 46,
+    "raw_title": "Zafar Iqbal @ Salim @ Jamaldeen @ Shamsher Nai @ Shamsher Khan",
+    "primary": "Zafar Iqbal",
+    "aliases": [
+      "Salim",
+      "Jamaldeen",
+      "Shamsher Nai",
+      "Shamsher Khan"
+    ]
+  },
+  {
+    "sno": 45,
+    "raw_title": "Rafiq Nai @Sultan.",
+    "primary": "Rafiq Nai",
+    "aliases": [
+      "Sultan"
+    ]
+  },
+  {
+    "sno": 44,
+    "raw_title": "Irshad Ahmad @ Idress.",
+    "primary": "Irshad Ahmad",
+    "aliases": [
+      "Idress"
+    ]
+  },
+  {
+    "sno": 43,
+    "raw_title": "Basheer Ahmad Peer @ Imtiyaz Alam.",
+    "primary": "Basheer Ahmad Peer",
+    "aliases": [
+      "Imtiyaz Alam"
+    ]
+  },
+  {
+    "sno": 42,
+    "raw_title": "Habibullah Malik @ Sajid Jutt @Saifullah @Noomi @Numan @Langda.",
+    "primary": "Habibullah Malik",
+    "aliases": [
+      "Sajid Jutt",
+      "Saifullah",
+      "Noomi",
+      "Numan",
+      "Langda"
+    ]
+  },
+  {
+    "sno": 41,
+    "raw_title": "Basit Ahmed Reshi.",
+    "primary": "Basit Ahmed Reshi",
+    "aliases": []
+  },
+  {
+    "sno": 40,
+    "raw_title": "Showkat Ahmad Sheikh @ Showkat Mochi.",
+    "primary": "Showkat Ahmad Sheikh",
+    "aliases": [
+      "Showkat Mochi"
+    ]
+  },
+  {
+    "sno": 39,
+    "raw_title": "Imtiyaz Ahmad Kandoo @ Sajad @ Fayaz Sopore.",
+    "primary": "Imtiyaz Ahmad Kandoo",
+    "aliases": [
+      "Sajad",
+      "Fayaz Sopore"
+    ]
+  },
+  {
+    "sno": 38,
+    "raw_title": "Arjumand Gulzar Dar @ Hamza Burhan @Doctor.",
+    "primary": "Arjumand Gulzar Dar",
+    "aliases": [
+      "Hamza Burhan",
+      "Doctor"
+    ]
+  },
+  {
+    "sno": 37,
+    "raw_title": "Sheikh Sajad @Sheikh Sajjad Gul @Sajjad Gul @Sajjad Ah Sheikh\u201d.",
+    "primary": "Sheikh Sajad",
+    "aliases": [
+      "Sheikh Sajjad Gul",
+      "Sajjad Gul",
+      "Sajjad Ah Sheikh\u201d"
+    ]
+  },
+  {
+    "sno": 36,
+    "raw_title": "Ashiq Ahmed Nengroo @Nengroo @Ashaq Hussain Nengroo @Ashaq Moulvi.",
+    "primary": "Ashiq Ahmed Nengroo",
+    "aliases": [
+      "Nengroo",
+      "Ashaq Hussain Nengroo",
+      "Ashaq Moulvi"
+    ]
+  },
+  {
+    "sno": 35,
+    "raw_title": "Mustaq Ahmad Zargar @ Latram.",
+    "primary": "Mustaq Ahmad Zargar",
+    "aliases": [
+      "Latram"
+    ]
+  },
+  {
+    "sno": 34,
+    "raw_title": "Ali Kashif Jan @Jan Ali Kashif.",
+    "primary": "Ali Kashif Jan",
+    "aliases": [
+      "Jan Ali Kashif"
+    ]
+  },
+  {
+    "sno": 33,
+    "raw_title": "Mohiuddin Aurangzeb Alamgir @ Maktab Ameer @Mujahid Bhai @Muhammad Bhai @M. Ammar @ Abu Ammar Madam @ Orangzaib Anzar @ Maulana Ammar Madni @ Maulana Ammar @Abu Ammar @Ammar Alvi\u201d.",
+    "primary": "Mohiuddin Aurangzeb Alamgir",
+    "aliases": [
+      "Maktab Ameer",
+      "Mujahid Bhai",
+      "Muhammad Bhai",
+      "M. Ammar",
+      "Abu Ammar Madam",
+      "Orangzaib Anzar",
+      "Maulana Ammar Madni",
+      "Maulana Ammar",
+      "Abu Ammar",
+      "Ammar Alvi\u201d"
+    ]
+  },
+  {
+    "sno": 32,
+    "raw_title": "Hafiz Talha Saeed.",
+    "primary": "Hafiz Talha Saeed",
+    "aliases": []
+  },
+  {
+    "sno": 31,
+    "raw_title": "Javed Chikna @ Javed Dawood Tailor.",
+    "primary": "Javed Chikna",
+    "aliases": [
+      "Javed Dawood Tailor"
+    ]
+  },
+  {
+    "sno": 30,
+    "raw_title": "Ibrahim Memon @ Tiger Memon @ Mushtaq @ Sikander @ Ibrahim Abdul Razak Memon @ Mustafa @ Ismail.",
+    "primary": "Ibrahim Memon",
+    "aliases": [
+      "Tiger Memon",
+      "Mushtaq",
+      "Sikander",
+      "Ibrahim Abdul Razak Memon",
+      "Mustafa",
+      "Ismail"
+    ]
+  },
+  {
+    "sno": 29,
+    "raw_title": "Mohammad Anis Shaikh.",
+    "primary": "Mohammad Anis Shaikh",
+    "aliases": []
+  },
+  {
+    "sno": 28,
+    "raw_title": "Shaikh Shakeel @ Chhota Shakeel.",
+    "primary": "Shaikh Shakeel",
+    "aliases": [
+      "Chhota Shakeel"
+    ]
+  },
+  {
+    "sno": 27,
+    "raw_title": "Md. Iqbal @ Shabandri Mohammed Iqbal @ Iqbal Bhatkal.",
+    "primary": "Md. Iqbal",
+    "aliases": [
+      "Shabandri Mohammed Iqbal",
+      "Iqbal Bhatkal"
+    ]
+  },
+  {
+    "sno": 26,
+    "raw_title": "Riyaz Ismail Shahbandri @ Shah Riyaz Ahmed @ Riyaz Bhatkal @ Md. Riyaz @ Ahmed Bhai @ Rasool Khan @ Roshan Khan @ Aziz",
+    "primary": "Riyaz Ismail Shahbandri",
+    "aliases": [
+      "Shah Riyaz Ahmed",
+      "Riyaz Bhatkal",
+      "Md. Riyaz",
+      "Ahmed Bhai",
+      "Rasool Khan",
+      "Roshan Khan",
+      "Aziz"
+    ]
+  },
+  {
+    "sno": 25,
+    "raw_title": "Zaffar Hussain Bhat @ Khursheed @ Mohd. Zafar Khan @ Moulvi @ Khursheed Ibrahim.",
+    "primary": "Zaffar Hussain Bhat",
+    "aliases": [
+      "Khursheed",
+      "Mohd. Zafar Khan",
+      "Moulvi",
+      "Khursheed Ibrahim"
+    ]
+  },
+  {
+    "sno": 24,
+    "raw_title": "Ghulam Nabi Khan @ Amir Khan @ Saifullah Khalid @ Khalid Saifullah @ Jawaad @ Daand.",
+    "primary": "Ghulam Nabi Khan",
+    "aliases": [
+      "Amir Khan",
+      "Saifullah Khalid",
+      "Khalid Saifullah",
+      "Jawaad",
+      "Daand"
+    ]
+  },
+  {
+    "sno": 23,
+    "raw_title": "Syed Mohammad Yusuf Shah @ Syed Salahudeen @ Peer Sahab @ Buzurg.",
+    "primary": "Syed Mohammad Yusuf Shah",
+    "aliases": [
+      "Syed Salahudeen",
+      "Peer Sahab",
+      "Buzurg"
+    ]
+  },
+  {
+    "sno": 22,
+    "raw_title": "Shahid Latif @ Chota Shahid Bhai @ Noor Al Din.",
+    "primary": "Shahid Latif",
+    "aliases": [
+      "Chota Shahid Bhai",
+      "Noor Al Din"
+    ]
+  },
+  {
+    "sno": 21,
+    "raw_title": "Yusuf Azhar @ Azhar Yusuf @ Mohd. Salim.",
+    "primary": "Yusuf Azhar",
+    "aliases": [
+      "Azhar Yusuf",
+      "Mohd. Salim"
+    ]
+  },
+  {
+    "sno": 20,
+    "raw_title": "Ibrahim Athar @ Ahmed Ali Mohd. Ali Shaikh @ JavedAmjad Siddiqui @ A.A. Shaikh@ Chief",
+    "primary": "Ibrahim Athar",
+    "aliases": [
+      "Ahmed Ali Mohd. Ali Shaikh",
+      "JavedAmjad Siddiqui",
+      "A.A. Shaikh",
+      "Chief"
+    ]
+  },
+  {
+    "sno": 19,
+    "raw_title": "Abdul Rauf Asghar @ Mufti @ Mufti Asghar @ Saad baba @ Maulana Mufti Rauf Asghar.",
+    "primary": "Abdul Rauf Asghar",
+    "aliases": [
+      "Mufti",
+      "Mufti Asghar",
+      "Saad baba",
+      "Maulana Mufti Rauf Asghar"
+    ]
+  },
+  {
+    "sno": 18,
+    "raw_title": "Farhatullah Ghori @ Abu Sufiyan @ Sardar Sahab @ Faru.",
+    "primary": "Farhatullah Ghori",
+    "aliases": [
+      "Abu Sufiyan",
+      "Sardar Sahab",
+      "Faru"
+    ]
+  },
+  {
+    "sno": 17,
+    "raw_title": "Shahid Mehmood @ Shahid Mehmood Rehmatullah.",
+    "primary": "Shahid Mehmood",
+    "aliases": [
+      "Shahid Mehmood Rehmatullah"
+    ]
+  },
+  {
+    "sno": 16,
+    "raw_title": "Abdur Rehman Makki @ Abdul Rehman Makki.",
+    "primary": "Abdur Rehman Makki",
+    "aliases": [
+      "Abdul Rehman Makki"
+    ]
+  },
+  {
+    "sno": 15,
+    "raw_title": "Yusuf Muzammil @ Ahmad Bhai @ Yousuf Muzammil Butt @ Hurreira Bhai.",
+    "primary": "Yusuf Muzammil",
+    "aliases": [
+      "Ahmad Bhai",
+      "Yousuf Muzammil Butt",
+      "Hurreira Bhai"
+    ]
+  },
+  {
+    "sno": 14,
+    "raw_title": "Sajid Mir @ Sajid Majeed @ Ibrahim Shah @ Wasi @ Khali @ Muhammad Waseem.",
+    "primary": "Sajid Mir",
+    "aliases": [
+      "Sajid Majeed",
+      "Ibrahim Shah",
+      "Wasi",
+      "Khali",
+      "Muhammad Waseem"
+    ]
+  },
+  {
+    "sno": 13,
+    "raw_title": "Paramjit Singh @ Pamma.",
+    "primary": "Paramjit Singh",
+    "aliases": [
+      "Pamma"
+    ]
+  },
+  {
+    "sno": 12,
+    "raw_title": "Hardeep Singh Nijjar.",
+    "primary": "Hardeep Singh Nijjar",
+    "aliases": []
+  },
+  {
+    "sno": 11,
+    "raw_title": "Gurpatwant Singh Pannun.",
+    "primary": "Gurpatwant Singh Pannun",
+    "aliases": []
+  },
+  {
+    "sno": 10,
+    "raw_title": "Gurmeet Singh Bagga.",
+    "primary": "Gurmeet Singh Bagga",
+    "aliases": []
+  },
+  {
+    "sno": 9,
+    "raw_title": "Bhupinder Singh Bhinda.",
+    "primary": "Bhupinder Singh Bhinda",
+    "aliases": []
+  },
+  {
+    "sno": 8,
+    "raw_title": "Paramjit Singh @ Panjwar.",
+    "primary": "Paramjit Singh",
+    "aliases": [
+      "Panjwar"
+    ]
+  },
+  {
+    "sno": 7,
+    "raw_title": "Ranjeet Singh @ Neeta.",
+    "primary": "Ranjeet Singh",
+    "aliases": [
+      "Neeta"
+    ]
+  },
+  {
+    "sno": 6,
+    "raw_title": "Lakhbir Singh @ Rode.",
+    "primary": "Lakhbir Singh",
+    "aliases": [
+      "Rode"
+    ]
+  },
+  {
+    "sno": 5,
+    "raw_title": "Wadhawa Singh Babbar @chacha.",
+    "primary": "Wadhawa Singh Babbar",
+    "aliases": [
+      "chacha"
+    ]
+  },
+  {
+    "sno": 4,
+    "raw_title": "Dawood Ibrahim Kaskar.",
+    "primary": "Dawood Ibrahim Kaskar",
+    "aliases": []
+  },
+  {
+    "sno": 3,
+    "raw_title": "Zaki-ur-RehmanLakhvi @ Abu Waheed Irshad Ahmad Arshad @ Kaki Ur-Rehman @ ZakirRehmanLakhvi @ Zaki-Ur-Rehman Lakvi @ Zakir Rehman.",
+    "primary": "Zaki-ur-RehmanLakhvi",
+    "aliases": [
+      "Abu Waheed Irshad Ahmad Arshad",
+      "Kaki Ur-Rehman",
+      "ZakirRehmanLakhvi",
+      "Zaki-Ur-Rehman Lakvi",
+      "Zakir Rehman"
+    ]
+  },
+  {
+    "sno": 2,
+    "raw_title": "Hafiz Muhammad Saeed @ Hafiz Mohammad Sahib @ Hafiz Mohaddad Sayid @ Hafiz Muhammad @ Hafiz Saeed @ Hafez Mohammad Saeed @ Hafiz Mohammad Sayeed @ Mohammad Sayed @ Muhammad Saeed.",
+    "primary": "Hafiz Muhammad Saeed",
+    "aliases": [
+      "Hafiz Mohammad Sahib",
+      "Hafiz Mohaddad Sayid",
+      "Hafiz Muhammad",
+      "Hafiz Saeed",
+      "Hafez Mohammad Saeed",
+      "Hafiz Mohammad Sayeed",
+      "Mohammad Sayed",
+      "Muhammad Saeed"
+    ]
+  },
+  {
+    "sno": 1,
+    "raw_title": "Maulana Masood Azhar @ Maulana Mohammad Masood AzharAlvi @ Vali Adam Issa.",
+    "primary": "Maulana Masood Azhar",
+    "aliases": [
+      "Maulana Mohammad Masood AzharAlvi",
+      "Vali Adam Issa"
+    ]
+  }
+]
