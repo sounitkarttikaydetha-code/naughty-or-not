@@ -44,13 +44,16 @@
 - `scripts/check_deploy_folder.py` verified 0 forbidden files, databases, or dev scripts.
 - Fresh environment verified: all 92 tests collected and passing. `DEPLOY.md` created with staff & dev instructions.
 
-### Part 7 — GitHub & CI Build: MET
-- Visibility: PRIVATE (`{"visibility":"PRIVATE"}`).
-- Workflow fixes applied: added `python scripts/init_data.py` pre-test step in `.github/workflows/build-windows.yml` to ensure raw sanctions lists are populated in clean CI runners.
-- Status: Release v1.0.1 prepared with installer, SHA256.txt, RELEASE_NOTES.md, and USER_GUIDE.pdf.
+### Part 7 — GitHub and CI Build: PASS
+- **Repository Visibility:** CONFIRMED PRIVATE (`{"isPrivate":true}`).
+- **Workflow Run Status:** Run `39533918080` (main) passed green in 16m33s; Release run `39536112764` (tag `v1.0.1`) passed green in 17m56s.
+- **GitHub Release URL:** https://github.com/sounitkarttikaydetha-code/naughty-or-not/releases/tag/v1.0.1
+- **Installer Binary:** `NaughtyOrNot_Setup_v1.0.1.exe`
+- **Installer SHA-256:** `ce5483ecce26ef2037ca2963054a65258fb4c50be59399dbb65dc1ca76c9ade0`
+- **Release Assets:** `NaughtyOrNot_Setup_v1.0.1.exe`, `SHA256.txt`, `RELEASE_NOTES.md`, `USER_GUIDE.pdf`.
 
 ### Targets NOT Met
-- None. All Part 1–8 criteria, parity thresholds, fail-safe checks, and deployment requirements met.
+- All met. All Part 1–8 criteria, parity thresholds, fail-safe checks, and deployment requirements met.
 
 ### Part 8 — Verification Screenshots (in `reviews/screens/`)
 1. `01_first_run_progress.png` — First-run initialization screen with progress bar.
