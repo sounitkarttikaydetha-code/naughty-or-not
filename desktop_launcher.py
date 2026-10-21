@@ -22,7 +22,7 @@ except Exception:
     pass
 
 MUTEX_NAME = "NaughtyOrNot_SingleInstance_Mutex"
-APP_TITLE = "Naughty or not v1.0.0"
+APP_TITLE = "Naughty or not v1.0.2"
 
 
 def check_single_instance() -> bool:
@@ -162,8 +162,12 @@ def main():
     os.environ["ENGINE"] = "python"
     os.environ["NAUGHTY_DESKTOP_MODE"] = "1"
 
-    local_app = os.environ.get("LOCALAPPDATA", str(Path.home() / "AppData" / "Local"))
-    app_data = Path(local_app) / "NaughtyOrNot"
+    # Portable mode check: if .portable or portable.dat exists in application directory
+    if (root / ".portable").exists() or (root / "portable.dat").exists():
+        app_data = root / "data"
+    else:
+        local_app = os.environ.get("LOCALAPPDATA", str(Path.home() / "AppData" / "Local"))
+        app_data = Path(local_app) / "NaughtyOrNot"
     app_data.mkdir(parents=True, exist_ok=True)
     os.environ["NAUGHTY_DATA_DIR"] = str(app_data)
 

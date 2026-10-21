@@ -1,4 +1,16 @@
-# Release Notes — Naughty or not v1.0.0
+# Release Notes — Naughty or not v1.0.2
+
+## Overview & Highlights
+Naughty or not v1.0.2 resolves dynamic submodule import handling for PDF report generation and introduces official zero-install portable deployment alongside the Windows installer.
+
+## Key Changes in v1.0.2
+- **PDF Report Generator Fix:** Added recursive packaging of all `reportlab` submodules (including `reportlab.lib.colors`, `reportlab.platypus`, and styling modules), resolving runtime import errors when generating screening reports.
+- **Standalone Portable `.zip` Release:** Provided zero-install `NaughtyOrNot_v1.0.2_Portable.zip` containing the complete application bundle and pre-seeded sanction lists. Users can unzip anywhere and run `Naughty or not.exe` directly without setup.
+- **Zero-Trace "True Portable" Mode:** Placing a `.portable` marker file inside the application directory directs all audit logs, databases, and cached lists to an internal `data/` directory instead of `%LOCALAPPDATA%`, leaving zero footprint on host systems when running from USB drives.
+
+---
+
+# Release Notes — Naughty or not v1.0.1
 
 ## Overview & Highlights
 Naughty or not v1.0.0 is the official self-contained Windows desktop release for non-technical users. It operates as a native standalone application running in its own window without requiring Docker, Python installations, administrative privileges, or terminal execution.

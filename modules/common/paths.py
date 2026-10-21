@@ -36,6 +36,13 @@ def get_app_data_dir() -> Path:
         if repo_data.is_dir():
             return get_base_dir()
 
+    # Portable mode: if .portable or portable.dat exists in application directory
+    base = get_base_dir()
+    if (base / ".portable").exists() or (base / "portable.dat").exists():
+        app_dir = base / "data"
+        app_dir.mkdir(parents=True, exist_ok=True)
+        return app_dir
+
     local_app = os.environ.get("LOCALAPPDATA")
     if local_app:
         app_dir = Path(local_app) / "NaughtyOrNot"

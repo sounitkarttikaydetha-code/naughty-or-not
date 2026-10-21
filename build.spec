@@ -10,24 +10,36 @@ streamlit_datas = collect_data_files('streamlit')
 streamlit_metadata = copy_metadata('streamlit')
 webview_datas = collect_data_files('webview')
 
-datas = [
-    ('app.py', '.'),
-    ('config', 'config'),
-    ('modules', 'modules'),
-    ('assets', 'assets'),
-    ('USER_GUIDE.pdf', '.'),
-    ('THIRD_PARTY_NOTICES.md', '.'),
-    ('LICENSE', '.'),
-] + streamlit_datas + streamlit_metadata + webview_datas
-
 # ReportLab packaging filter: exclude DarkGarden font files
 # DarkGarden (DarkGardenMK / DarkGarden-Regular.afm) is GNU GPL v2 copyleft.
 # Naughty or not uses standard core PDF fonts (Helvetica) exclusively.
 datas_filter = lambda d: 'DarkGarden' not in str(d[0]) and 'darkgarden' not in str(d[0]).lower()
 
+reportlab_datas = [d for d in collect_data_files('reportlab') if datas_filter(d)]
+reportlab_metadata = [d for d in copy_metadata('reportlab') if datas_filter(d)]
+
+datas = [
+    ('app.py', '.'),
+    ('config', 'config'),
+    ('modules', 'modules'),
+    ('assets', 'assets'),
+    ('data/raw', 'data/raw'),
+    ('data/aviation', 'data/aviation'),
+    ('data/india', 'data/india'),
+    ('USER_GUIDE.pdf', '.'),
+    ('THIRD_PARTY_NOTICES.md', '.'),
+    ('LICENSE', '.'),
+] + streamlit_datas + streamlit_metadata + webview_datas + reportlab_datas + reportlab_metadata
+
 hidden_imports = (
     collect_submodules('streamlit')
     + collect_submodules('webview')
+    + collect_submodules('modules')
+    + collect_submodules('app')
+    + collect_submodules('reportlab')
+    + collect_submodules('openpyxl')
+    + collect_submodules('pypdf')
+    + collect_submodules('rapidfuzz')
     + [
         'streamlit.web.bootstrap',
         'streamlit.runtime.scriptrunner.magic_expressions',
@@ -36,10 +48,6 @@ hidden_imports = (
         'keyring.backends.Windows',
         'clr_loader',
         'pythonnet',
-        'rapidfuzz',
-        'reportlab',
-        'openpyxl',
-        'pypdf',
         'yaml',
         'sqlite3',
     ]

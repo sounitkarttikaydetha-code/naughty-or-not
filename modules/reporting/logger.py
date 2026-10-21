@@ -45,7 +45,7 @@ def _get_base_data_dir() -> Path:
 BASE_DATA_DIR = _get_base_data_dir()
 LOGS_DIR = BASE_DATA_DIR / "logs"
 DB_PATH = LOGS_DIR / "screening.db"
-APP_VERSION = "1.0.0"
+APP_VERSION = "1.0.2"
 
 
 

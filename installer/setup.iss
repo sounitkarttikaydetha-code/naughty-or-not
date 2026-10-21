@@ -2,7 +2,7 @@
 ; Installs per-user to %LOCALAPPDATA%\Programs\NaughtyOrNot with NO ADMIN RIGHTS required.
 
 #define MyAppName "Naughty or not"
-#define MyAppVersion "1.0.1"
+#define MyAppVersion "1.0.2"
 #define MyAppPublisher "Compliance Engineering"
 #define MyAppURL "https://github.com/organization/naughty-or-not"
 #define MyAppExeName "Naughty or not.exe"
