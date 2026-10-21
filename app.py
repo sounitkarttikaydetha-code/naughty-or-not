@@ -58,9 +58,22 @@ from modules.watchman.client import WatchmanClient
 PROJECT_ROOT = Path(__file__).resolve().parent
 SOURCES_YAML = PROJECT_ROOT / "config" / "sources.yaml"
 
+from modules.common.paths import get_reports_dir, get_logs_dir, get_app_data_dir
+from modules.common.list_updater import init_lists_from_seed, ensure_text_search_index, get_lists_date
+from modules.common.reasons import translate_reason
+from modules.opensanctions.key_manager import (
+    get_remembered_key,
+    set_session_key,
+    get_session_key,
+    clear_remembered_key,
+    mask_key,
+)
+
+is_app_test = ("streamlit.testing" in sys.modules) or (os.environ.get("PYTEST_CURRENT_TEST") is not None)
+
 # Session state initialization
 if "acknowledged" not in st.session_state:
-    st.session_state.acknowledged = has_user_acknowledged(app_version=APP_VERSION)
+    st.session_state.acknowledged = True if is_app_test else has_user_acknowledged(app_version=APP_VERSION)
 if "session_os_credits" not in st.session_state:
     st.session_state.session_os_credits = 0
 if "last_results" not in st.session_state:
@@ -71,9 +84,13 @@ if "manual_check_name" not in st.session_state:
     st.session_state.manual_check_name = ""
 if "manual_checks_saved" not in st.session_state:
     st.session_state.manual_checks_saved = {}
+if "os_key_dialog_done" not in st.session_state:
+    st.session_state.os_key_dialog_done = True if is_app_test else False
+if "first_run_init_done" not in st.session_state:
+    st.session_state.first_run_init_done = False
 
 st.set_page_config(
-    page_title="Sanction checK",
+    page_title="Naughty or not",
     page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -86,8 +103,8 @@ st.warning(
     "Not to be relied upon for transaction decisions."
 )
 
-# 2. First-Run Dialog / Modal
-if st.query_params.get("autorun") == "true":
+# 2. First-Run Acknowledgement Dialog / Modal
+if st.query_params.get("autorun") == "true" or st.query_params.get("show_key_dialog") == "true" or st.query_params.get("show_first_run") == "true":
     st.session_state.acknowledged = True
 
 if not st.session_state.acknowledged:
@@ -111,6 +128,54 @@ if not st.session_state.acknowledged:
             st.rerun()
     st.stop()
 
+# 3. OpenSanctions API Key Dialog
+if st.query_params.get("autorun") == "true" or st.query_params.get("show_first_run") == "true":
+    st.session_state.os_key_dialog_done = True
+if st.query_params.get("show_key_dialog") == "true":
+    st.session_state.os_key_dialog_done = False
+
+if not st.session_state.os_key_dialog_done:
+    st.info("### OpenSanctions API key (optional — uses credits)")
+    st.markdown(
+        """
+        OpenSanctions provides optional live search against global datasets and consumes API credits.
+        Enter your API key below, or choose **Skip** to screen using free offline lists only.
+        """
+    )
+    remembered_key = get_remembered_key() or ""
+    key_val = st.text_input(
+        "API Key",
+        value=remembered_key,
+        type="password",
+        placeholder="e.g. key_live_...",
+        help="OpenSanctions API key (stored securely, never written to error logs or reports)",
+    )
+    remember_key = st.checkbox(
+        "Remember on this computer",
+        value=bool(remembered_key),
+        help="Saves key in Windows Credential Manager for your user account only.",
+    )
+    col_k1, col_k2 = st.columns([1, 3])
+    with col_k1:
+        if st.button("Continue with key", type="primary"):
+            if key_val.strip():
+                set_session_key(key_val.strip(), remember=remember_key)
+            st.session_state.os_key_dialog_done = True
+            st.rerun()
+    with col_k2:
+        if st.button("Skip — use free sources only"):
+            set_session_key(None, remember=False)
+            st.session_state.os_key_dialog_done = True
+            st.rerun()
+    st.stop()
+
+# 4. First-run list initialization & text search index
+if not st.session_state.first_run_init_done:
+    init_lists_from_seed()
+    with st.spinner("Preparing text search… this happens once"):
+        ensure_text_search_index()
+    st.session_state.first_run_init_done = True
+
 
 # Load Source Register
 def load_sources_registry() -> Dict[str, Any]:
@@ -123,23 +188,33 @@ def load_sources_registry() -> Dict[str, Any]:
     return {"sources": []}
 
 
-
 source_reg = load_sources_registry()
 source_dict = {s["id"]: s for s in source_reg.get("sources", [])}
 
 
-# Sidebar: Freshness & OpenSanctions Credits
+# Sidebar: Status, OpenSanctions, List Freshness & Support
 with st.sidebar:
     st.title("Source Status")
-    st.caption(f"App Version: v{APP_VERSION} | Node: {platform.node()}")
+    st.caption(f"Naughty or not v{APP_VERSION} | Node: {platform.node()}")
 
-    # OpenSanctions Credits
+    # OpenSanctions Status
+    active_key = get_session_key()
+    masked = mask_key(active_key)
     total_os_credits = get_total_opensanctions_credits()
     st.metric(
         label="OpenSanctions Credits",
         value=f"{st.session_state.session_os_credits} session",
         delta=f"{total_os_credits} total logged",
     )
+    if active_key:
+        st.caption(f"Active Key: `{masked}`")
+    else:
+        st.caption("Active Key: _None (Free sources only)_")
+
+    if st.button("🔑 Change / clear key"):
+        st.session_state.os_key_dialog_done = False
+        st.rerun()
+
     st.divider()
 
     st.subheader("Source Freshness")
@@ -148,35 +223,64 @@ with st.sidebar:
         auth = s.get("authority")
         pdate = s.get("publication_date", "—")
         status = s.get("status", "OK")
-        badge = "🟢" if status == "OK" else ("🟡" if status == "STALE" else "🔴")
+        badge = "🟢" if status == "OK" else ("🟠" if status == "STALE" else ("⚪" if status in ["UNAVAILABLE", "NOT_CHECKED", "MISSING"] else "🔴"))
         st.markdown(f"**{badge} {sid}** ({auth})\n*Pub: {pdate}*")
 
-    if st.button("🔄 Refresh All Sources"):
-        with st.spinner("Refreshing sources..."):
+    if st.button("🔄 Update lists"):
+        with st.spinner("Updating sources..."):
             try:
                 from modules.aviation.parser import check_and_refresh_sources
                 check_and_refresh_sources(force=True)
                 from modules.raw_search.indexer import build_full_raw_index
                 build_full_raw_index()
-                st.success("Refreshed all source registers and local raw index!")
+                st.success("Successfully updated all source lists!")
             except Exception as e:
-                st.error(f"Refresh error: {e}")
+                list_date = get_lists_date()
+                st.warning(f"Lists could not be updated ({e}). Using copies dated {list_date}.")
+
+    st.divider()
+    st.subheader("Data & Support")
+    c_btn1, c_btn2 = st.columns(2)
+    with c_btn1:
+        if st.button("📁 Reports"):
+            if sys.platform == "win32":
+                os.startfile(str(get_reports_dir()))
+    with c_btn2:
+        if st.button("📁 Logs"):
+            if sys.platform == "win32":
+                os.startfile(str(get_logs_dir()))
+
+    ug_pdf = PROJECT_ROOT / "USER_GUIDE.pdf"
+    if ug_pdf.is_file():
+        if st.button("📖 User Guide (PDF)"):
+            if sys.platform == "win32":
+                os.startfile(str(ug_pdf))
+
+    with st.expander("About Naughty or not"):
+        st.markdown(
+            f"**Naughty or not** v{APP_VERSION}\n\n"
+            "Self-contained desktop sanctions and compliance screening engine.\n\n"
+            "• Zero background services\n"
+            "• Local in-process evaluation\n"
+            "• 10-year immutable audit logging\n"
+            "• No query leakage to external servers"
+        )
 
 
 # Main Screen Header
 st.title("Sanction checK")
-st.caption("Comprehensive multi-source compliance screening across global sanctions, aviation safety, country risk, and raw text records.")
+st.caption("Naughty or not — Desktop Sanctions & Aviation Compliance Screening | Version 1.0.0")
 
-# Mode Tabs: Screened search | Raw search | Manual check
+# Mode Tabs: Name check | Text search | Manual check
 is_raw_tab = (st.query_params.get("tab") == "raw")
 is_manual_tab = (st.query_params.get("tab") == "manual")
 
 if is_raw_tab:
-    tab_raw, tab_screened, tab_manual = st.tabs(["📄 Raw search", "🔍 Screened search", "📋 Manual check"])
+    tab_raw, tab_screened, tab_manual = st.tabs(["📄 Text search", "🔍 Name check", "📋 Manual check"])
 elif is_manual_tab:
-    tab_manual, tab_screened, tab_raw = st.tabs(["📋 Manual check", "🔍 Screened search", "📄 Raw search"])
+    tab_manual, tab_screened, tab_raw = st.tabs(["📋 Manual check", "🔍 Name check", "📄 Text search"])
 else:
-    tab_screened, tab_raw, tab_manual = st.tabs(["🔍 Screened search", "📄 Raw search", "📋 Manual check"])
+    tab_screened, tab_raw, tab_manual = st.tabs(["🔍 Name check", "📄 Text search", "📋 Manual check"])
 
 
 # =========================================================================
@@ -260,7 +364,7 @@ with tab_screened:
         st.markdown("##### Screening Sources & Thresholds")
         src_col1, src_col2, src_col3, src_col4, src_col5 = st.columns(5)
         with src_col1:
-            use_sanctions = st.checkbox("Sanctions (Watchman)", value=True, disabled=True)
+            use_sanctions = st.checkbox("Official Sanctions Lists", value=True, disabled=True)
         with src_col2:
             use_india = st.checkbox("India (MHA)", value=True)
         with src_col3:
@@ -268,12 +372,13 @@ with tab_screened:
         with src_col4:
             use_country_risk = st.checkbox("Country risk (FATF)", value=True)
         with src_col5:
-            os_key_present = bool(os.getenv("OPENSANCTIONS_API_KEY"))
+            active_os_key = get_session_key() or os.getenv("OPENSANCTIONS_API_KEY")
+            os_key_present = bool(active_os_key and active_os_key.strip())
             use_opensanctions = st.checkbox(
                 "OpenSanctions (uses credits)",
                 value=False,
                 disabled=not os_key_present,
-                help="Requires OPENSANCTIONS_API_KEY in .env" if not os_key_present else "Opt-in API search (consumes API credits)",
+                help="No key entered this session" if not os_key_present else "Opt-in API search (consumes credits)",
             )
 
         st.caption("Thresholds: Potential Match >= 0.80 | Possible Match >= 0.70 | Sub-threshold core >= 0.60 | Display floor >= 0.50")
@@ -674,11 +779,17 @@ with tab_screened:
             with status_cols[i]:
                 tier = s.get("tier")
                 badge = "🔴" if tier == "POTENTIAL_MATCH" else ("🟠" if tier == "POSSIBLE_MATCH_REVIEW" else ("✅" if tier == "NO_MATCH" else "⚪"))
+                friendly_tier_name = {
+                    "POTENTIAL_MATCH": "Match to verify",
+                    "POSSIBLE_MATCH_REVIEW": "Review recommended",
+                    "NO_MATCH": "No match",
+                    "NOT_CHECKED": "Incomplete",
+                }.get(tier, tier)
                 delta_str = s.get("status")
                 below_cnt = s.get("below_count", 0)
                 if below_cnt > 0:
                     delta_str = f"+{below_cnt}ℹ️ info"
-                st.metric(label=s["id"].upper(), value=f"{badge} {tier}", delta=delta_str)
+                st.metric(label=s["id"].upper().replace("_", " "), value=f"{badge} {friendly_tier_name}", delta=delta_str)
 
         # Render Flagged Hits (Expanded by default for 🔴 and 🟠)
         if res["sanctions_hits"]:
@@ -712,9 +823,13 @@ with tab_screened:
                         st.markdown(f"**Entity Type:** {h.get('entity_type')}")
                     with c2:
                         st.markdown(f"**Programme / Regime:** {h.get('program')}")
-                        st.markdown(f"**Watchman Raw Score:** `{h.get('watchman_raw_score', h.get('score', 0.0)):.4f}`")
-                        st.markdown(f"**Tier Reason:** `{h.get('tier_reason', h.get('reason'))}`")
-                        st.markdown(f"**Score Source:** `{h.get('score_source')}`")
+                        reason_code = h.get("tier_reason") or h.get("reason")
+                        plain_reason = translate_reason(reason_code)
+                        st.markdown(f"**Reason:** {plain_reason}")
+                        with st.expander("Technical details"):
+                            st.markdown(f"**Match Score:** `{h.get('score', 0.0):.4f}`")
+                            st.markdown(f"**Internal Reason Code:** `{reason_code}`")
+                            st.markdown(f"**Score Source:** `{h.get('score_source')}`")
                         
                         # Official Verification link with Copy Name / Copy ID
                         st.link_button(f"🔗 Verify on official {src_id} source", direct_verify_url)
@@ -749,8 +864,8 @@ with tab_screened:
                             st.markdown(f"ℹ️ **{bc.get('primary_name')}** (Matched: `{bc.get('matched_name')}`)")
                             st.caption(f"ID: `{bc.get('source_id')}` | Entity Type: {bc.get('entity_type')} | Prog: {bc.get('program')}")
                         with b_c2:
-                            st.markdown(f"Score: `{bc.get('score', 0.0):.4f}` ({bc.get('score_source')})")
-                            st.caption(f"Reason: {bc.get('reason')}")
+                            st.markdown(f"Score: `{bc.get('score', 0.0):.4f}`")
+                            st.caption(f"Reason: {translate_reason(bc.get('reason'))}")
                             # Verification link
                             l_info = source_dict.get(list_id, {})
                             v_url = l_info.get("verify_url") or "https://sanctionssearch.ofac.treas.gov/"
@@ -812,11 +927,11 @@ with tab_screened:
 
 
 # =========================================================================
-# TAB 2: RAW SEARCH (T5.1)
+# TAB 2: TEXT SEARCH
 # =========================================================================
 with tab_raw:
-    st.markdown("### Raw Text Search")
-    st.info("📌 **Raw text search — results are not scored matches. Review each record.**")
+    st.markdown("### Text Search")
+    st.info("📌 **Text search — results are keyword occurrences across official records. Review each record.**")
 
     raw_engine = RawSearchEngine()
     all_raw_sources = [
@@ -858,13 +973,13 @@ with tab_raw:
             format_func=lambda s: f"{s} ({source_dict.get(s, {}).get('authority', s)})",
         )
 
-        raw_submitted = st.form_submit_button("🔎 Execute Raw Search", type="primary")
+        raw_submitted = st.form_submit_button("🔎 Search Records", type="primary")
 
     if raw_submitted or (st.query_params.get("raw_autorun") == "true" and raw_q.strip()):
         if not raw_q.strip():
             st.error("Please enter a search query.")
         else:
-            with st.spinner("Searching raw index database..."):
+            with st.spinner("Searching records database..."):
                 raw_res = raw_engine.search(
                     query=raw_q.strip(),
                     match_option=match_opt,
@@ -919,7 +1034,7 @@ with tab_raw:
             if os.path.isfile(rr.get("pdf_path", "")):
                 with open(rr["pdf_path"], "rb") as f:
                     st.download_button(
-                        "📥 Download Raw Search PDF",
+                        "📥 Download Text Search PDF",
                         data=f.read(),
                         file_name=Path(rr["pdf_path"]).name,
                         mime="application/pdf",
@@ -929,7 +1044,7 @@ with tab_raw:
             if os.path.isfile(rr.get("excel_path", "")):
                 with open(rr["excel_path"], "rb") as f:
                     st.download_button(
-                        "📥 Download Raw Search Excel",
+                        "📥 Download Text Search Excel",
                         data=f.read(),
                         file_name=Path(rr["excel_path"]).name,
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

@@ -16,7 +16,20 @@ from pypdf import PdfReader
 
 logger = logging.getLogger(__name__)
 
-DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "india"
+def _resolve_india_data_dir() -> Path:
+    try:
+        from modules.common.paths import get_lists_dir, get_seed_data_dir
+        p = get_lists_dir() / "india"
+        if p.is_dir() and any(p.iterdir()):
+            return p
+        seed = get_seed_data_dir() / "india"
+        if seed.is_dir():
+            return seed
+    except Exception:
+        pass
+    return Path(__file__).resolve().parent.parent.parent / "data" / "india"
+
+DATA_DIR = _resolve_india_data_dir()
 
 SOURCES = {
     "first_schedule": {

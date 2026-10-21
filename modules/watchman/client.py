@@ -13,17 +13,31 @@ from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
+_singleton_python_engine = None
+
+
+def get_python_engine():
+    global _singleton_python_engine
+    if _singleton_python_engine is None:
+        from modules.engine.engine import PythonEngine
+        _singleton_python_engine = PythonEngine()
+    return _singleton_python_engine
+
 
 class WatchmanClient:
-    """Client for interacting with the local Moov Watchman HTTP API."""
+    """Client for interacting with the sanctions search engine (Python or Moov Watchman)."""
 
-    def __init__(self, base_url: Optional[str] = None, timeout: float = 10.0):
+    def __init__(self, base_url: Optional[str] = None, timeout: float = 10.0, engine: Optional[str] = None):
         """
-        Initialize the Watchman client.
+        Initialize the search engine client.
 
         :param base_url: URL where Watchman is hosted. Defaults to WATCHMAN_URL env var or http://localhost:8084.
         :param timeout: Request timeout in seconds.
+        :param engine: 'python' (default) or 'watchman' (Docker). Defaults to ENGINE env var.
         """
+        from modules.screening.config import ENGINE
+        default_engine = "watchman" if base_url else os.getenv("ENGINE", ENGINE)
+        self.engine = (engine or default_engine).lower()
         self.base_url = (base_url or os.getenv("WATCHMAN_URL", "http://localhost:8084")).rstrip("/")
         self.timeout = float(timeout)
 
@@ -99,10 +113,19 @@ class WatchmanClient:
 
     def health(self) -> Dict[str, Any]:
         """
-        Check health of Watchman service.
-        Moov Watchman responds to /ping with 'PONG' and /v2/data/refresh with status.
+        Check health of search engine.
         Returns clean dict with status and healthy boolean.
         """
+        if self.engine == "python":
+            py_h = get_python_engine().health()
+            return {
+                "status": "ok" if py_h.get("healthy") else "incomplete",
+                "healthy": py_h.get("healthy", False),
+                "status_code": 200 if py_h.get("healthy") else 503,
+                "engine": "python",
+                "details": py_h,
+            }
+
         res = self._make_request("/ping")
         if res.get("status") == "ok":
             return {
@@ -128,8 +151,22 @@ class WatchmanClient:
 
     def list_info(self) -> Dict[str, Any]:
         """
-        Retrieve loaded lists, record counts, hashes and timestamps from /v2/listinfo.
+        Retrieve loaded lists, record counts, hashes and timestamps.
         """
+        if self.engine == "python":
+            py_info = get_python_engine().listinfo()
+            return {
+                "status": "ok",
+                "lists": {
+                    "lists": py_info.get("lists", {}),
+                    "version": py_info.get("version"),
+                    "startedAt": py_info.get("startedAt"),
+                    "endedAt": py_info.get("endedAt"),
+                },
+                "listHashes": py_info.get("listHashes", {}),
+                "engine": "python",
+            }
+
         res = self._make_request("/v2/listinfo")
         if res.get("status") == "ok":
             return {
@@ -150,7 +187,7 @@ class WatchmanClient:
         **fields: Any
     ) -> Dict[str, Any]:
         """
-        Screen a name against Watchman via /v2/search.
+        Screen a name against the search engine.
 
         :param name: Entity name to screen
         :param type: Entity type (person, entity, etc.)
@@ -158,6 +195,17 @@ class WatchmanClient:
         :param fields: Additional search filters/parameters
         :return: Clean dict with search results or unavailable error
         """
+        if self.engine == "python":
+            source = fields.get("source")
+            limit = int(fields.get("limit", 50))
+            return get_python_engine().search(
+                name=name,
+                type=type,
+                min_match=min_match,
+                source=source,
+                limit=limit,
+            )
+
         params = {
             "name": name,
             "minMatch": min_match,

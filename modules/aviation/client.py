@@ -23,7 +23,20 @@ logger = logging.getLogger(__name__)
 SAFETY_LABEL = "Safety flag — not a sanctions finding"
 BIS_EXPORT_CONTROL_LABEL = "Export-control restriction (US EAR) — verify before providing any service"
 
-DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "aviation"
+def _resolve_aviation_data_dir() -> Path:
+    try:
+        from modules.common.paths import get_lists_dir, get_seed_data_dir
+        p = get_lists_dir() / "aviation"
+        if p.is_dir() and any(p.iterdir()):
+            return p
+        seed = get_seed_data_dir() / "aviation"
+        if seed.is_dir():
+            return seed
+    except Exception:
+        pass
+    return Path(__file__).resolve().parent.parent.parent / "data" / "aviation"
+
+DATA_DIR = _resolve_aviation_data_dir()
 ALIAS_FILE = DATA_DIR / "airline_aliases.csv"
 
 

@@ -19,6 +19,11 @@ logger = logging.getLogger(__name__)
 
 def _get_base_data_dir() -> Path:
     """Return base storage directory with %LOCALAPPDATA% fallback when frozen or in Program Files."""
+    try:
+        from modules.common.paths import get_app_data_dir
+        return get_app_data_dir()
+    except Exception:
+        pass
     if getattr(sys, "frozen", False):
         local_app = os.environ.get("LOCALAPPDATA")
         if local_app:
@@ -40,7 +45,7 @@ def _get_base_data_dir() -> Path:
 BASE_DATA_DIR = _get_base_data_dir()
 LOGS_DIR = BASE_DATA_DIR / "logs"
 DB_PATH = LOGS_DIR / "screening.db"
-APP_VERSION = "1.6.0"
+APP_VERSION = "1.0.0"
 
 
 

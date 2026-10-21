@@ -18,7 +18,20 @@ from pypdf import PdfReader
 
 logger = logging.getLogger(__name__)
 
-DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "aviation"
+def _resolve_aviation_data_dir() -> Path:
+    try:
+        from modules.common.paths import get_lists_dir, get_seed_data_dir
+        p = get_lists_dir() / "aviation"
+        if p.is_dir() and any(p.iterdir()):
+            return p
+        seed = get_seed_data_dir() / "aviation"
+        if seed.is_dir():
+            return seed
+    except Exception:
+        pass
+    return Path(__file__).resolve().parent.parent.parent / "data" / "aviation"
+
+DATA_DIR = _resolve_aviation_data_dir()
 ARCHIVE_DIR = DATA_DIR / "archive"
 META_FILE = DATA_DIR / "sources_meta.json"
 

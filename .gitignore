@@ -13,5 +13,6 @@ __pycache__/
 reviews/screens/
 dist/
 build/
+lists/
 PREPUSH_CHECK.md
 

@@ -16,7 +16,14 @@ import yaml
 
 logger = logging.getLogger(__name__)
 
-INDEX_DB_PATH = Path("data/raw_index.db")
+def _resolve_index_db_path() -> Path:
+    try:
+        from modules.common.paths import get_index_db_path
+        return get_index_db_path()
+    except Exception:
+        return Path("data/raw_index.db")
+
+INDEX_DB_PATH = _resolve_index_db_path()
 SOURCES_YAML_PATH = Path("config/sources.yaml")
 
 

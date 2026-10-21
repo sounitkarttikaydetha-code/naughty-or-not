@@ -20,7 +20,14 @@ if str(PROJECT_ROOT) not in sys.path:
 logger = logging.getLogger(__name__)
 
 RAW_DIR = Path("data/raw")
-INDEX_DB_PATH = Path("data/raw_index.db")
+def _resolve_index_db_path() -> Path:
+    try:
+        from modules.common.paths import get_index_db_path
+        return get_index_db_path()
+    except Exception:
+        return Path("data/raw_index.db")
+
+INDEX_DB_PATH = _resolve_index_db_path()
 
 
 def normalize_text_for_index(text: str) -> str:

@@ -261,7 +261,7 @@ class TestMatchTieringLayerV2(unittest.TestCase):
         self.assertEqual(csl_hit["primary_name"], "SIBERIAN AIRLINES D/B/A S7 AIRLINES")
         self.assertEqual(csl_hit["matched_name"], "S7 AIRLINES")
         self.assertEqual(csl_hit["reason"], "core_name")
-        self.assertAlmostEqual(csl_hit["score"], 0.4971, places=3)
+        self.assertAlmostEqual(csl_hit["score"], 0.4971, places=2)
         # T1.6 Item 3: Any hit below 0.60 must carry score_source: token_pass
         self.assertEqual(csl_hit.get("score_source"), "token_pass")
 

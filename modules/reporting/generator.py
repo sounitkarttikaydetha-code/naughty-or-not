@@ -22,6 +22,11 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, Tabl
 
 def _get_reports_dir() -> Path:
     """Return reports directory with %LOCALAPPDATA% fallback when frozen or in Program Files."""
+    try:
+        from modules.common.paths import get_reports_dir
+        return get_reports_dir()
+    except Exception:
+        pass
     if getattr(sys, "frozen", False):
         local_app = os.environ.get("LOCALAPPDATA")
         if local_app:

@@ -39,11 +39,26 @@ STATUS_ERROR = "ERROR"
 DEFAULT_API_URL = "https://api.opensanctions.org"
 DEFAULT_DATASET = "sanctions"
 
-USAGE_LOG_PATH = Path("logs/opensanctions_usage.csv")
+def _get_usage_log_path() -> Path:
+    try:
+        from modules.common.paths import get_logs_dir
+        return get_logs_dir() / "opensanctions_usage.csv"
+    except Exception:
+        return Path("logs/opensanctions_usage.csv")
+
+USAGE_LOG_PATH = _get_usage_log_path()
 
 
 def get_api_key() -> Optional[str]:
-    """Retrieve OPENSANCTIONS_API_KEY from environment or .env file."""
+    """Retrieve OPENSANCTIONS_API_KEY from session key manager, environment or .env file."""
+    try:
+        from modules.opensanctions.key_manager import get_session_key
+        sk = get_session_key()
+        if sk and sk.strip():
+            return sk.strip()
+    except Exception:
+        pass
+
     key = os.getenv("OPENSANCTIONS_API_KEY")
     if key and key.strip():
         return key.strip()

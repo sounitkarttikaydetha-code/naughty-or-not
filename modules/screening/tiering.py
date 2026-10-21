@@ -171,12 +171,13 @@ def normalize_name(text: str) -> List[str]:
     # 2. Fold accents
     s = unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode("utf-8")
 
-    # 3. Remove multi-word company phrases first
+    # 3. Remove multi-word company phrases first (normalize hyphens to spaces)
+    s = s.replace("-", " ")
     multi_word_phrases = [
-        w.lower() for w in COMPANY_TYPE_WORDS if " " in w or "-" in w
+        w.lower().replace("-", " ") for w in COMPANY_TYPE_WORDS if " " in w or "-" in w
     ]
     for phrase in sorted(multi_word_phrases, key=len, reverse=True):
-        pattern = r"\b" + re.escape(phrase) + r"\b"
+        pattern = r"\b" + re.escape(" ".join(phrase.split())) + r"\b"
         s = re.sub(pattern, " ", s)
 
     # 4. Remove punctuation & symbols
@@ -189,6 +190,7 @@ def normalize_name(text: str) -> List[str]:
     single_word_set = {
         w.lower() for w in COMPANY_TYPE_WORDS if " " not in w and "-" not in w
     }
+    single_word_set.update({"joint", "stock", "commercial", "enterprise", "industrial"})
     core_tokens = [
         NAME_VARIANTS.get(w, w)
         for w in tokens
@@ -715,17 +717,19 @@ def _screen_direct_all_lists(
             q_tokens = normalize_name(query)
             weak_set = {w.lower() for w in WEAK_WORDS}
             country_set = {w.lower() for w in COUNTRY_WORDS}
-            effective_weak = weak_set | country_set
+            company_words = {w.lower() for phrase in COMPANY_TYPE_WORDS for w in re.findall(r"\w+", phrase)}
+            company_words.update({"joint", "stock", "commercial", "enterprise", "industrial"})
+            effective_weak = weak_set | country_set | company_words
             distinctive_tokens = [w for w in q_tokens if w not in effective_weak and len(w) >= 4]
 
             for token in distinctive_tokens:
                 extra_resp = client.search(
-                    name=token, min_match=0.45, source=src, limit=retrieval_limit
+                    name=token, min_match=0.45, source=src, limit=100
                 )
                 extra_entities = extra_resp.get("results", {}).get("entities") or []
                 for ee in extra_entities:
                     sid = ee.get("sourceID")
-                    if sid and sid not in entity_map:
+                    if sid and (sid not in entity_map or float(ee.get("match", 0)) > float(entity_map[sid].get("match", 0))):
                         ee_copy = dict(ee)
                         ee_copy["score_source"] = "token_pass"
                         entity_map[sid] = ee_copy
@@ -940,20 +944,31 @@ def screen_query_all_lists(
                     direct_results[src]["orange_hits"].append(exp_best_copy)
 
                 # Merge expanded candidates into all_candidates and info_hits if not present
-                existing_sids = {c.get("source_id") for c in direct_results[src]["all_candidates"]}
+                existing_cands = {c.get("source_id"): c for c in direct_results[src]["all_candidates"] if c.get("source_id")}
                 for cand in exp_res[src].get("all_candidates", []):
                     sid = cand.get("source_id")
-                    if sid and sid not in existing_sids:
+                    if not sid:
+                        continue
+                    if sid not in existing_cands:
                         cand_copy = dict(cand)
                         cand_copy["expanded_from"] = exp_alias
                         direct_results[src]["all_candidates"].append(cand_copy)
-                        existing_sids.add(sid)
+                        existing_cands[sid] = cand_copy
                         if cand_copy.get("tier") == TIER_BELOW_THRESHOLD:
                             direct_results[src]["info_hits"].append(cand_copy)
                         elif cand_copy.get("tier") == TIER_POSSIBLE_MATCH and cand_copy not in direct_results[src]["orange_hits"]:
                             direct_results[src]["orange_hits"].append(cand_copy)
                         elif cand_copy.get("tier") == TIER_POTENTIAL_MATCH and cand_copy not in direct_results[src]["red_hits"]:
                             direct_results[src]["red_hits"].append(cand_copy)
+                    else:
+                        existing = existing_cands[sid]
+                        if cand.get("score", 0.0) > existing.get("score", 0.0):
+                            existing["score"] = cand.get("score")
+                            existing["watchman_raw_score"] = cand.get("watchman_raw_score", cand.get("score"))
+                            existing["tier"] = cand.get("tier")
+                            existing["tier_icon"] = cand.get("tier_icon")
+                            existing["matched_name"] = cand.get("matched_name")
+                            existing["expanded_from"] = exp_alias
 
                 # Refresh counts on best_hit
                 direct_results[src]["best_hit"]["below_threshold_count"] = len(direct_results[src]["info_hits"])

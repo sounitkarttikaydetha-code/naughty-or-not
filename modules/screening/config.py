@@ -4,6 +4,7 @@ Loads all rules and wordlists from tiering_config.json.
 """
 
 import json
+import os
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -18,6 +19,9 @@ def load_config() -> Dict[str, Any]:
 
 
 _config = load_config()
+
+# Screening engine: 'python' (default) or 'watchman' (reference container)
+ENGINE: str = os.getenv("ENGINE", _config.get("engine", "python")).lower()
 
 CANDIDATE_MIN_MATCH: float = float(_config.get("candidate_min_match", 0.60))
 DISPLAY_MIN_MATCH: float = float(_config.get("display_min_match", 0.50))

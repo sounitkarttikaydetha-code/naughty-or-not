@@ -1,0 +1,99 @@
+name: Build & Release Windows Desktop App
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  test_and_build:
+    name: Test, Verify & Package
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Run Full Test Suite
+        env:
+          ENGINE: python
+        run: |
+          pytest -v
+
+      - name: Run Golden Regression Set
+        env:
+          ENGINE: python
+        run: |
+          pytest tests/test_golden.py -v
+
+      - name: Run Fail-Safe Checks (20/20 Matrix)
+        env:
+          ENGINE: python
+        run: |
+          python scripts/dev/run_failsafe_check.py
+
+      - name: Run Mutation Checks (6/6 Checks)
+        env:
+          ENGINE: python
+        run: |
+          python scripts/dev/run_mutation_check.py
+
+      - name: Build PyInstaller Desktop App
+        run: |
+          pyinstaller build.spec --clean --noconfirm
+
+      - name: Run Release Hygiene Check on App Bundle
+        run: |
+          python scripts/dev/release_hygiene_check.py dist/NaughtyOrNot
+
+      - name: Set up Inno Setup
+        uses: MinisCode/setup-innosetup@v1
+
+      - name: Compile Inno Setup Installer
+        run: |
+          iscc installer/setup.iss
+
+      - name: Compute Checksum & Verify Release Hygiene
+        id: checksum
+        shell: powershell
+        run: |
+          $installer = Get-ChildItem -Path "dist\installer\NaughtyOrNot_Setup_*.exe" | Select-Object -First 1
+          if (-not $installer) {
+            Write-Error "Installer binary not found!"
+            exit 1
+          }
+          $hash = (Get-FileHash -Path $installer.FullName -Algorithm SHA256).Hash.ToLower()
+          "$hash  $($installer.Name)" | Out-File -FilePath "dist\installer\SHA256.txt" -Encoding ascii
+          Write-Host "Installer SHA-256: $hash"
+          echo "INSTALLER_PATH=$($installer.FullName)" >> $env:GITHUB_OUTPUT
+          echo "INSTALLER_NAME=$($installer.Name)" >> $env:GITHUB_OUTPUT
+          echo "SHA256_HASH=$hash" >> $env:GITHUB_OUTPUT
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            dist/installer/*.exe
+            dist/installer/SHA256.txt
+            RELEASE_NOTES.md
+            USER_GUIDE.pdf
+          body_path: RELEASE_NOTES.md
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
