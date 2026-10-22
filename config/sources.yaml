@@ -1,173 +1,419 @@
-# Source Register for Naughty or not (Sanction checK)
-# Tracks all official landing pages, resolved download URLs, dates, hashes, verify URLs, and statuses.
-
 sources:
-  - id: us_ofac
-    authority: US Treasury, OFAC
-    landing_page: https://sanctionssearch.ofac.treas.gov/
-    file_url_resolved: https://www.treasury.gov/ofac/downloads/sdn.csv
-    publication_date: "2026-10-18"
-    last_checked: "2026-10-20"
-    sha256: watchman_managed
-    parser: watchman
+  us_ofac:
+    id: us_ofac
+    authority: US Department of the Treasury (OFAC)
+    landing_page: https://ofac.treasury.gov/specially-designated-nationals-and-blocked-persons-list-sdn-human-readable-lists
+    candidate_urls:
+    - https://www.treasury.gov/ofac/downloads/sdn.csv
+    - https://sanctionssearch.ofac.treas.gov/Files/sdn.csv
+    allowed_domains:
+    - treasury.gov
+    - ofac.treasury.gov
+    - sanctionssearch.ofac.treas.gov
+    discovery: href=[\"\'](https?://[^\"\']*/sdn\.csv)[\"\']
+    expected:
+      format: csv
+      min_bytes: 8000000
+      required_columns:
+      - ent_num
+      - SDN_Name
+      - SDN_Type
+      - Program
+      min_records: 15000
+      count_range_ratio:
+      - 0.7
+      - 1.5
+    max_age_days: 7
+    closure_keywords:
+    - no longer being updated
+    - no longer updated
+    - has closed
+    - closed on
+    - replaced by
+    - superseded
+    - withdrawn
+    - archived
+    - discontinued
+    - moved to
     verify_url: https://sanctionssearch.ofac.treas.gov/
-    record_url_template: https://sanctionssearch.ofac.treas.gov/Details.aspx?id={id}
-    status: OK
-
-  - id: us_csl
-    authority: US ITA (Commerce, State, Treasury)
+    record_url_template: https://sanctionssearch.ofac.treas.gov/Details.aspx?id={source_id}
+  us_csl:
+    id: us_csl
+    authority: US International Trade Administration (ITA)
     landing_page: https://www.trade.gov/consolidated-screening-list
-    file_url_resolved: https://data.trade.gov/downloadable_consolidated_screening_list/v1/consolidated.csv
-    publication_date: "2026-10-18"
-    last_checked: "2026-10-20"
-    sha256: watchman_managed
-    parser: watchman
-    verify_url: https://www.trade.gov/data-visualization/csl-search
-    record_url_template: ""
-    status: OK
-
-  - id: uk_csl
-    authority: UK FCDO
+    candidate_urls:
+    - https://api.trade.gov/static/consolidated_screening_list/consolidated.csv
+    - https://data.trade.gov/consolidated_screening_list/consolidated.csv
+    allowed_domains:
+    - trade.gov
+    - api.trade.gov
+    - data.trade.gov
+    discovery: href=[\"\'](https?://[^\"\']*/consolidated\.csv)[\"\']
+    expected:
+      format: csv
+      min_bytes: 3000000
+      required_columns:
+      - Source
+      - Entity_Number
+      - Name
+      min_records: 5000
+      count_range_ratio:
+      - 0.7
+      - 1.5
+    max_age_days: 7
+    closure_keywords:
+    - no longer being updated
+    - no longer updated
+    - has closed
+    - closed on
+    - replaced by
+    - superseded
+    - withdrawn
+    - archived
+    - discontinued
+    - moved to
+    verify_url: https://www.trade.gov/consolidated-screening-list
+    record_url_template: https://www.trade.gov/consolidated-screening-list?search={source_id}
+  uk_csl:
+    id: uk_csl
+    authority: UK Foreign, Commonwealth & Development Office (FCDO)
     landing_page: https://www.gov.uk/government/publications/the-uk-sanctions-list
-    file_url_resolved: https://sanctionslist.fcdo.gov.uk/docs/UK-Sanctions-List.csv
-    publication_date: "2026-10-18"
-    last_checked: "2026-10-20"
-    sha256: watchman_managed
-    parser: watchman
+    candidate_urls:
+    - https://assets.publishing.service.gov.uk/media/uk_sanctions_list.csv
+    - https://docs.fcdo.gov.uk/docs/UK-Sanctions-List.csv
+    allowed_domains:
+    - gov.uk
+    - assets.publishing.service.gov.uk
+    - docs.fcdo.gov.uk
+    discovery: href=[\"\'](https?://[^\"\']*(?:uk_sanctions_list|UK-Sanctions-List)[^\"\']*\.csv)[\"\']
+    expected:
+      format: csv
+      min_bytes: 3000000
+      required_columns:
+      - Unique ID
+      - Name 6
+      - Group Type
+      - Regime Name
+      min_records: 4500
+      count_range_ratio:
+      - 0.7
+      - 1.5
+    max_age_days: 7
+    closure_keywords:
+    - no longer being updated
+    - no longer updated
+    - has closed
+    - closed on
+    - replaced by
+    - superseded
+    - withdrawn
+    - archived
+    - discontinued
+    - moved to
     verify_url: https://search-uk-sanctions-list.service.gov.uk/
-    record_url_template: ""
-    status: OK
-
-  - id: eu_csl
-    authority: European Commission
-    landing_page: https://data.europa.eu/data/datasets/consolidated-list-of-persons-groups-and-entities-subject-to-eu-financial-sanctions
-    file_url_resolved: https://webgate.ec.europa.eu/fsd/fsf/public/files/xmlFullSanctionsList_1_1/content?token=dG9rZW4tMjAxNw
-    publication_date: "2026-10-18"
-    last_checked: "2026-10-20"
-    sha256: watchman_managed
-    parser: watchman
-    verify_url: https://www.sanctionsmap.eu/#/main
-    record_url_template: ""
-    status: OK
-
-  - id: un_csl
-    authority: UN Security Council
-    landing_page: https://main.un.org/securitycouncil/en/content/un-sc-consolidated-list
-    file_url_resolved: https://scsanctions.un.org/resources/xml/en/consolidated.xml
-    publication_date: "2026-10-18"
-    last_checked: "2026-10-20"
-    sha256: watchman_managed
-    parser: watchman
-    verify_url: https://main.un.org/securitycouncil/en/content/un-sc-consolidated-list
-    record_url_template: ""
-    status: OK
-
-  - id: bis_aircraft
-    authority: US BIS
-    landing_page: https://media.bis.gov/licensing/country-guidance/russia-belarus/bis-list-commercial-and-private-aircraft-in-potential-violation-of-the-export-administration-regulations-ear
-    file_url_resolved: https://www.bis.gov/media/documents/2025.10.10-current-bis-list-commercial-private-aircraft-potential-violation-export-administration
-    publication_date: "2025-10-10"
-    last_checked: "2026-10-20"
-    sha256: c31c6e62d2899ea4282a78c24ff4dd2c4544d630e37b419d866a1dc6ef69e56e
-    parser: modules.aviation.parser.parse_bis_aircraft
-    verify_url: https://www.bis.gov/media/documents/2025.10.10-current-bis-list-commercial-private-aircraft-potential-violation-export-administration
-    record_url_template: https://www.bis.gov/media/documents/2025.10.10-current-bis-list-commercial-private-aircraft-potential-violation-export-administration
-    status: OK
-
-  - id: bis_tdo
-    authority: US BIS, Export Violations (Temporary Denial Orders)
-    landing_page: https://media.bis.gov/enforcement/export-violations
-    file_url_resolved: https://media.bis.gov/enforcement/export-violations
-    publication_date: "2026-10-15"
-    last_checked: "2026-10-20"
-    sha256: none
-    parser: reference_cross_check
-    verify_url: https://media.bis.gov/enforcement/export-violations
-    record_url_template: ""
-    status: OK
-
-  - id: eu_air_safety
-    authority: European Commission, DG MOVE
+    record_url_template: https://search-uk-sanctions-list.service.gov.uk/search-results?searchTerm={source_id}
+  eu_csl:
+    id: eu_csl
+    authority: European External Action Service (EEAS)
+    landing_page: https://data.europa.eu/data/datasets/consolidated-list-of-sanctions
+    candidate_urls:
+    - https://webgate.ec.europa.eu/fsd/fsf/public/files/xmlFullSanctionsList_1_1/content?token=dG9rZW4tMjAxNw
+    - https://data.europa.eu/euodp/data/dataset/consolidated-list-of-sanctions
+    allowed_domains:
+    - europa.eu
+    - ec.europa.eu
+    - data.europa.eu
+    - webgate.ec.europa.eu
+    discovery: href=[\"\'](https?://webgate\.ec\.europa\.eu/[^\"\']*xmlFullSanctionsList[^\"\']*)[\"\']
+    expected:
+      format: xml
+      min_bytes: 8000000
+      required_elements:
+      - export
+      - sanctionEntity
+      min_records: 4500
+      count_range_ratio:
+      - 0.7
+      - 1.5
+    max_age_days: 7
+    closure_keywords:
+    - no longer being updated
+    - no longer updated
+    - has closed
+    - closed on
+    - replaced by
+    - superseded
+    - withdrawn
+    - archived
+    - discontinued
+    - moved to
+    verify_url: https://data.europa.eu/data/datasets/consolidated-list-of-sanctions
+    record_url_template: https://data.europa.eu/data/datasets/consolidated-list-of-sanctions?record={source_id}
+  un_csl:
+    id: un_csl
+    authority: UN Security Council Committee
+    landing_page: https://www.un.org/securitycouncil/sanctions/consolidated
+    candidate_urls:
+    - https://scsanctions.un.org/resources/xml/en/consolidated.xml
+    - https://www.un.org/securitycouncil/sites/www.un.org.securitycouncil/files/xml/en/consolidated.xml
+    allowed_domains:
+    - un.org
+    - scsanctions.un.org
+    discovery: href=[\"\'](https?://[^\"\']*consolidated\.xml)[\"\']
+    expected:
+      format: xml
+      min_bytes: 1000000
+      required_elements:
+      - CONSOLIDATED_LIST
+      - INDIVIDUALS
+      - ENTITIES
+      min_records: 800
+      count_range_ratio:
+      - 0.7
+      - 1.5
+    max_age_days: 7
+    closure_keywords:
+    - no longer being updated
+    - no longer updated
+    - has closed
+    - closed on
+    - replaced by
+    - superseded
+    - withdrawn
+    - archived
+    - discontinued
+    - moved to
+    verify_url: https://scsanctions.un.org/consolidated/
+    record_url_template: https://scsanctions.un.org/consolidated/#rec_{source_id}
+  in_mha_first_schedule:
+    id: in_mha_first_schedule
+    authority: Ministry of Home Affairs (India)
+    landing_page: https://www.mha.gov.in/en/banned-organisations
+    candidate_urls:
+    - https://www.mha.gov.in/sites/default/files/2026-10/first_schedule.pdf
+    allowed_domains:
+    - mha.gov.in
+    discovery: href=[\"\'](https?://www\.mha\.gov\.in/[^\"\']*(?:first_schedule|FirstSchedule|BannedOrgs)[^\"\']*\.pdf)[\"\']
+    expected:
+      format: pdf
+      min_bytes: 10000
+      required_elements:
+      - FIRST SCHEDULE
+      - TERRORIST
+      min_records: 40
+      count_range_ratio:
+      - 0.7
+      - 1.5
+    max_age_days: 45
+    closure_keywords:
+    - no longer being updated
+    - no longer updated
+    - has closed
+    - closed on
+    - replaced by
+    - superseded
+    - withdrawn
+    - archived
+    - discontinued
+    - moved to
+    verify_url: https://www.mha.gov.in/en/banned-organisations
+    record_url_template: https://www.mha.gov.in/en/banned-organisations
+  in_mha_fourth_schedule:
+    id: in_mha_fourth_schedule
+    authority: Ministry of Home Affairs (India)
+    landing_page: https://www.mha.gov.in/en/individual-terrorists
+    candidate_urls:
+    - https://www.mha.gov.in/sites/default/files/2026-07/individuals_all.json
+    allowed_domains:
+    - mha.gov.in
+    discovery: href=[\"\'](https?://www\.mha\.gov\.in/[^\"\']*(?:individuals|terrorists)[^\"\']*\.json)[\"\']
+    expected:
+      format: json
+      min_bytes: 5000
+      required_elements:
+      - entities
+      min_records: 60
+      count_range_ratio:
+      - 0.7
+      - 1.5
+    max_age_days: 45
+    closure_keywords:
+    - no longer being updated
+    - no longer updated
+    - has closed
+    - closed on
+    - replaced by
+    - superseded
+    - withdrawn
+    - archived
+    - discontinued
+    - moved to
+    verify_url: https://www.mha.gov.in/en/individual-terrorists
+    record_url_template: https://www.mha.gov.in/en/individual-terrorists
+  in_mha_unlawful_assoc:
+    id: in_mha_unlawful_assoc
+    authority: Ministry of Home Affairs (India)
+    landing_page: https://www.mha.gov.in/en/unlawful-associations
+    candidate_urls:
+    - https://www.mha.gov.in/sites/default/files/2025-03/unlawful_associations_all.json
+    allowed_domains:
+    - mha.gov.in
+    discovery: href=[\"\'](https?://www\.mha\.gov\.in/[^\"\']*(?:unlawful|associations)[^\"\']*\.json)[\"\']
+    expected:
+      format: json
+      min_bytes: 4000
+      required_elements:
+      - entities
+      min_records: 30
+      count_range_ratio:
+      - 0.7
+      - 1.5
+    max_age_days: 45
+    closure_keywords:
+    - no longer being updated
+    - no longer updated
+    - has closed
+    - closed on
+    - replaced by
+    - superseded
+    - withdrawn
+    - archived
+    - discontinued
+    - moved to
+    verify_url: https://www.mha.gov.in/en/unlawful-associations
+    record_url_template: https://www.mha.gov.in/en/unlawful-associations
+  bis_aircraft:
+    id: bis_aircraft
+    authority: US Bureau of Industry and Security (BIS)
+    landing_page: https://www.bis.gov/commercial-and-private-aircraft
+    candidate_urls:
+    - https://www.bis.gov/sites/default/files/bis_aircraft.pdf
+    - https://www.bis.doc.gov/sites/default/files/bis_aircraft.pdf
+    allowed_domains:
+    - bis.gov
+    - bis.doc.gov
+    discovery: href=[\"\'](https?://[^\"\']*(?:bis_aircraft|aircraft)[^\"\']*\.pdf)[\"\']
+    expected:
+      format: pdf
+      min_bytes: 50000
+      required_elements:
+      - COMMERCIAL AND PRIVATE AIRCRAFT
+      - EAR
+      min_records: 200
+      count_range_ratio:
+      - 0.7
+      - 1.5
+    max_age_days: 45
+    closure_keywords:
+    - no longer being updated
+    - no longer updated
+    - has closed
+    - closed on
+    - replaced by
+    - superseded
+    - withdrawn
+    - archived
+    - discontinued
+    - moved to
+    verify_url: https://www.bis.gov/commercial-and-private-aircraft
+    record_url_template: https://www.bis.gov/commercial-and-private-aircraft
+  eu_air_safety_list:
+    id: eu_air_safety_list
+    authority: European Commission (DG MOVE)
     landing_page: https://transport.ec.europa.eu/transport-themes/eu-air-safety-list_en
-    file_url_resolved: https://transport.ec.europa.eu/document/download/3195fabb-7575-4db9-85b9-ec5a77b481aa_en?filename=air-safety-list.pdf
-    publication_date: "2026-06-09"
-
-    last_checked: "2026-10-20"
-    sha256: 7d9323517302108170675fb13c21925f19d9680f3fccceee30dfe99bd5cc94da
-    parser: modules.aviation.parser.parse_eu_air_safety_list
+    candidate_urls:
+    - https://transport.ec.europa.eu/system/files/eu_air_safety_list.pdf
+    allowed_domains:
+    - ec.europa.eu
+    - transport.ec.europa.eu
+    discovery: href=[\"\'](https?://transport\.ec\.europa\.eu/[^\"\']*(?:air-safety-list|eu_air_safety_list)[^\"\']*\.pdf)[\"\']
+    expected:
+      format: pdf
+      min_bytes: 100000
+      required_elements:
+      - ANNEX A
+      - LIST OF AIR CARRIERS
+      min_records: 120
+      count_range_ratio:
+      - 0.7
+      - 1.5
+    max_age_days: 45
+    closure_keywords:
+    - no longer being updated
+    - no longer updated
+    - has closed
+    - closed on
+    - replaced by
+    - superseded
+    - withdrawn
+    - archived
+    - discontinued
+    - moved to
     verify_url: https://transport.ec.europa.eu/transport-themes/eu-air-safety-list_en
-    record_url_template: ""
-    status: OK
-
-  - id: faa_iasa
-    authority: US FAA
-    landing_page: https://www.faa.gov/about/initiatives/iasa/iasa-program-results
-    file_url_resolved: https://www.faa.gov/sites/faa.gov/files/IASAWSR119r.pdf
-    publication_date: "2025-04-18"
-    last_checked: "2026-10-20"
-    sha256: 73ef0e78c2d17454d89393f3eb1159081c9bc14833e32289da01cfd2e0b23294
-    parser: modules.aviation.parser.parse_faa_iasa
-    verify_url: https://www.faa.gov/about/initiatives/iasa/iasa-program-results
-    record_url_template: ""
-    status: OK
-
-  - id: in_mha_first_schedule
-    authority: Ministry of Home Affairs, Government of India
-    landing_page: https://www.mha.gov.in/counter-terrorism-counter-radicalization-division
-    file_url_resolved: https://www.mha.gov.in/files/documents/List46TerroristOrganisationsWebsite.pdf
-    publication_date: "2026-10-01"
-    last_checked: "2026-10-20"
-    sha256: 8c33d4175680927cd1d27dbfe71eb66e73fd035663c419382c6b3aebb2da7b91
-    parser: modules.india.parser.parse_first_schedule
-    verify_url: https://www.mha.gov.in/files/documents/List46TerroristOrganisationsWebsite.pdf
-    record_url_template: https://www.mha.gov.in/files/documents/List46TerroristOrganisationsWebsite.pdf
-    status: OK
-
-  - id: in_mha_fourth_schedule
-    authority: Ministry of Home Affairs, Government of India
-    landing_page: https://www.mha.gov.in/counter-terrorism-counter-radicalization-division
-    file_url_resolved: https://www.mha.gov.in/individuals-terrorists-fourth-schedule-unlawful-activities-prevention-act
-    publication_date: "2026-07-04"
-    last_checked: "2026-10-20"
-    sha256: 05d1f222c5d89d797f68862577011c3f77e97e05fe8c7e39ffc757814100ea4e
-    parser: modules.india.parser.parse_fourth_schedule
-    verify_url: https://www.mha.gov.in/individuals-terrorists-fourth-schedule-unlawful-activities-prevention-act
-    record_url_template: https://www.mha.gov.in/individuals-terrorists-fourth-schedule-unlawful-activities-prevention-act
-    status: OK
-
-  - id: in_mha_unlawful_assoc
-    authority: Ministry of Home Affairs, Government of India
-    landing_page: https://www.mha.gov.in/counter-terrorism-counter-radicalization-division
-    file_url_resolved: https://www.mha.gov.in/unlawful-associations-section3-unlawful-activities-prevention-act-1967
-    publication_date: "2025-03-17"
-    last_checked: "2026-10-20"
-    sha256: f30ae013c0f2507643537184f13cebd9041c912693334d78d971086156dd4bb7
-    parser: modules.india.parser.parse_unlawful_associations
-    verify_url: https://www.mha.gov.in/unlawful-associations-section3-unlawful-activities-prevention-act-1967
-    record_url_template: https://www.mha.gov.in/unlawful-associations-section3-unlawful-activities-prevention-act-1967
-    status: OK
-
-  - id: fatf_jurisdictions
+    record_url_template: https://transport.ec.europa.eu/transport-themes/eu-air-safety-list_en
+  faa_iasa:
+    id: faa_iasa
+    authority: Federal Aviation Administration (FAA)
+    landing_page: https://www.faa.gov/about/initiatives/iasa
+    candidate_urls:
+    - https://www.faa.gov/sites/default/files/faa_iasa.pdf
+    allowed_domains:
+    - faa.gov
+    discovery: href=[\"\'](https?://www\.faa\.gov/[^\"\']*(?:iasa|IASA)[^\"\']*\.pdf)[\"\']
+    expected:
+      format: pdf
+      min_bytes: 20000
+      required_elements:
+      - Category 2
+      - IASA
+      min_records: 5
+      count_range_ratio:
+      - 0.5
+      - 2.0
+    max_age_days: 45
+    closure_keywords:
+    - no longer being updated
+    - no longer updated
+    - has closed
+    - closed on
+    - replaced by
+    - superseded
+    - withdrawn
+    - archived
+    - discontinued
+    - moved to
+    verify_url: https://www.faa.gov/about/initiatives/iasa
+    record_url_template: https://www.faa.gov/about/initiatives/iasa
+  fatf_jurisdictions:
+    id: fatf_jurisdictions
     authority: Financial Action Task Force (FATF)
     landing_page: https://www.fatf-gafi.org/en/topics/high-risk-and-other-monitored-jurisdictions.html
-    file_url_resolved: https://www.fatf-gafi.org/en/topics/high-risk-and-other-monitored-jurisdictions.html
-    publication_date: "2026-06-28"
-    last_checked: "2026-10-20"
-    sha256: table_data
-    parser: modules.fatf.client.check_country
+    candidate_urls:
+    - https://www.fatf-gafi.org/content/dam/fatf-gafi/fatf.json
+    allowed_domains:
+    - fatf-gafi.org
+    discovery: href=[\"\'](https?://www\.fatf-gafi\.org/[^\"\']*\.json)[\"\']
+    expected:
+      format: json
+      min_bytes: 500
+      required_elements:
+      - black_list
+      - grey_list
+      min_records: 20
+      count_range_ratio:
+      - 0.7
+      - 1.5
+    max_age_days: 45
+    closure_keywords:
+    - no longer being updated
+    - no longer updated
+    - has closed
+    - closed on
+    - replaced by
+    - superseded
+    - withdrawn
+    - archived
+    - discontinued
+    - moved to
     verify_url: https://www.fatf-gafi.org/en/topics/high-risk-and-other-monitored-jurisdictions.html
-    record_url_template: ""
-    status: OK
-
-  - id: os_bulk
-    authority: OpenSanctions
-    landing_page: https://www.opensanctions.org/datasets/sanctions/
-    file_url_resolved: https://data.opensanctions.org/datasets/latest/sanctions/entities.ftm.json
-    publication_date: "2026-10-18"
-    last_checked: "2026-10-20"
-    sha256: not_downloaded
-    parser: modules.opensanctions.bulk.load_bulk
-    verify_url: https://www.opensanctions.org/search/
-    record_url_template: https://www.opensanctions.org/entities/{id}/
-    status: OK
-    licence: CC BY-NC 4.0 – commercial use requires licence
+    record_url_template: https://www.fatf-gafi.org/en/topics/high-risk-and-other-monitored-jurisdictions.html

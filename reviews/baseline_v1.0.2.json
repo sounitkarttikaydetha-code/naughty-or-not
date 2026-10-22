@@ -1,0 +1,3722 @@
+{
+  "Sberbank::organisation": {
+    "query": "Sberbank",
+    "query_type": "organisation",
+    "group": "golden_set",
+    "lists": {
+      "us_ofac": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.779021590909091,
+        "reason": "core_name",
+        "primary_name": "JOINT STOCK COMPANY SBERBANK",
+        "matched_name": "JOINT STOCK COMPANY SBERBANK",
+        "source_id": "18715",
+        "expanded_from": null,
+        "below_threshold_count": 7
+      },
+      "us_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.779021590909091,
+        "reason": "core_name",
+        "primary_name": "JOINT STOCK COMPANY SBERBANK",
+        "matched_name": "JOINT STOCK COMPANY SBERBANK",
+        "source_id": "18715",
+        "expanded_from": null,
+        "below_threshold_count": 2
+      },
+      "uk_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "PJSC Sberbank (Public Joint-Stock Company Sberbank)",
+        "matched_name": "PJSC Sberbank",
+        "source_id": "RUS0256",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "eu_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "Сбербанк",
+        "matched_name": "Sberbank",
+        "source_id": "142064",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 4
+      }
+    }
+  },
+  "Sberbank of Russia::organisation": {
+    "query": "Sberbank of Russia",
+    "query_type": "organisation",
+    "group": "golden_set",
+    "lists": {
+      "us_ofac": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "PUBLIC JOINT STOCK COMPANY SBERBANK OF RUSSIA",
+        "matched_name": "PUBLIC JOINT STOCK COMPANY SBERBANK OF RUSSIA",
+        "source_id": "17018",
+        "expanded_from": null,
+        "below_threshold_count": 7
+      },
+      "us_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "PUBLIC JOINT STOCK COMPANY SBERBANK OF RUSSIA",
+        "matched_name": "PUBLIC JOINT STOCK COMPANY SBERBANK OF RUSSIA",
+        "source_id": "17018",
+        "expanded_from": null,
+        "below_threshold_count": 2
+      },
+      "uk_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "PJSC Sberbank (Public Joint-Stock Company Sberbank)",
+        "matched_name": "PJSC Sberbank of Russia",
+        "source_id": "RUS0256",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "eu_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name_reverse",
+        "primary_name": "Сбербанк",
+        "matched_name": "Sberbank",
+        "source_id": "142064",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 4
+      }
+    }
+  },
+  "VTB Bank::organisation": {
+    "query": "VTB Bank",
+    "query_type": "organisation",
+    "group": "golden_set",
+    "lists": {
+      "us_ofac": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 1.0,
+        "reason": "score_and_core_name",
+        "primary_name": "VTB BANK BELARUS CLOSED JOINT STOCK COMPANY",
+        "matched_name": "VTB BANK BELARUS",
+        "source_id": "18721",
+        "expanded_from": null,
+        "below_threshold_count": 3
+      },
+      "us_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "VTB BANK PUBLIC JOINT STOCK COMPANY",
+        "matched_name": "VTB BANK PUBLIC JOINT STOCK COMPANY",
+        "source_id": "17013",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "uk_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "VTB Bank (Public Joint-Stock Company)",
+        "matched_name": "VTB Bank",
+        "source_id": "RUS0250",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "eu_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "ВТБ/Внешторгбанк",
+        "matched_name": "VTB Bank",
+        "source_id": "139001",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      }
+    }
+  },
+  "S7 Airlines::airline": {
+    "query": "S7 Airlines",
+    "query_type": "airline",
+    "group": "golden_set",
+    "lists": {
+      "us_ofac": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.81225,
+        "reason": "type_mismatch",
+        "primary_name": "SIBERIA",
+        "matched_name": "SIBERIA",
+        "source_id": "37078",
+        "expanded_from": "Siberia Airlines",
+        "below_threshold_count": 36
+      },
+      "us_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "SIBERIAN AIRLINES D/B/A S7 AIRLINES",
+        "matched_name": "S7 AIRLINES",
+        "source_id": "b04d5f6edf0e3b9ca1ff24074e5f382eb02ba47cf381db8217f9b8bd",
+        "expanded_from": null,
+        "below_threshold_count": 32
+      },
+      "uk_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "JSC Siberia Airlines",
+        "matched_name": "S7 Airlines",
+        "source_id": "RUS2426",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 60
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 37
+      }
+    }
+  },
+  "Siberia Airlines::airline": {
+    "query": "Siberia Airlines",
+    "query_type": "airline",
+    "group": "golden_set",
+    "lists": {
+      "us_ofac": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.81225,
+        "reason": "type_mismatch",
+        "primary_name": "SIBERIA",
+        "matched_name": "SIBERIA",
+        "source_id": "37078",
+        "expanded_from": null,
+        "below_threshold_count": 36
+      },
+      "us_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "SIBERIAN AIRLINES D/B/A S7 AIRLINES",
+        "matched_name": "S7 AIRLINES",
+        "source_id": "b04d5f6edf0e3b9ca1ff24074e5f382eb02ba47cf381db8217f9b8bd",
+        "expanded_from": "S7 Airlines",
+        "below_threshold_count": 32
+      },
+      "uk_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.7919437500000001,
+        "reason": "core_name",
+        "primary_name": "JSC Siberia Airlines",
+        "matched_name": "JSC Siberia Airlines",
+        "source_id": "RUS2426",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 60
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 37
+      }
+    }
+  },
+  "Aeroflot::airline": {
+    "query": "Aeroflot",
+    "query_type": "airline",
+    "group": "golden_set",
+    "lists": {
+      "us_ofac": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 27
+      },
+      "us_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.7716375,
+        "reason": "core_name",
+        "primary_name": "PJSC AEROFLOT",
+        "matched_name": "PJSC AEROFLOT",
+        "source_id": "1d6ca9a675764b253af523e62f0e69833a69c554e54d1128a1593c7a",
+        "expanded_from": null,
+        "below_threshold_count": 21
+      },
+      "uk_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.7716375,
+        "reason": "core_name",
+        "primary_name": "PJSC Aeroflot",
+        "matched_name": "PJSC Aeroflot",
+        "source_id": "RUS1444",
+        "expanded_from": null,
+        "below_threshold_count": 3
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 32
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 1
+      }
+    }
+  },
+  "Azur Air::airline": {
+    "query": "Azur Air",
+    "query_type": "airline",
+    "group": "golden_set",
+    "lists": {
+      "us_ofac": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7070995408163265,
+        "reason": "score",
+        "primary_name": "AUTOMOBILE PLANT URAL JOINT STOCK COMPANY",
+        "matched_name": "AUTOMOBILE PLANT URAL JOINT STOCK COMPANY",
+        "source_id": "48874",
+        "expanded_from": "AzurAir",
+        "below_threshold_count": 73
+      },
+      "us_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "AZUR AIR",
+        "matched_name": "AZUR AIR",
+        "source_id": "642715d1625402f8a5ae7b84f0c9ea70f3e92cfed8c56fea57790f63",
+        "expanded_from": null,
+        "below_threshold_count": 45
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 70
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 72
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 46
+      }
+    }
+  },
+  "UTair::airline": {
+    "query": "UTair",
+    "query_type": "airline",
+    "group": "golden_set",
+    "lists": {
+      "us_ofac": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 42
+      },
+      "us_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.72848671875,
+        "reason": "core_name",
+        "primary_name": "UTAIR AVIATION JSC,",
+        "matched_name": "UTAIR AVIATION JSC",
+        "source_id": "1c9ad49f655038f54ce330ad4f09c62d5ff6546ef3ea31654271b330",
+        "expanded_from": null,
+        "below_threshold_count": 24
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 33
+      },
+      "eu_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "UTAIR",
+        "matched_name": "UTAIR",
+        "source_id": "171617",
+        "expanded_from": null,
+        "below_threshold_count": 34
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 26
+      }
+    }
+  },
+  "Jaipur International Airport Limited::organisation": {
+    "query": "Jaipur International Airport Limited",
+    "query_type": "organisation",
+    "group": "golden_set",
+    "lists": {
+      "us_ofac": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      },
+      "us_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 21
+      }
+    }
+  },
+  "Adani Airport Holdings Limited::organisation": {
+    "query": "Adani Airport Holdings Limited",
+    "query_type": "organisation",
+    "group": "golden_set",
+    "lists": {
+      "us_ofac": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7339258928571429,
+        "reason": "type_mismatch",
+        "primary_name": "AL-ADANI, Abu Sulayman",
+        "matched_name": "AL-ADANI, Abu Sulayman",
+        "source_id": "23052",
+        "expanded_from": null,
+        "below_threshold_count": 4
+      },
+      "us_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      }
+    }
+  },
+  "Air India::organisation": {
+    "query": "Air India",
+    "query_type": "organisation",
+    "group": "golden_set",
+    "lists": {
+      "us_ofac": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 3
+      },
+      "us_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 2
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 1
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 2
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 1
+      }
+    }
+  },
+  "IndiGo::airline": {
+    "query": "IndiGo",
+    "query_type": "airline",
+    "group": "golden_set",
+    "lists": {
+      "us_ofac": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7568693181818181,
+        "reason": "score",
+        "primary_name": "LIMITED LIABILITY COMPANY INDIGO 3D",
+        "matched_name": "LIMITED LIABILITY COMPANY INDIGO 3D",
+        "source_id": "48863",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "us_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 24
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 6
+      }
+    }
+  },
+  "InterGlobe Aviation Limited::airline": {
+    "query": "InterGlobe Aviation Limited",
+    "query_type": "airline",
+    "group": "golden_set",
+    "lists": {
+      "us_ofac": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      },
+      "us_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 2
+      }
+    }
+  },
+  "Siberian Wellness::organisation": {
+    "query": "Siberian Wellness",
+    "query_type": "organisation",
+    "group": "golden_set",
+    "lists": {
+      "us_ofac": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.75133125,
+        "reason": "score",
+        "primary_name": "PUBLIC JOINT STOCK COMPANY BANK URALSIB",
+        "matched_name": "PUBLIC JOINT STOCK COMPANY BANK URALSIB",
+        "source_id": "39317",
+        "expanded_from": null,
+        "below_threshold_count": 23
+      },
+      "us_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.75133125,
+        "reason": "score",
+        "primary_name": "SIBERIAN AIRLINES D/B/A S7 AIRLINES",
+        "matched_name": "SIBERIAN AIRLINES D/B/A S7 AIRLINES",
+        "source_id": "b04d5f6edf0e3b9ca1ff24074e5f382eb02ba47cf381db8217f9b8bd",
+        "expanded_from": null,
+        "below_threshold_count": 20
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 3
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 5
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 16
+      }
+    }
+  },
+  "Rajesh Kumar::person": {
+    "query": "Rajesh Kumar",
+    "query_type": "person",
+    "group": "golden_set",
+    "lists": {
+      "us_ofac": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.77417578125,
+        "reason": "partial_name_person",
+        "primary_name": "GUPTA, Rajesh",
+        "matched_name": "GUPTA, Rajesh Kumar",
+        "source_id": "27586",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "us_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "uk_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.77417578125,
+        "reason": "partial_name_person",
+        "primary_name": "GUPTA Rajesh Kumar",
+        "matched_name": "GUPTA Rajesh Kumar",
+        "source_id": "GAC0018",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      }
+    }
+  },
+  "Mohammed Khan::person": {
+    "query": "Mohammed Khan",
+    "query_type": "person",
+    "group": "golden_set",
+    "lists": {
+      "us_ofac": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "MOHAMMADHASNI, Haji Asad Khan Zarkari",
+        "matched_name": "KHAN, Mohammed",
+        "source_id": "10898",
+        "expanded_from": null,
+        "below_threshold_count": 3
+      },
+      "us_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7346994642857143,
+        "reason": "partial_name_person",
+        "primary_name": "Mohammad Jan Khan Mangal",
+        "matched_name": "Mohammad Jan Khan Mangal",
+        "source_id": "1b5d453ba5e47d3a629994479eaa6f7a736134c0cc108262c9405d13",
+        "expanded_from": null,
+        "below_threshold_count": 2
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 5
+      },
+      "eu_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.5553062167816092,
+        "reason": "core_name_fuzzy",
+        "primary_name": "حجت الاسلام علی خان محمدی",
+        "matched_name": "Hodjatoleslam Ali KHAN MOHAMMADI",
+        "source_id": "151889",
+        "expanded_from": null,
+        "below_threshold_count": 5
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 5
+      }
+    }
+  },
+  "Sky Bank::organisation": {
+    "query": "Sky Bank",
+    "query_type": "organisation",
+    "group": "golden_set",
+    "lists": {
+      "us_ofac": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 7
+      },
+      "us_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 17
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 1
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 2
+      }
+    }
+  },
+  "Volga Logistics::organisation": {
+    "query": "Volga Logistics",
+    "query_type": "organisation",
+    "group": "golden_set",
+    "lists": {
+      "us_ofac": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.75133125,
+        "reason": "score",
+        "primary_name": "LK VOLGA LIMITED LIABILITY COMPANY",
+        "matched_name": "LK VOLGA LIMITED LIABILITY COMPANY",
+        "source_id": "51523",
+        "expanded_from": null,
+        "below_threshold_count": 1
+      },
+      "us_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.75133125,
+        "reason": "score",
+        "primary_name": "Volga Group",
+        "matched_name": "Volga Group",
+        "source_id": "175942889f72035dfd87e33cc12f23fd68f045c63501759d5a1379b3",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "uk_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7581,
+        "reason": "score",
+        "primary_name": "VOLGA SHIPPING COMPANY",
+        "matched_name": "VOLGA SHIPPING COMPANY",
+        "source_id": "RUS1847",
+        "expanded_from": null,
+        "below_threshold_count": 1
+      },
+      "eu_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.75133125,
+        "reason": "score",
+        "primary_name": "ООО „Авиакомпания ,Волга Днепр‘“",
+        "matched_name": "ООО „Авиакомпания ,Волга Днепр‘“",
+        "source_id": "166187",
+        "expanded_from": null,
+        "below_threshold_count": 2
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 1
+      }
+    }
+  },
+  "S7::airline": {
+    "query": "S7",
+    "query_type": "airline",
+    "group": "golden_set",
+    "lists": {
+      "us_ofac": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7147800000000001,
+        "reason": "score",
+        "primary_name": "S 7 ENGINEERING LLC",
+        "matched_name": "S 7 ENGINEERING LLC",
+        "source_id": "47939",
+        "expanded_from": null,
+        "below_threshold_count": 36
+      },
+      "us_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.7147800000000001,
+        "reason": "core_name",
+        "primary_name": "SIBERIAN AIRLINES D/B/A S7 AIRLINES",
+        "matched_name": "S7 AIRLINES",
+        "source_id": "b04d5f6edf0e3b9ca1ff24074e5f382eb02ba47cf381db8217f9b8bd",
+        "expanded_from": null,
+        "below_threshold_count": 32
+      },
+      "uk_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.7147800000000001,
+        "reason": "core_name",
+        "primary_name": "JSC Siberia Airlines",
+        "matched_name": "S7 Airlines",
+        "source_id": "RUS2426",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 60
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 37
+      }
+    }
+  },
+  "Aeroflot Russian Airlines::airline": {
+    "query": "Aeroflot Russian Airlines",
+    "query_type": "airline",
+    "group": "golden_set",
+    "lists": {
+      "us_ofac": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 27
+      },
+      "us_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.7716375,
+        "reason": "core_name_reverse",
+        "primary_name": "PJSC AEROFLOT",
+        "matched_name": "PJSC AEROFLOT",
+        "source_id": "1d6ca9a675764b253af523e62f0e69833a69c554e54d1128a1593c7a",
+        "expanded_from": null,
+        "below_threshold_count": 21
+      },
+      "uk_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.7716375,
+        "reason": "core_name_reverse",
+        "primary_name": "PJSC Aeroflot",
+        "matched_name": "PJSC Aeroflot",
+        "source_id": "RUS1444",
+        "expanded_from": null,
+        "below_threshold_count": 3
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 32
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 1
+      }
+    }
+  },
+  "Siberian Airlines::organisation": {
+    "query": "Siberian Airlines",
+    "query_type": "organisation",
+    "group": "golden_set",
+    "lists": {
+      "us_ofac": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.75133125,
+        "reason": "score",
+        "primary_name": "PUBLIC JOINT STOCK COMPANY BANK URALSIB",
+        "matched_name": "PUBLIC JOINT STOCK COMPANY BANK URALSIB",
+        "source_id": "39317",
+        "expanded_from": null,
+        "below_threshold_count": 36
+      },
+      "us_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "SIBERIAN AIRLINES D/B/A S7 AIRLINES",
+        "matched_name": "SIBERIAN AIRLINES",
+        "source_id": "b04d5f6edf0e3b9ca1ff24074e5f382eb02ba47cf381db8217f9b8bd",
+        "expanded_from": null,
+        "below_threshold_count": 32
+      },
+      "uk_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "JSC Siberia Airlines",
+        "matched_name": "S7 Airlines",
+        "source_id": "RUS2426",
+        "expanded_from": "S7 Airlines",
+        "below_threshold_count": 25
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 60
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 37
+      }
+    }
+  },
+  "PJSC Sberbank::organisation": {
+    "query": "PJSC Sberbank",
+    "query_type": "organisation",
+    "group": "19_agreed",
+    "lists": {
+      "us_ofac": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "PUBLIC JOINT STOCK COMPANY SBERBANK OF RUSSIA",
+        "matched_name": "PJSC SBERBANK",
+        "source_id": "17018",
+        "expanded_from": null,
+        "below_threshold_count": 7
+      },
+      "us_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "PUBLIC JOINT STOCK COMPANY SBERBANK OF RUSSIA",
+        "matched_name": "PJSC Sberbank",
+        "source_id": "17018",
+        "expanded_from": null,
+        "below_threshold_count": 2
+      },
+      "uk_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "PJSC Sberbank (Public Joint-Stock Company Sberbank)",
+        "matched_name": "PJSC Sberbank",
+        "source_id": "RUS0256",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "eu_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "Сбербанк",
+        "matched_name": "Sberbank",
+        "source_id": "142064",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 4
+      }
+    }
+  },
+  "Larsen & Toubro::organisation": {
+    "query": "Larsen & Toubro",
+    "query_type": "organisation",
+    "group": "29_independent",
+    "lists": {
+      "us_ofac": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      },
+      "us_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 11
+      }
+    }
+  },
+  "SpiceJet::airline": {
+    "query": "SpiceJet",
+    "query_type": "airline",
+    "group": "29_independent",
+    "lists": {
+      "us_ofac": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      },
+      "us_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 23
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 4
+      }
+    }
+  },
+  "Akasa Air::airline": {
+    "query": "Akasa Air",
+    "query_type": "airline",
+    "group": "29_independent",
+    "lists": {
+      "us_ofac": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      },
+      "us_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      }
+    }
+  },
+  "Tata Steel::organisation": {
+    "query": "Tata Steel",
+    "query_type": "organisation",
+    "group": "29_independent",
+    "lists": {
+      "us_ofac": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.81225,
+        "reason": "type_mismatch",
+        "primary_name": "BERMUDEZ MEJIA, Luis Antonio",
+        "matched_name": "TATA",
+        "source_id": "33013",
+        "expanded_from": null,
+        "below_threshold_count": 1
+      },
+      "us_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7339258928571429,
+        "reason": "score",
+        "primary_name": "Steel Design LLC",
+        "matched_name": "Steel Design LLC",
+        "source_id": "aa1a68cfe58da27a93a1ce2aa9a3f9d295ec94b3ee280c3a52cb71fb",
+        "expanded_from": null,
+        "below_threshold_count": 22
+      },
+      "uk_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7190801470588235,
+        "reason": "type_mismatch",
+        "primary_name": "SAEED HAFIZ MUHAMMAD",
+        "matched_name": "SAEED HAFIZ MUHAMMAD",
+        "source_id": "AQD0183",
+        "expanded_from": null,
+        "below_threshold_count": 2
+      },
+      "eu_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.72425625,
+        "reason": "score",
+        "primary_name": "Научно-исследовательский  институт стали",
+        "matched_name": "Научно-исследовательский  институт стали",
+        "source_id": "179311",
+        "expanded_from": null,
+        "below_threshold_count": 2
+      },
+      "un_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7190801470588235,
+        "reason": "type_mismatch",
+        "primary_name": "HAFIZ MUHAMMAD SAEED",
+        "matched_name": "HAFIZ MUHAMMAD SAEED",
+        "source_id": "UN-2833107",
+        "expanded_from": null,
+        "below_threshold_count": 22
+      }
+    }
+  },
+  "Bharat Petroleum::organisation": {
+    "query": "Bharat Petroleum",
+    "query_type": "organisation",
+    "group": "29_independent",
+    "lists": {
+      "us_ofac": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7687366071428572,
+        "reason": "score",
+        "primary_name": "TAMCO ESTABLISHMENT FOR OIL DERIVATIVES",
+        "matched_name": "TAMCO ESTABLISHMENT FOR OIL DERIVATIVES",
+        "source_id": "54478",
+        "expanded_from": null,
+        "below_threshold_count": 19
+      },
+      "us_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7635149999999999,
+        "reason": "score",
+        "primary_name": "Oranto Petroleum",
+        "matched_name": "Oranto Petroleum",
+        "source_id": "3e0e2426575c4c686b47919b384984de0d6e107168f1243313bcac8b",
+        "expanded_from": null,
+        "below_threshold_count": 8
+      },
+      "uk_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.754914705882353,
+        "reason": "score",
+        "primary_name": "MINISTRY OF PETROLEUM",
+        "matched_name": "MINISTRY OF PETROLEUM",
+        "source_id": "INU0413",
+        "expanded_from": null,
+        "below_threshold_count": 24
+      },
+      "eu_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.754914705882353,
+        "reason": "score",
+        "primary_name": "Ministry of Petroleum",
+        "matched_name": "Ministry of Petroleum",
+        "source_id": "178355",
+        "expanded_from": null,
+        "below_threshold_count": 24
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      }
+    }
+  },
+  "Rosneft::organisation": {
+    "query": "Rosneft",
+    "query_type": "organisation",
+    "group": "29_independent",
+    "lists": {
+      "us_ofac": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "OPEN JOINT-STOCK COMPANY ROSNEFT OIL COMPANY",
+        "matched_name": "ROSNEFT",
+        "source_id": "17022",
+        "expanded_from": null,
+        "below_threshold_count": 1
+      },
+      "us_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "Rosneft",
+        "matched_name": "Rosneft",
+        "source_id": "190b85a2272ec2e1a7dc29669a5190e9f4cd1f8c0d49ae3752368a60",
+        "expanded_from": null,
+        "below_threshold_count": 3
+      },
+      "uk_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "PJSC Rosneft Oil Company",
+        "matched_name": "ROSNEFT",
+        "source_id": "RUS3064",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "eu_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.7679454545454546,
+        "reason": "core_name",
+        "primary_name": "RN AERO",
+        "matched_name": "ROSNEFT AERO",
+        "source_id": "137714",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 4
+      }
+    }
+  },
+  "Gazprombank::organisation": {
+    "query": "Gazprombank",
+    "query_type": "organisation",
+    "group": "29_independent",
+    "lists": {
+      "us_ofac": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.7861419642857144,
+        "reason": "core_name",
+        "primary_name": "GAZPROMBANK (SWITZERLAND) LTD",
+        "matched_name": "GAZPROMBANK   LTD",
+        "source_id": "20312",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "us_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.7861419642857144,
+        "reason": "core_name",
+        "primary_name": "GAZPROMBANK (SWITZERLAND) LTD",
+        "matched_name": "GAZPROMBANK   LTD",
+        "source_id": "20312",
+        "expanded_from": null,
+        "below_threshold_count": 2
+      },
+      "uk_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "Gazprombank",
+        "matched_name": "Gazprombank",
+        "source_id": "RUS1072",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 20
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      }
+    }
+  },
+  "Mahan Air::airline": {
+    "query": "Mahan Air",
+    "query_type": "airline",
+    "group": "29_independent",
+    "lists": {
+      "us_ofac": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "MAHAN AIR",
+        "matched_name": "MAHAN AIR",
+        "source_id": "12927",
+        "expanded_from": null,
+        "below_threshold_count": 1
+      },
+      "us_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.741178125,
+        "reason": "score",
+        "primary_name": "MAHAN AIRWAYS",
+        "matched_name": "MAHAN AIRWAYS",
+        "source_id": "134818ba309fc0c4a20dc3cb206fa681dc636741be08c18d45f2f61e",
+        "expanded_from": null,
+        "below_threshold_count": 1
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      },
+      "eu_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "ماهان ایر",
+        "matched_name": "Mahan Air",
+        "source_id": "170089",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      }
+    }
+  },
+  "Ural::airline": {
+    "query": "Ural",
+    "query_type": "airline",
+    "group": "t8_5_probes",
+    "lists": {
+      "us_ofac": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7716375,
+        "reason": "score",
+        "primary_name": "AUTOMOBILE PLANT URAL JOINT STOCK COMPANY",
+        "matched_name": "AUTOMOBILE PLANT URAL JOINT STOCK COMPANY",
+        "source_id": "48874",
+        "expanded_from": null,
+        "below_threshold_count": 22
+      },
+      "us_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.7229025,
+        "reason": "core_name",
+        "primary_name": "URAL AIRLINES JSC",
+        "matched_name": "URAL AIRLINES JSC",
+        "source_id": "25b989d17378caffa71aa9300f665ac352380c07250243c6288e8693",
+        "expanded_from": null,
+        "below_threshold_count": 20
+      },
+      "uk_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.7229025,
+        "reason": "core_name",
+        "primary_name": "JSC Ural Airlines",
+        "matched_name": "JSC Ural Airlines",
+        "source_id": "RUS1446",
+        "expanded_from": null,
+        "below_threshold_count": 23
+      },
+      "eu_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.7208718749999999,
+        "reason": "core_name",
+        "primary_name": "Уральские Авиалинии",
+        "matched_name": "OJSC Ural Airlines",
+        "source_id": "166152",
+        "expanded_from": null,
+        "below_threshold_count": 22
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 18
+      }
+    }
+  },
+  "Rossiya::airline": {
+    "query": "Rossiya",
+    "query_type": "airline",
+    "group": "t8_5_probes",
+    "lists": {
+      "us_ofac": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.7679454545454546,
+        "reason": "core_name",
+        "primary_name": "BANK ROSSIYA",
+        "matched_name": "BANK ROSSIYA",
+        "source_id": "16681",
+        "expanded_from": null,
+        "below_threshold_count": 22
+      },
+      "us_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.7472700000000001,
+        "reason": "core_name",
+        "primary_name": "ROSSIYA AIRLINES",
+        "matched_name": "ROSSIYA AIRLINES",
+        "source_id": "1425ba169b06b84f203576bb95d1f20b921f63d925ba501d059740ed",
+        "expanded_from": null,
+        "below_threshold_count": 24
+      },
+      "uk_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.7679454545454546,
+        "reason": "core_name",
+        "primary_name": "Bank Rossiya",
+        "matched_name": "Bank Rossiya",
+        "source_id": "RUS0232",
+        "expanded_from": null,
+        "below_threshold_count": 20
+      },
+      "eu_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.7679454545454546,
+        "reason": "core_name",
+        "primary_name": "Банк “Россия”",
+        "matched_name": "Bank Rossiya",
+        "source_id": "135338",
+        "expanded_from": null,
+        "below_threshold_count": 23
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 6
+      }
+    }
+  },
+  "Pobeda::airline": {
+    "query": "Pobeda",
+    "query_type": "airline",
+    "group": "t8_5_probes",
+    "lists": {
+      "us_ofac": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.7426285714285714,
+        "reason": "core_name",
+        "primary_name": "LIMITED LIABILITY COMPANY AVIAKOMPANIYA POBEDA",
+        "matched_name": "POBEDA AIRLINES",
+        "source_id": "48822",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "us_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.7426285714285714,
+        "reason": "core_name",
+        "primary_name": "POBEDA AIRLINES",
+        "matched_name": "POBEDA AIRLINES",
+        "source_id": "1a41183f94a5a7dcde52b43ca2d60aaf3890ef15849816ea790a2613",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 24
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 3
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 3
+      }
+    }
+  },
+  "Homa::airline": {
+    "query": "Homa",
+    "query_type": "airline",
+    "group": "t8_5_probes",
+    "lists": {
+      "us_ofac": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "IRAN AIR",
+        "matched_name": "HOMA",
+        "source_id": "25237",
+        "expanded_from": null,
+        "below_threshold_count": 9
+      },
+      "us_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score",
+        "primary_name": "Iran Air",
+        "matched_name": "Iran Air",
+        "source_id": "2bcef566bd77afd68139a7bbdde0f4efbf4d1f32b905aee9cfe65e17",
+        "expanded_from": "Iran Air",
+        "below_threshold_count": 39
+      },
+      "uk_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score",
+        "primary_name": "Islamic Republic of Iran Airlines",
+        "matched_name": "Islamic Republic of Iran Airlines",
+        "source_id": "IRN0240",
+        "expanded_from": "Iran Air",
+        "below_threshold_count": 35
+      },
+      "eu_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "Iran Air Catering",
+        "matched_name": "Homa",
+        "source_id": "170094",
+        "expanded_from": null,
+        "below_threshold_count": 13
+      },
+      "un_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.74371640625,
+        "reason": "score",
+        "primary_name": "AL-QAIDA IN IRAQ",
+        "matched_name": "AL-QAIDA IN IRAQ",
+        "source_id": "UN-113966",
+        "expanded_from": "The Airline of the Islamic Republic of Iran",
+        "below_threshold_count": 35
+      }
+    }
+  },
+  "Nord Wind::airline": {
+    "query": "Nord Wind",
+    "query_type": "airline",
+    "group": "t8_5_probes",
+    "lists": {
+      "us_ofac": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.75133125,
+        "reason": "type_mismatch",
+        "primary_name": "NORD STAR",
+        "matched_name": "NORD STAR",
+        "source_id": "56706",
+        "expanded_from": null,
+        "below_threshold_count": 35
+      },
+      "us_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "NORDWIND AIRLINES",
+        "matched_name": "NORDWIND AIRLINES",
+        "source_id": "c9e72c341b15c746b6a49a42e9502641492a2e291bc7fb7cbe24f324",
+        "expanded_from": "Nordwind Airlines",
+        "below_threshold_count": 25
+      },
+      "uk_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7445625,
+        "reason": "type_mismatch",
+        "primary_name": "IMO 9314179 ('FLINT WIND')",
+        "matched_name": "IMO 9314179 ('FLINT WIND')",
+        "source_id": "RUS3778",
+        "expanded_from": null,
+        "below_threshold_count": 23
+      },
+      "eu_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.70750359375,
+        "reason": "score",
+        "primary_name": "Than Win",
+        "matched_name": "Than Win",
+        "source_id": "133419",
+        "expanded_from": null,
+        "below_threshold_count": 46
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      }
+    }
+  },
+  "Ural Airlines::airline": {
+    "query": "Ural Airlines",
+    "query_type": "airline",
+    "group": "t8_5_probes",
+    "lists": {
+      "us_ofac": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7716375,
+        "reason": "score",
+        "primary_name": "AUTOMOBILE PLANT URAL JOINT STOCK COMPANY",
+        "matched_name": "AUTOMOBILE PLANT URAL JOINT STOCK COMPANY",
+        "source_id": "48874",
+        "expanded_from": null,
+        "below_threshold_count": 22
+      },
+      "us_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.7878825,
+        "reason": "core_name",
+        "primary_name": "URAL AIRLINES JSC",
+        "matched_name": "URAL AIRLINES JSC",
+        "source_id": "25b989d17378caffa71aa9300f665ac352380c07250243c6288e8693",
+        "expanded_from": null,
+        "below_threshold_count": 20
+      },
+      "uk_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.7878825,
+        "reason": "core_name",
+        "primary_name": "JSC Ural Airlines",
+        "matched_name": "JSC Ural Airlines",
+        "source_id": "RUS1446",
+        "expanded_from": null,
+        "below_threshold_count": 23
+      },
+      "eu_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.7817906250000001,
+        "reason": "core_name",
+        "primary_name": "Уральские Авиалинии",
+        "matched_name": "OJSC Ural Airlines",
+        "source_id": "166152",
+        "expanded_from": null,
+        "below_threshold_count": 22
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 18
+      }
+    }
+  },
+  "VTB::organisation": {
+    "query": "VTB",
+    "query_type": "organisation",
+    "group": "t8_6_probes",
+    "lists": {
+      "us_ofac": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.7426285714285714,
+        "reason": "core_name",
+        "primary_name": "VTB BANK PUBLIC JOINT STOCK COMPANY",
+        "matched_name": "VTB BANK PUBLIC JOINT STOCK COMPANY",
+        "source_id": "17013",
+        "expanded_from": null,
+        "below_threshold_count": 9
+      },
+      "us_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.7426285714285714,
+        "reason": "core_name",
+        "primary_name": "VTB BANK PUBLIC JOINT STOCK COMPANY",
+        "matched_name": "VTB BANK PUBLIC JOINT STOCK COMPANY",
+        "source_id": "17013",
+        "expanded_from": null,
+        "below_threshold_count": 8
+      },
+      "uk_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "VTB Bank (Public Joint-Stock Company)",
+        "matched_name": "VTB",
+        "source_id": "RUS0250",
+        "expanded_from": null,
+        "below_threshold_count": 2
+      },
+      "eu_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.7426285714285714,
+        "reason": "core_name",
+        "primary_name": "ВТБ/Внешторгбанк",
+        "matched_name": "VTB Bank",
+        "source_id": "139001",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 1
+      }
+    }
+  },
+  "S7::organisation": {
+    "query": "S7",
+    "query_type": "organisation",
+    "group": "t8_6_probes",
+    "lists": {
+      "us_ofac": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7147800000000001,
+        "reason": "score",
+        "primary_name": "S 7 ENGINEERING LLC",
+        "matched_name": "S 7 ENGINEERING LLC",
+        "source_id": "47939",
+        "expanded_from": null,
+        "below_threshold_count": 36
+      },
+      "us_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.7147800000000001,
+        "reason": "core_name",
+        "primary_name": "SIBERIAN AIRLINES D/B/A S7 AIRLINES",
+        "matched_name": "S7 AIRLINES",
+        "source_id": "b04d5f6edf0e3b9ca1ff24074e5f382eb02ba47cf381db8217f9b8bd",
+        "expanded_from": null,
+        "below_threshold_count": 32
+      },
+      "uk_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.7147800000000001,
+        "reason": "core_name",
+        "primary_name": "JSC Siberia Airlines",
+        "matched_name": "S7 Airlines",
+        "source_id": "RUS2426",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 60
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 37
+      }
+    }
+  },
+  "IRGC::organisation": {
+    "query": "IRGC",
+    "query_type": "organisation",
+    "group": "t8_6_probes",
+    "lists": {
+      "us_ofac": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "ISLAMIC REVOLUTIONARY GUARD CORPS",
+        "matched_name": "IRGC",
+        "source_id": "10391",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "us_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7600339285714286,
+        "reason": "score",
+        "primary_name": "Islamic Revolutionary Guard Corps Aerospace Force",
+        "matched_name": "Islamic Revolutionary Guard Corps Aerospace Force",
+        "source_id": "a14c1cc7f13fd511e9d77923cd2ff3617a1d4a0767121a1838abfa12",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "uk_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "Islamic Revolutionary Guard Corps (IRGC)",
+        "matched_name": "IRGC",
+        "source_id": "INU0080",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "eu_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "شهداء سپاه پاسداران انقلاب اسلامی",
+        "matched_name": "IRGC",
+        "source_id": "148469",
+        "expanded_from": null,
+        "below_threshold_count": 1
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 3
+      }
+    }
+  },
+  "ZTE::organisation": {
+    "query": "ZTE",
+    "query_type": "organisation",
+    "group": "t8_6_probes",
+    "lists": {
+      "us_ofac": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 18
+      },
+      "us_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.72696375,
+        "reason": "score",
+        "primary_name": "ZTE Parsian",
+        "matched_name": "ZTE Parsian",
+        "source_id": "dd533a593568a5ba9078900c345859e7fd4f414f3015f254f5633ecf",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 4
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 2
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      }
+    }
+  },
+  "Bank::organisation": {
+    "query": "Bank",
+    "query_type": "organisation",
+    "group": "t8_6_probes",
+    "lists": {
+      "us_ofac": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score",
+        "primary_name": "IS BANK, AO",
+        "matched_name": "IS BANK, AO",
+        "source_id": "22507",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "us_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7716375,
+        "reason": "score",
+        "primary_name": "BM Bank JSC",
+        "matched_name": "BM Bank JSC",
+        "source_id": "17017",
+        "expanded_from": null,
+        "below_threshold_count": 5
+      },
+      "uk_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score",
+        "primary_name": "IS Bank",
+        "matched_name": "IS Bank",
+        "source_id": "RUS0236",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "eu_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7716375,
+        "reason": "score",
+        "primary_name": "ООО “ВБ Банк\"",
+        "matched_name": "ООО “ВБ Банк\"",
+        "source_id": "183726",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "un_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7445625,
+        "reason": "score",
+        "primary_name": "KORYO BANK",
+        "matched_name": "KORYO BANK",
+        "source_id": "UN-6908596",
+        "expanded_from": null,
+        "below_threshold_count": 5
+      }
+    }
+  },
+  "Air::organisation": {
+    "query": "Air",
+    "query_type": "organisation",
+    "group": "t8_6_probes",
+    "lists": {
+      "us_ofac": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.75133125,
+        "reason": "score",
+        "primary_name": "POUYA AIR",
+        "matched_name": "POUYA AIR",
+        "source_id": "13109",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "us_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7635149999999999,
+        "reason": "score",
+        "primary_name": "Ukraine Mediterranean Airlines",
+        "matched_name": "Ukraine Mediterranean Airlines",
+        "source_id": "e06e1dfc8b1e9f120dc340b25cf241f001d715c4c2c9bd0d6982c2c8",
+        "expanded_from": null,
+        "below_threshold_count": 1
+      },
+      "uk_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.75133125,
+        "reason": "score",
+        "primary_name": "YAS AIR",
+        "matched_name": "YAS AIR",
+        "source_id": "INU0273",
+        "expanded_from": null,
+        "below_threshold_count": 4
+      },
+      "eu_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.75133125,
+        "reason": "score",
+        "primary_name": "Yas Air",
+        "matched_name": "Yas Air",
+        "source_id": "6697",
+        "expanded_from": null,
+        "below_threshold_count": 6
+      },
+      "un_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.75133125,
+        "reason": "score",
+        "primary_name": "YAS AIR",
+        "matched_name": "YAS AIR",
+        "source_id": "UN-110327",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      }
+    }
+  },
+  "International::organisation": {
+    "query": "International",
+    "query_type": "organisation",
+    "group": "t8_6_probes",
+    "lists": {
+      "us_ofac": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7894054687500001,
+        "reason": "score",
+        "primary_name": "MAK INTERNATIONAL SERVICES CO LTD",
+        "matched_name": "MAK INTERNATIONAL SERVICES CO LTD",
+        "source_id": "22906",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "us_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.796005,
+        "reason": "score",
+        "primary_name": "A.C. International",
+        "matched_name": "A.C. International",
+        "source_id": "808de622c89fcefa5aa5fef3f15d08a596307661fef2a0caab654337",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "uk_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7835823529411765,
+        "reason": "score",
+        "primary_name": "INOI INTERNATIONAL FZ LLC",
+        "matched_name": "INOI INTERNATIONAL FZ LLC",
+        "source_id": "RUS3061",
+        "expanded_from": null,
+        "below_threshold_count": 3
+      },
+      "eu_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7784062500000001,
+        "reason": "score",
+        "primary_name": "EKN Trading",
+        "matched_name": "EKN Trading",
+        "source_id": "177124",
+        "expanded_from": null,
+        "below_threshold_count": 11
+      },
+      "un_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.773775,
+        "reason": "score",
+        "primary_name": "LEADER (HONG KONG) INTERNATIONAL",
+        "matched_name": "LEADER (HONG KONG) INTERNATIONAL",
+        "source_id": "UN-690768",
+        "expanded_from": null,
+        "below_threshold_count": 7
+      }
+    }
+  },
+  "Сбербанк::organisation": {
+    "query": "Сбербанк",
+    "query_type": "organisation",
+    "group": "t8_6_probes",
+    "lists": {
+      "us_ofac": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "us_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "eu_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score",
+        "primary_name": "Сбербанк",
+        "matched_name": "Сбербанк",
+        "source_id": "142064",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      }
+    }
+  },
+  "طيران ماهان::airline": {
+    "query": "طيران ماهان",
+    "query_type": "airline",
+    "group": "t8_6_probes",
+    "lists": {
+      "us_ofac": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "us_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      }
+    }
+  },
+  "Qaddafi::person": {
+    "query": "Qaddafi",
+    "query_type": "person",
+    "group": "t8_6a_probes",
+    "lists": {
+      "us_ofac": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.761484375,
+        "reason": "partial_name_person",
+        "primary_name": "QADHAFI, Ayesha",
+        "matched_name": "EL-QADDAFI, Aisha",
+        "source_id": "12610",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "us_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 24
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 24
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 14
+      }
+    }
+  },
+  "Kadhafi::person": {
+    "query": "Kadhafi",
+    "query_type": "person",
+    "group": "t8_6a_probes",
+    "lists": {
+      "us_ofac": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      },
+      "us_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 5
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 25
+      },
+      "eu_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 20
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 17
+      }
+    }
+  },
+  "Gadhafi::person": {
+    "query": "Gadhafi",
+    "query_type": "person",
+    "group": "t8_6a_probes",
+    "lists": {
+      "us_ofac": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.761484375,
+        "reason": "partial_name_person",
+        "primary_name": "QADHAFI, Ayesha",
+        "matched_name": "GADHAFI, Aisha",
+        "source_id": "12610",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "us_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 3
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 17
+      },
+      "eu_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.5784819886363636,
+        "reason": "core_name_fuzzy",
+        "primary_name": "Quren Salih Quren AL QADHAFI",
+        "matched_name": "Quren Salih Quren AL GADAFI",
+        "source_id": "6239",
+        "expanded_from": null,
+        "below_threshold_count": 11
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 11
+      }
+    }
+  },
+  "Hussein::person": {
+    "query": "Hussein",
+    "query_type": "person",
+    "group": "t8_6a_probes",
+    "lists": {
+      "us_ofac": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "FADHIL, Mustafa Mohamed",
+        "matched_name": "HUSSEIN",
+        "source_id": "6924",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "us_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.761484375,
+        "reason": "partial_name_person",
+        "primary_name": "Husayn Fa'ur",
+        "matched_name": "Hussein Faour",
+        "source_id": "021b1ae499d9e9537d9974fc627c9aa6d74765c051403d0d03ca133e",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "uk_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.77569875,
+        "reason": "partial_name_person",
+        "primary_name": "Zeiniye Jamal Hussein Hassan",
+        "matched_name": "Zeiniye Jamal Hussein Hassan",
+        "source_id": "AQD0363",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "eu_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.77569875,
+        "reason": "partial_name_person",
+        "primary_name": "Abu-Malik al-Talli",
+        "matched_name": "Abu Hussein",
+        "source_id": "125879",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "un_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.77569875,
+        "reason": "partial_name_person",
+        "primary_name": "JAMAL HUSSEIN HASSAN ZEINIYE",
+        "matched_name": "JAMAL HUSSEIN HASSAN ZEINIYE",
+        "source_id": "UN-6908833",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      }
+    }
+  },
+  "Husayn::person": {
+    "query": "Husayn",
+    "query_type": "person",
+    "group": "t8_6a_probes",
+    "lists": {
+      "us_ofac": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7716375,
+        "reason": "partial_name_person",
+        "primary_name": "AL-HAMIDAWI, Ahmad",
+        "matched_name": "HUSAYN, Abu",
+        "source_id": "28571",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "us_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7635149999999999,
+        "reason": "partial_name_person",
+        "primary_name": "Husayn Fa'ur",
+        "matched_name": "Husayn Fa'ur",
+        "source_id": "021b1ae499d9e9537d9974fc627c9aa6d74765c051403d0d03ca133e",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "uk_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7466451923076924,
+        "reason": "partial_name_person",
+        "primary_name": "Al-Husayn Nawful",
+        "matched_name": "Al-Husayn Nawful",
+        "source_id": "SYR0189",
+        "expanded_from": null,
+        "below_threshold_count": 1
+      },
+      "eu_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7466451923076924,
+        "reason": "partial_name_person",
+        "primary_name": "Nawful AL-HUSAYN",
+        "matched_name": "Nawful AL-HUSAYN",
+        "source_id": "6503",
+        "expanded_from": null,
+        "below_threshold_count": 1
+      },
+      "un_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7391475000000001,
+        "reason": "partial_name_person",
+        "primary_name": "HUSAYN JUAYTHINI",
+        "matched_name": "HUSAYN JUAYTHINI",
+        "source_id": "UN-6908544",
+        "expanded_from": null,
+        "below_threshold_count": 1
+      }
+    }
+  },
+  "Yevgeny::person": {
+    "query": "Yevgeny",
+    "query_type": "person",
+    "group": "t8_6a_probes",
+    "lists": {
+      "us_ofac": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.761484375,
+        "reason": "partial_name_person",
+        "primary_name": "MUROV, Evgeniy Alekseyevich",
+        "matched_name": "MUROV, Yevgeny",
+        "source_id": "16733",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "us_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.6737807142857143,
+        "reason": "core_name_fuzzy",
+        "primary_name": "Evgeny Krayushin",
+        "matched_name": "Evgeny Krayushin",
+        "source_id": "e7438c355e9fbbd5c173ed3919964d5e8ed90f56a04d5a316c1c6b3d",
+        "expanded_from": null,
+        "below_threshold_count": 2
+      },
+      "uk_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7472700000000001,
+        "reason": "partial_name_person",
+        "primary_name": "Khodotov Yevgeny",
+        "matched_name": "Khodotov Yevgeny",
+        "source_id": "CAF0027",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "eu_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7560173076923077,
+        "reason": "partial_name_person",
+        "primary_name": "Евгений Сандро",
+        "matched_name": "Yevgeny Sandro",
+        "source_id": "149619",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      }
+    }
+  },
+  "Evgeniy::person": {
+    "query": "Evgeniy",
+    "query_type": "person",
+    "group": "t8_6a_probes",
+    "lists": {
+      "us_ofac": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7472700000000001,
+        "reason": "partial_name_person",
+        "primary_name": "GRABCHAK, Evgeniy Petrovich",
+        "matched_name": "GRABCHAK, Evgeniy Petrovich",
+        "source_id": "23546",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "us_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.6897194496783089,
+        "reason": "core_name_fuzzy",
+        "primary_name": "Yevgeniy L Biryukov",
+        "matched_name": "Yevgeniy L Biryukov",
+        "source_id": "1b8dcaa7463c3277a3215419c4b8d92a0ebdd68043d0b686734b941d",
+        "expanded_from": null,
+        "below_threshold_count": 2
+      },
+      "uk_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7259484375,
+        "reason": "partial_name_person",
+        "primary_name": "Kopot Evgeny",
+        "matched_name": "Kopot Evgeniy Mikhailovich",
+        "source_id": "CAF0028",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "eu_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7259484375,
+        "reason": "partial_name_person",
+        "primary_name": "Евгений Васильевич САВЛЕВ",
+        "matched_name": "Evgeniy Vasilievich  SAVLEV",
+        "source_id": "182938",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      }
+    }
+  },
+  "Sheikh::person": {
+    "query": "Sheikh",
+    "query_type": "person",
+    "group": "t8_6a_probes",
+    "lists": {
+      "us_ofac": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7568693181818181,
+        "reason": "partial_name_person",
+        "primary_name": "SHEIKH, Muhammad Naeem",
+        "matched_name": "SHEIKH, Muhammad Naeem",
+        "source_id": "17270",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "us_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.6150947727272726,
+        "reason": "partial_name_person",
+        "primary_name": "HAJI WALI MUHAMMAD SHEIKH",
+        "matched_name": "HAJI WALI MUHAMMAD SHEIKH",
+        "source_id": "31a1f7bee6af424debf39c15b5e2fde20dc0491254ac36f150c541d5",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "uk_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7568693181818181,
+        "reason": "partial_name_person",
+        "primary_name": "AWEYS HASSAN DAHIR",
+        "matched_name": "ALI Sheikh Hassan Dahir Aweys",
+        "source_id": "SOM0003",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "eu_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7568693181818181,
+        "reason": "partial_name_person",
+        "primary_name": "Hassan Dahir Aweys",
+        "matched_name": "Sheikh Hassan Dahir Aweys Ali",
+        "source_id": "5609",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "un_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "MUSA HILAL ABDALLA ALNSIEM",
+        "matched_name": "Sheikh",
+        "source_id": "UN-690785",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      }
+    }
+  },
+  "Shaikh::person": {
+    "query": "Shaikh",
+    "query_type": "person",
+    "group": "t8_6a_probes",
+    "lists": {
+      "us_ofac": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7635149999999999,
+        "reason": "partial_name_person",
+        "primary_name": "SHEIKH, Muhammad Naeem",
+        "matched_name": "NAIM, Shaikh",
+        "source_id": "17270",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "us_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7334139705882353,
+        "reason": "partial_name_person",
+        "primary_name": "Basha Asmath Shaikh",
+        "matched_name": "Basha Asmath Shaikh",
+        "source_id": "c8623ef586cf809af3d3eabdb3baa807d2db95fe5c78f2ce9528ab47",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "uk_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.6164397321428572,
+        "reason": "partial_name_person",
+        "primary_name": "KASKAR DAWOOD IBRAHIM",
+        "matched_name": "Kaskar Daud Hasan Shaikh Ibrahim",
+        "source_id": "AQD0159",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "eu_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7334139705882353,
+        "reason": "partial_name_person",
+        "primary_name": "Dawood Ibrahim Kaskar",
+        "matched_name": "Daud Hasan Shaikh Ibrahim Kaskar",
+        "source_id": "1079",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "un_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7334139705882353,
+        "reason": "partial_name_person",
+        "primary_name": "DAWOOD IBRAHIM KASKAR",
+        "matched_name": "Daud Hasan Shaikh Ibrahim Kaskar",
+        "source_id": "UN-112138",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      }
+    }
+  },
+  "Chaudhary::person": {
+    "query": "Chaudhary",
+    "query_type": "person",
+    "group": "t8_6a_probes",
+    "lists": {
+      "us_ofac": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.6036250916666666,
+        "reason": "core_name_fuzzy",
+        "primary_name": "CHAUDHRY, Aamir Ali",
+        "matched_name": "CHAUDHRY, Aamir Ali",
+        "source_id": "15517",
+        "expanded_from": null,
+        "below_threshold_count": 20
+      },
+      "us_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7687366071428572,
+        "reason": "partial_name_person",
+        "primary_name": "Haris M. Fazal",
+        "matched_name": "Chaudhary Haris",
+        "source_id": "519d08b98c14cd66b7c3e3c3440638de72bbcd449304ccf491e117ff",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "uk_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.5981870277777778,
+        "reason": "core_name_fuzzy",
+        "primary_name": "IQBAL ZAFAR",
+        "matched_name": "Chaudhry Zafar Iqbal",
+        "source_id": "AQD0339",
+        "expanded_from": null,
+        "below_threshold_count": 8
+      },
+      "eu_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.5981870277777778,
+        "reason": "core_name_fuzzy",
+        "primary_name": "Muhammad Zafar Iqbal",
+        "matched_name": "Zafar Iqbal Chaudhry",
+        "source_id": "125228",
+        "expanded_from": null,
+        "below_threshold_count": 15
+      },
+      "un_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.5981870277777778,
+        "reason": "core_name_fuzzy",
+        "primary_name": "ZAFAR IQBAL",
+        "matched_name": "Zafar Iqbal Chaudhry",
+        "source_id": "UN-2983973",
+        "expanded_from": null,
+        "below_threshold_count": 4
+      }
+    }
+  },
+  "Choudhary::person": {
+    "query": "Choudhary",
+    "query_type": "person",
+    "group": "t8_6a_probes",
+    "lists": {
+      "us_ofac": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7426285714285714,
+        "reason": "partial_name_person",
+        "primary_name": "CHOUDHARY, Sandeep Singh",
+        "matched_name": "CHOUDHARY, Sandeep Singh",
+        "source_id": "49402",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "us_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 5
+      },
+      "uk_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.614919532051282,
+        "reason": "core_name_fuzzy",
+        "primary_name": "CHOUDARY ANJEM",
+        "matched_name": "CHOUDARY ANJEM",
+        "source_id": "AQD0143",
+        "expanded_from": null,
+        "below_threshold_count": 10
+      },
+      "eu_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.614919532051282,
+        "reason": "core_name_fuzzy",
+        "primary_name": "ANJEM CHOUDARY",
+        "matched_name": "ANJEM CHOUDARY",
+        "source_id": "118362",
+        "expanded_from": null,
+        "below_threshold_count": 10
+      },
+      "un_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.614919532051282,
+        "reason": "core_name_fuzzy",
+        "primary_name": "ANJEM CHOUDARY",
+        "matched_name": "ANJEM CHOUDARY",
+        "source_id": "UN-6908742",
+        "expanded_from": null,
+        "below_threshold_count": 5
+      }
+    }
+  },
+  "Wladimir::person": {
+    "query": "Wladimir",
+    "query_type": "person",
+    "group": "t8_6a_probes",
+    "lists": {
+      "us_ofac": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7600339285714286,
+        "reason": "partial_name_person",
+        "primary_name": "TYURIN, Vladimir Anatolyevich",
+        "matched_name": "TJURIN, Wladimir",
+        "source_id": "23243",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "us_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 2
+      },
+      "uk_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 1
+      },
+      "eu_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7252232142857143,
+        "reason": "partial_name_person",
+        "primary_name": "Vladimir Stepanovich NIKITIN",
+        "matched_name": "Wladimir Stepanowitsch NIKITIN",
+        "source_id": "7464",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      }
+    }
+  },
+  "Vladimir::person": {
+    "query": "Vladimir",
+    "query_type": "person",
+    "group": "t8_6a_probes",
+    "lists": {
+      "us_ofac": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.765389423076923,
+        "reason": "partial_name_person",
+        "primary_name": "PICHUGIN, Yuri Viktorovich",
+        "matched_name": "VLADIMIR BILIY",
+        "source_id": "23229",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "us_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7553925,
+        "reason": "partial_name_person",
+        "primary_name": "VLADIMIR VOLGAEV",
+        "matched_name": "VLADIMIR VOLGAEV",
+        "source_id": "d02d1e8ab14cb05c143f667de469dd979412920c0dd2fa7d5dec0107",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "uk_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.765389423076923,
+        "reason": "partial_name_person",
+        "primary_name": "PUTIN Vladimir Vladimirovich",
+        "matched_name": "PUTIN Vladimir Vladimirovich",
+        "source_id": "RUS0251",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "eu_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.765389423076923,
+        "reason": "partial_name_person",
+        "primary_name": "Владимир Брониславович ТАТУР",
+        "matched_name": "Vladimir Tatur",
+        "source_id": "171914",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      }
+    }
+  },
+  "Vladimir Putin::person": {
+    "query": "Vladimir Putin",
+    "query_type": "person",
+    "group": "t8_6a_probes",
+    "lists": {
+      "us_ofac": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "PUTIN, Vladimir Vladimirovich",
+        "matched_name": "PUTIN, Vladimir",
+        "source_id": "35096",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "us_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "uk_csl": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "PUTIN Vladimir Vladimirovich",
+        "matched_name": "Putin Vladimir",
+        "source_id": "RUS0251",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "eu_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.75133125,
+        "reason": "partial_name_person",
+        "primary_name": "Влади́мир Влади́мирович ПУ́ТИН",
+        "matched_name": "Vladimir Vladimirovich PUTIN",
+        "source_id": "135909",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      }
+    }
+  },
+  "Kim Jong Un::person": {
+    "query": "Kim Jong Un",
+    "query_type": "person",
+    "group": "t8_6a_probes",
+    "lists": {
+      "us_ofac": {
+        "tier": "POTENTIAL_MATCH",
+        "tier_icon": "🔴",
+        "score": 0.81225,
+        "reason": "score_and_core_name",
+        "primary_name": "KIM, Jong Un",
+        "matched_name": "KIM, Jong Un",
+        "source_id": "20157",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "us_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 0
+      },
+      "uk_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7701333333333333,
+        "reason": "score",
+        "primary_name": "Kim Tong-Un",
+        "matched_name": "Kim Tong-Un",
+        "source_id": "DPR0025",
+        "expanded_from": null,
+        "below_threshold_count": 3
+      },
+      "eu_csl": {
+        "tier": "POSSIBLE_MATCH_REVIEW",
+        "tier_icon": "🟠",
+        "score": 0.7701333333333333,
+        "reason": "score",
+        "primary_name": "KIM Tong-un",
+        "matched_name": "KIM Tong-un",
+        "source_id": "5603",
+        "expanded_from": null,
+        "below_threshold_count": 4
+      },
+      "un_csl": {
+        "tier": "NO_MATCH",
+        "tier_icon": "✅",
+        "score": 0.0,
+        "reason": "none",
+        "primary_name": "—",
+        "matched_name": "—",
+        "source_id": "—",
+        "expanded_from": null,
+        "below_threshold_count": 2
+      }
+    }
+  }
+}

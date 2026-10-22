@@ -1,0 +1,51 @@
+name: Weekly Regulatory Source Watch
+
+on:
+  schedule:
+    - cron: '0 6 * * 1' # Every Monday at 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  watch_sources:
+    name: Check Sources & Detect Regulatory Relocations
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml pypdf
+
+      - name: Run Source Watch Verification
+        id: source_watch
+        run: |
+          python scripts/source_watch.py
+        continue-on-error: true
+
+      - name: Create or Update GitHub Issue on Anomaly
+        if: steps.source_watch.outcome == 'failure'
+        uses: peter-evans/create-issue-from-file@v5
+        with:
+          title: "🚨 Regulatory Source Anomaly Detected"
+          content-filepath: ./source_watch_report.md
+          labels: source-change
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enforce Exit Code
+        if: steps.source_watch.outcome == 'failure'
+        run: |
+          echo "Source watch detected anomalies. Review opened issue."
+          exit 1
