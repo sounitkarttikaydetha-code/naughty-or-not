@@ -21,7 +21,9 @@ from modules.watchman.client import WatchmanClient
 
 def run_diff(allowed_changes=None):
     if allowed_changes is None:
-        allowed_changes = {}
+        allowed_changes = {
+            "Kadhafi::person::us_ofac": "T8-6A: Phonetic elevation for Kadhafi -> Qadhafi (record 15258) to 🟠 phonetic_name_person",
+        }
 
     baseline_path = PROJECT_ROOT / "reviews" / "baseline_v1.0.2.json"
     if not baseline_path.is_file():

@@ -25,15 +25,18 @@ from modules.screening.config import (
     COMPANY_TYPE_WORDS,
     ENABLE_COUNTRY_WORDS_GUARD,
     COUNTRY_WORDS,
+    CURATED_NAME_VARIANTS,
     FUZZY_WORD_MIN_LEN,
     FUZZY_WORD_MIN_SIMILARITY,
     MIN_DISTINCTIVE_WORD_LEN,
     NAME_VARIANTS,
+    PHONETIC_ENABLED,
     POSSIBLE_MATCH_THRESHOLD,
     POTENTIAL_MATCH_THRESHOLD,
     WEAK_WORDS,
     KNOWN_CITIES as CONFIG_KNOWN_CITIES,
 )
+import metaphone
 from modules.watchman.client import WatchmanClient
 from modules.engine.name_prep import get_transliteration
 
@@ -324,6 +327,85 @@ def extract_program_info(entity: Dict[str, Any]) -> str:
     return sd.get("Programs") or entity.get("sourceList", "")
 
 
+
+def check_phonetic_match(
+    q_words: List[str],
+    c_words: List[str],
+    is_person: bool = False,
+    name_variants: Optional[Dict[str, str]] = None,
+) -> Tuple[bool, bool, Dict[str, Any]]:
+    """
+    Evaluates whether candidate is a phonetic match under T8-6A:
+    - every distinctive query token >= 4 chars is paired 1-to-1 with a candidate token
+      whose Double Metaphone primary/secondary code matches or matches via curated variants
+    - at least one pair is NOT an identical spelling
+    - length ratio of each pair is between 0.6 and 1.67
+    - for Person search, token counts are equal
+    - at least one pair involves a non-weak, non-country word
+    Returns (is_strong_phonetic_match, is_weak_phonetic, evidence_dict).
+    """
+    if name_variants is None:
+        name_variants = {**NAME_VARIANTS, **CURATED_NAME_VARIANTS}
+
+    weak_and_country = {w.lower() for w in WEAK_WORDS} | {w.lower() for w in COUNTRY_WORDS}
+
+    q_dist = [w.lower() for w in q_words if len(w) >= 4 and w.lower() not in weak_and_country]
+    c_dist = [w.lower() for w in c_words if len(w) >= 4 and w.lower() not in weak_and_country]
+
+    if not q_dist or not c_dist:
+        return False, False, {}
+
+    if len(q_dist) != len(c_dist):
+        return False, True, {"reason": "person_token_count_mismatch"}
+
+    pairs = []
+    used_c = set()
+    has_diff_spelling = False
+    has_non_weak_pair = False
+
+    for qw in q_dist:
+        p_q, s_q = metaphone.doublemetaphone(qw)
+        q_codes = {c for c in [p_q, s_q] if c}
+        matched = False
+        for c_idx, cw in enumerate(c_dist):
+            if c_idx in used_c:
+                continue
+            ratio = len(qw) / len(cw) if len(cw) else 0
+            if not (0.6 <= ratio <= 1.67):
+                continue
+
+            p_c, s_c = metaphone.doublemetaphone(cw)
+            c_codes = {c for c in [p_c, s_c] if c}
+            is_variant = (qw in name_variants and cw in name_variants and name_variants[qw] == name_variants[cw])
+            code_overlap = bool(q_codes & c_codes)
+
+            if code_overlap or is_variant:
+                used_c.add(c_idx)
+                matched = True
+                if qw != cw:
+                    has_diff_spelling = True
+                if qw not in weak_and_country and cw not in weak_and_country:
+                    has_non_weak_pair = True
+                pairs.append({
+                    "query_token": qw,
+                    "candidate_token": cw,
+                    "query_codes": list(q_codes),
+                    "cand_codes": list(c_codes),
+                    "is_variant": is_variant,
+                })
+                break
+        if not matched:
+            return False, True, {"reason": "unmatched_query_token", "token": qw}
+
+    is_strong = (len(pairs) == len(q_dist) and has_diff_spelling and has_non_weak_pair)
+    evidence = {
+        "pairs": pairs,
+        "is_person": is_person,
+        "query_distinctive": q_dist,
+        "cand_distinctive": c_dist,
+    }
+    return is_strong, not is_strong, evidence
+
 def tier_single_entity(
     query: str,
     entity: Dict[str, Any],
@@ -513,6 +595,44 @@ def tier_single_entity(
         if tier in [TIER_POTENTIAL_MATCH, TIER_POSSIBLE_MATCH]:
             tier = TIER_POSSIBLE_MATCH
             reason = "type_mismatch"
+
+    # T8-6A: Phonetic matching layer (capped at 🟠 with reason phonetic_match / phonetic_name_person)
+    if PHONETIC_ENABLED and tier in [TIER_BELOW_THRESHOLD, TIER_NO_MATCH] and not (is_airline_or_org and (is_truly_person or is_truly_vessel or is_truly_aircraft)):
+        ph_strong = False
+        ph_evidence = {}
+        for cand_name in [best_matched_name] + all_aliases:
+            c_cand_words = normalize_name(cand_name)
+            is_s, is_w, ev = check_phonetic_match(
+                q_words=q_words,
+                c_words=c_cand_words,
+                is_person=is_person,
+                name_variants={**NAME_VARIANTS, **CURATED_NAME_VARIANTS},
+            )
+            if is_s:
+                ph_strong = True
+                ph_evidence = ev
+                best_matched_name = cand_name
+                break
+            elif is_w and not ph_evidence:
+                ph_evidence = ev
+
+        if ph_strong:
+            sec_conflict = is_person and check_secondary_identifier_conflict(entity, dob=dob, yob=yob, nationality=nationality)
+            if sec_conflict:
+                tier = TIER_BELOW_THRESHOLD
+                reason = "secondary_identifier_conflict"
+            elif score >= 0.60:
+                tier = TIER_POSSIBLE_MATCH
+                reason = "phonetic_name_person" if is_person else "phonetic_match"
+            else:
+                tier = TIER_BELOW_THRESHOLD
+                reason = "phonetic_weak"
+            entity["phonetic_evidence"] = ph_evidence
+        elif ph_evidence:
+            if tier == TIER_BELOW_THRESHOLD:
+                reason = "phonetic_weak"
+            entity["phonetic_evidence"] = ph_evidence
+
 
     tier_icon = (
         "🔴" if tier == TIER_POTENTIAL_MATCH

@@ -13,6 +13,8 @@ import re
 import time
 from typing import Any, Dict, List, Optional, Set, Tuple
 
+import metaphone
+from modules.screening.config import PHONETIC_ENABLED
 from modules.engine.loader import (
     EntityRecord,
     load_ofac_sdn,
@@ -119,6 +121,8 @@ class PythonEngine:
         self.records_by_source: Dict[str, List[EntityRecord]] = {s: [] for s in LIST_SOURCES}
         self.token_index_by_source: Dict[str, Dict[str, List[int]]] = {s: defaultdict(list) for s in LIST_SOURCES}
         self.prefix_index_by_source: Dict[str, Dict[str, List[int]]] = {s: defaultdict(list) for s in LIST_SOURCES}
+        self.phonetic_index_by_source: Dict[str, Dict[str, List[int]]] = {s: defaultdict(list) for s in LIST_SOURCES}
+        self.phonetic_enabled: bool = PHONETIC_ENABLED
         self.id_index_by_source: Dict[str, Dict[str, List[int]]] = {s: defaultdict(list) for s in LIST_SOURCES}
         self.hashes_by_source: Dict[str, str] = {s: "" for s in LIST_SOURCES}
         self.source_errors: Dict[str, str] = {}
@@ -129,6 +133,7 @@ class PythonEngine:
         """Build token, prefix, and identifier inverted indices for fast candidate retrieval."""
         t_idx = defaultdict(list)
         p_idx = defaultdict(list)
+        ph_idx = defaultdict(list)
         id_idx = defaultdict(list)
         records = self.records_by_source.get(src, [])
         for idx, rec in enumerate(records):
@@ -142,12 +147,19 @@ class PythonEngine:
                 t_idx[t].append(idx)
                 if len(t) >= 3:
                     p_idx[t[:3]].append(idx)
+                if len(t) >= 4:
+                    p_code, s_code = metaphone.doublemetaphone(t)
+                    if p_code:
+                        ph_idx[p_code].append(idx)
+                    if s_code and s_code != p_code:
+                        ph_idx[s_code].append(idx)
 
             for ident in rec.identifiers:
                 id_idx[ident].append(idx)
 
         self.token_index_by_source[src] = dict(t_idx)
         self.prefix_index_by_source[src] = dict(p_idx)
+        self.phonetic_index_by_source[src] = dict(ph_idx)
         self.id_index_by_source[src] = dict(id_idx)
 
     def _load_all_sources(self) -> None:
@@ -169,7 +181,7 @@ class PythonEngine:
             else:
                 file_signatures.append(f"{src}:missing")
 
-        cache_key = hashlib.sha256(";".join(file_signatures).encode()).hexdigest()[:24]
+        cache_key = hashlib.sha256((";".join(file_signatures) + ":ph_v1").encode()).hexdigest()[:24]
 
         cache_dir = None
         try:
@@ -189,6 +201,7 @@ class PythonEngine:
                 self.records_by_source = cached["records_by_source"]
                 self.token_index_by_source = cached["token_index_by_source"]
                 self.prefix_index_by_source = cached["prefix_index_by_source"]
+                self.phonetic_index_by_source = cached.get("phonetic_index_by_source", {})
                 self.id_index_by_source = cached["id_index_by_source"]
                 self.hashes_by_source = cached["hashes_by_source"]
                 self.source_errors = cached.get("source_errors", {})
@@ -228,6 +241,7 @@ class PythonEngine:
                             "records_by_source": self.records_by_source,
                             "token_index_by_source": self.token_index_by_source,
                             "prefix_index_by_source": self.prefix_index_by_source,
+                            "phonetic_index_by_source": self.phonetic_index_by_source,
                             "id_index_by_source": self.id_index_by_source,
                             "hashes_by_source": self.hashes_by_source,
                             "source_errors": self.source_errors,
@@ -344,10 +358,11 @@ class PythonEngine:
                 token_index=self.token_index_by_source[src],
                 partition_size=len(records),
             )
-            selected_records = [records[i] for i in cand_indices]
+
             q_soundex = {SOUNDEX_MAP_LOWER.get(t[0], t[0]) for t in q_tokens if t}
 
-            for rec in selected_records:
+            for rec_idx in cand_indices:
+                rec = records[rec_idx]
                 if (rec.source, rec.source_id) in seen_cand_ids:
                     continue
                 if target_type and rec.entity_type != target_type:
@@ -363,14 +378,49 @@ class PythonEngine:
                     query_name=q_norm,
                     primary_name=rec.prepared_name,
                 )
-
                 if score >= min_match:
                     candidates.append((score, rec))
+                    seen_cand_ids.add((rec.source, rec.source_id))
 
-        # Sort descending by score
+            # 2. Phonetic retrieval pass: extra candidates unioned (T8-6A)
+            if getattr(self, "phonetic_enabled", True):
+                extra_phonetic: Set[int] = set()
+                cand_set = set(cand_indices)
+                part_size = len(records)
+                for t in q_tokens:
+                    if len(t) >= 4:
+                        p_code, s_code = metaphone.doublemetaphone(t)
+                        for code in {p_code, s_code} - {"", None}:
+                            ph_hits = self.phonetic_index_by_source.get(src, {}).get(code, [])
+                            if ph_hits and (len(ph_hits) / part_size) <= 0.20:
+                                for h_idx in ph_hits:
+                                    if h_idx not in cand_set and h_idx not in extra_phonetic:
+                                        extra_phonetic.add(h_idx)
+                                        if len(extra_phonetic) >= 50:
+                                            break
+                            if len(extra_phonetic) >= 50:
+                                break
+
+                for h_idx in extra_phonetic:
+                    rec = records[h_idx]
+                    if (rec.source, rec.source_id) in seen_cand_ids:
+                        continue
+                    if target_type and rec.entity_type != target_type:
+                        continue
+                    score = score_query_against_entity_names(
+                        query_tokens=q_tokens,
+                        primary_tokens=rec.primary_tokens,
+                        alt_names_tokens=rec.alt_tokens_list,
+                        historical_tokens=rec.historical_tokens_list,
+                        query_name=q_norm,
+                        primary_name=rec.prepared_name,
+                    )
+                    if score >= min_match:
+                        candidates.append((score, rec))
+                        seen_cand_ids.add((rec.source, rec.source_id))
+
+        # Sort descending by score across all sources
         candidates.sort(key=lambda x: x[0], reverse=True)
-
-        # Slice top limit
         top_hits = candidates[:limit]
 
         entities_out = []

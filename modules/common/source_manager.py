@@ -77,7 +77,10 @@ def load_sources_registry() -> Dict[str, Any]:
         return {}
     with open(cfg_path, "r", encoding="utf-8") as f:
         data = yaml.safe_load(f)
-    return data.get("sources", {})
+    raw = data.get("sources", {})
+    if isinstance(raw, list):
+        return {s["id"]: s for s in raw if isinstance(s, dict) and "id" in s}
+    return raw
 
 
 def get_sources_state_file() -> Path:

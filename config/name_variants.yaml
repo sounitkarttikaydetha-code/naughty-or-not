@@ -1,0 +1,49 @@
+# Curated name variant groups (T8-6A)
+# These feed the name matching and phonetic layers.
+# Matches derived through variants are capped at 🟠.
+
+variants:
+  mohammed:
+    - mohammed
+    - muhammad
+    - mohamed
+    - mohammad
+    - mohd
+  hussein:
+    - hussein
+    - hussain
+    - husayn
+    - husin
+  yevgeny:
+    - yevgeny
+    - evgeny
+    - eugene
+    - evgeniy
+    - yevgeniy
+    - evgeni
+  qaddafi:
+    - qaddafi
+    - kadhafi
+    - gadhafi
+    - qadhafi
+    - gaddafi
+  sheikh:
+    - sheikh
+    - shaikh
+    - shaykh
+    - cheikh
+  chaudhary:
+    - chaudhary
+    - choudhary
+    - chowdhury
+    - choudhury
+    - chaudhry
+  vladimir:
+    - vladimir
+    - wladimir
+    - volodymyr
+  alexander:
+    - alexander
+    - aleksandr
+    - aleksander
+    - alexandre

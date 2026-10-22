@@ -42,6 +42,7 @@ hidden_imports = (
     + collect_submodules('pypdf')
     + collect_submodules('rapidfuzz')
     + collect_submodules('anyascii')
+    + collect_submodules('metaphone')
     + [
         'streamlit.web.bootstrap',
         'streamlit.runtime.scriptrunner.magic_expressions',
