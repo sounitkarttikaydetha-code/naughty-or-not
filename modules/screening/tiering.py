@@ -826,9 +826,20 @@ def screen_query_all_lists(
 
     if expansion_row:
         all_expanded_aliases = expansion_row.get("aliases", [])
+        # De-duplicate alias queries after normalisation (T8-3)
+        query_norm_tuple = tuple(normalize_name(query))
+        seen_norm_aliases = {query_norm_tuple}
+        filtered_aliases = []
         for exp_alias in all_expanded_aliases:
             if exp_alias.strip().lower() == query.strip().lower():
                 continue
+            norm_a = tuple(normalize_name(exp_alias))
+            if not norm_a or norm_a in seen_norm_aliases:
+                continue
+            seen_norm_aliases.add(norm_a)
+            filtered_aliases.append(exp_alias)
+
+        for exp_alias in filtered_aliases:
             exp_res = _screen_direct_all_lists(
                 query=exp_alias,
                 client=client,

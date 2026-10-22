@@ -178,6 +178,14 @@ def main():
     except Exception as e:
         print(f"Notice: Seed init: {e}")
 
+    # Warm up screening engine in background daemon thread (T8-3)
+    try:
+        from modules.watchman.client import get_python_engine
+        import threading
+        threading.Thread(target=get_python_engine, daemon=True, name="EngineWarmupThread").start()
+    except Exception as e:
+        print(f"Notice: Background engine warm-up: {e}")
+
     # 4. Patch signal.signal for in-process daemon thread
     orig_signal = signal.signal
     def safe_signal(sig, handler):

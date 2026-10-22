@@ -15,4 +15,6 @@ dist/
 build/
 lists/
 PREPUSH_CHECK.md
+cache/
+*.pkl
 

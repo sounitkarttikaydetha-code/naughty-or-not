@@ -5,8 +5,10 @@ Complies with Watchman's HTTP API response format and scoring semantics.
 """
 
 from collections import defaultdict
+import hashlib
 import logging
 from pathlib import Path
+import pickle
 import re
 import time
 from typing import Any, Dict, List, Optional, Set, Tuple
@@ -25,7 +27,7 @@ from modules.engine.name_prep import (
     prepare_name,
     remove_stopwords,
 )
-from modules.engine.scoring import score_query_against_entity_names
+from modules.engine.scoring import score_query_against_entity_names, SOUNDEX_MAP_LOWER
 
 logger = logging.getLogger(__name__)
 
@@ -149,7 +151,7 @@ class PythonEngine:
         self.id_index_by_source[src] = dict(id_idx)
 
     def _load_all_sources(self) -> None:
-        """Load all 5 official sanctions lists."""
+        """Load all 5 official sanctions lists with disk caching keyed by file signatures."""
         loaders = [
             ("us_ofac", self.data_dir / "us_ofac_sdn.csv", load_ofac_sdn),
             ("us_csl", self.data_dir / "us_csl.csv", load_us_csl),
@@ -158,6 +160,45 @@ class PythonEngine:
             ("un_csl", self.data_dir / "un_csl.xml", load_un_csl),
         ]
 
+        # 1. Compute composite cache key from source file signatures (name, size, mtime)
+        file_signatures = []
+        for src, path, _ in loaders:
+            if path.is_file():
+                st = path.stat()
+                file_signatures.append(f"{src}:{path.name}:{st.st_size}:{st.st_mtime_ns}")
+            else:
+                file_signatures.append(f"{src}:missing")
+
+        cache_key = hashlib.sha256(";".join(file_signatures).encode()).hexdigest()[:24]
+
+        cache_dir = None
+        try:
+            from modules.common.paths import get_cache_dir
+            cache_dir = get_cache_dir()
+        except Exception:
+            cache_dir = self.data_dir.parent / "cache"
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        cache_file = cache_dir / f"engine_index_{cache_key}.pkl"
+
+        # 2. Try loading pre-built index from disk cache
+        if cache_file.is_file():
+            try:
+                t0 = time.perf_counter()
+                with open(cache_file, "rb") as f:
+                    cached = pickle.load(f)
+                self.records_by_source = cached["records_by_source"]
+                self.token_index_by_source = cached["token_index_by_source"]
+                self.prefix_index_by_source = cached["prefix_index_by_source"]
+                self.id_index_by_source = cached["id_index_by_source"]
+                self.hashes_by_source = cached["hashes_by_source"]
+                self.source_errors = cached.get("source_errors", {})
+                self.loaded_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+                logger.info(f"Loaded screening index from cache in {time.perf_counter() - t0:.3f} s")
+                return
+            except Exception as ce:
+                logger.warning(f"Could not load engine cache {cache_file}: {ce}; falling back to raw build")
+
+        # 3. Fallback: Parse raw files and build indices
         for src, path, loader_fn in loaders:
             try:
                 if not path.is_file():
@@ -176,6 +217,34 @@ class PythonEngine:
                 self.hashes_by_source[src] = ""
 
         self.loaded_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+        # 4. Save built index to disk cache atomically
+        if any(self.records_by_source.values()):
+            try:
+                tmp_cache = cache_dir / f"engine_index_{cache_key}.tmp"
+                with open(tmp_cache, "wb") as f:
+                    pickle.dump(
+                        {
+                            "records_by_source": self.records_by_source,
+                            "token_index_by_source": self.token_index_by_source,
+                            "prefix_index_by_source": self.prefix_index_by_source,
+                            "id_index_by_source": self.id_index_by_source,
+                            "hashes_by_source": self.hashes_by_source,
+                            "source_errors": self.source_errors,
+                        },
+                        f,
+                        protocol=pickle.HIGHEST_PROTOCOL,
+                    )
+                tmp_cache.replace(cache_file)
+                # Clean up older caches
+                for old_c in cache_dir.glob("engine_index_*.pkl"):
+                    if old_c != cache_file:
+                        try:
+                            old_c.unlink()
+                        except Exception:
+                            pass
+            except Exception as pe:
+                logger.warning(f"Failed to save engine disk cache: {pe}")
 
     def health(self) -> Dict[str, Any]:
         """Health check matching Watchman's /health endpoint."""
@@ -276,11 +345,14 @@ class PythonEngine:
                 partition_size=len(records),
             )
             selected_records = [records[i] for i in cand_indices]
+            q_soundex = {SOUNDEX_MAP_LOWER.get(t[0], t[0]) for t in q_tokens if t}
 
             for rec in selected_records:
                 if (rec.source, rec.source_id) in seen_cand_ids:
                     continue
                 if target_type and rec.entity_type != target_type:
+                    continue
+                if q_soundex and getattr(rec, "soundex_classes", None) and q_soundex.isdisjoint(rec.soundex_classes):
                     continue
 
                 score = score_query_against_entity_names(

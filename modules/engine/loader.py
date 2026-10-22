@@ -56,6 +56,18 @@ def extract_identifiers(text: str, source_id: str) -> Set[str]:
     return ids
 
 
+SOUNDEX_MAP_LOWER = {
+    "a": "A", "e": "A", "i": "A", "o": "A", "u": "A", "y": "A",
+    "b": "B", "f": "B", "p": "B", "v": "B",
+    "c": "C", "g": "C", "j": "C", "k": "C", "q": "C", "s": "C", "x": "C", "z": "C",
+    "d": "D", "t": "D",
+    "l": "L",
+    "m": "M", "n": "M",
+    "r": "R",
+    "h": "H", "w": "H",
+}
+
+
 class EntityRecord:
     __slots__ = (
         "source",
@@ -68,6 +80,7 @@ class EntityRecord:
         "historical_tokens_list",
         "raw_entity",
         "identifiers",
+        "soundex_classes",
     )
 
     def __init__(
@@ -93,6 +106,14 @@ class EntityRecord:
         self.historical_tokens_list = historical_tokens_list
         self.raw_entity = raw_entity
         self.identifiers = identifiers or {source_id.lower()}
+
+        # Precompute Soundex first-character classes for fast disjoint filtering (T8-3)
+        s_classes = {SOUNDEX_MAP_LOWER.get(t[0], t[0]) for t in primary_tokens if t}
+        for alt in alt_tokens_list:
+            s_classes.update(SOUNDEX_MAP_LOWER.get(t[0], t[0]) for t in alt if t)
+        for h in historical_tokens_list:
+            s_classes.update(SOUNDEX_MAP_LOWER.get(t[0], t[0]) for t in h if t)
+        self.soundex_classes = s_classes
 
 
 def load_ofac_sdn(path: Path) -> Tuple[List[EntityRecord], str]:

@@ -8,6 +8,7 @@ Ported from moov-io/watchman (v1.2.2):
 - pkg/search/similarity_fuzzy.go
 """
 
+from functools import lru_cache
 from typing import List, Tuple
 import rapidfuzz.distance.JaroWinkler as rjw
 
@@ -21,6 +22,9 @@ SOUNDEX_MAP = {
     "R": "R",
     "H": "H", "W": "H",
 }
+
+SOUNDEX_MAP_LOWER = {k.lower(): v for k, v in SOUNDEX_MAP.items()}
+SOUNDEX_MAP_LOWER.update(SOUNDEX_MAP)
 
 # Watchman scoring constants (DefaultScoringConfig)
 LENGTH_DIFFERENCE_CUTOFF_FACTOR = 0.90
@@ -47,15 +51,14 @@ def first_char_soundex_match(s1: str, s2: str) -> bool:
     return get_phonetic_class(s1) == get_phonetic_class(s2)
 
 
-def generate_word_combinations(tokens: List[str]) -> List[List[str]]:
-    """
-    Port of jaro_winkler.go GenerateWordCombinations.
-    Generates variations by combining short words (<= 3 chars) with neighbors.
-    """
+@lru_cache(maxsize=32768)
+def _generate_word_combinations_cached(tokens_tuple: Tuple[str, ...]) -> Tuple[Tuple[str, ...], ...]:
+    """Internal cached generator for word combinations."""
+    tokens = list(tokens_tuple)
     if len(tokens) <= 1:
-        return [tokens]
+        return (tokens_tuple,)
 
-    result = [tokens]
+    result = [tokens_tuple]
 
     # Forward combination (short word + next word)
     forward: List[str] = []
@@ -71,7 +74,8 @@ def generate_word_combinations(tokens: List[str]) -> List[List[str]]:
             forward.append(tokens[i])
 
     if len(forward) < len(tokens):
-        result.append(forward)
+        f_tup = tuple(forward)
+        result.append(f_tup)
 
         # Backward combination (combine short word with previous word)
         backward: List[str] = []
@@ -81,30 +85,71 @@ def generate_word_combinations(tokens: List[str]) -> List[List[str]]:
             else:
                 backward.append(tokens[i])
 
-        if len(backward) < len(tokens) and backward != forward and backward != tokens:
-            result.append(backward)
+        b_tup = tuple(backward)
+        if len(backward) < len(tokens) and b_tup != f_tup and b_tup != tokens_tuple:
+            result.append(b_tup)
 
-    return result
+    return tuple(result)
 
 
-def best_pairs_jaro_winkler(search_tokens: List[str], index_tokens: List[str]) -> float:
+def generate_word_combinations(tokens: List[str]) -> List[List[str]]:
+    """
+    Port of jaro_winkler.go GenerateWordCombinations.
+    Generates variations by combining short words (<= 3 chars) with neighbors.
+    """
+    cached = _generate_word_combinations_cached(tuple(tokens))
+    return [list(c) for c in cached]
+
+
+@lru_cache(maxsize=65536)
+def _token_similarity_cached(s: str, t: str) -> float:
+    """Cached rapidfuzz Jaro-Winkler score with length penalty."""
+    score = rjw.similarity(t, s, prefix_weight=0.1)
+    ls, lt = len(s), len(t)
+    ld = min(ls, lt) / max(ls, lt) if max(ls, lt) > 0 else 1.0
+    if ld < LENGTH_DIFFERENCE_CUTOFF_FACTOR:
+        score *= (1.0 - (1.0 - ld) * LENGTH_DIFFERENCE_PENALTY_WEIGHT)
+    return score
+
+
+def best_pairs_jaro_winkler(search_tokens: Tuple[str, ...], index_tokens: Tuple[str, ...]) -> float:
     """
     Port of jaro_winkler.go BestPairsJaroWinklerWithConfig.
     Evaluates pairwise token similarities and combines them via length-weighted average
     and unmatched indexed token penalties.
     """
+    # Fast path for single search token (all distinctive word passes & single-word queries)
+    if len(search_tokens) == 1:
+        s = search_tokens[0]
+        if not s:
+            return 0.0
+        s_cls = SOUNDEX_MAP_LOWER.get(s[0], s[0])
+        best_score = 0.0
+        best_len = 0
+        total_idx_len = 0
+        for t in index_tokens:
+            total_idx_len += len(t)
+            if t and s_cls == SOUNDEX_MAP_LOWER.get(t[0], t[0]):
+                sc = _token_similarity_cached(s, t)
+                if sc > best_score:
+                    best_score = sc
+                    best_len = len(t)
+        if best_score == 0.0 or total_idx_len == 0:
+            return 0.0
+        scaling = 1.0 - (1.0 - (best_len / total_idx_len)) * UNMATCHED_INDEX_TOKEN_WEIGHT
+        return best_score * scaling
+
     scores: List[Tuple[float, int, int]] = []
+    s_lens = [len(x) for x in search_tokens]
+    i_lens = [len(x) for x in index_tokens]
+    s_classes = [SOUNDEX_MAP_LOWER.get(s[0], s[0]) if s else " " for s in search_tokens]
+    i_classes = [SOUNDEX_MAP_LOWER.get(t[0], t[0]) if t else " " for t in index_tokens]
+
     for s_idx, s in enumerate(search_tokens):
+        s_cls = s_classes[s_idx]
         for i_idx, t in enumerate(index_tokens):
-            if first_char_soundex_match(s, t):
-                # Token similarity using Jaro-Winkler
-                score = rjw.similarity(t, s, prefix_weight=0.1)
-                ls, lt = len(s), len(t)
-                ld = min(ls, lt) / max(ls, lt) if max(ls, lt) > 0 else 1.0
-                if ld < LENGTH_DIFFERENCE_CUTOFF_FACTOR:
-                    score *= (1.0 - (1.0 - ld) * LENGTH_DIFFERENCE_PENALTY_WEIGHT)
-                if not first_char_soundex_match(t, s):
-                    score *= DIFFERENT_LETTER_PENALTY_WEIGHT
+            if s_cls == i_classes[i_idx]:
+                score = _token_similarity_cached(s, t)
                 scores.append((score, s_idx, i_idx))
 
     scores.sort(key=lambda x: x[0], reverse=True)
@@ -118,11 +163,11 @@ def best_pairs_jaro_winkler(search_tokens: List[str], index_tokens: List[str]) -
         if s_idx not in matched_search and i_idx not in matched_index:
             matched_search.add(s_idx)
             matched_index.add(i_idx)
-            total_weighted_scores += score * (len(search_tokens[s_idx]) + len(index_tokens[i_idx]))
-            matched_index_tokens_len += len(index_tokens[i_idx])
+            total_weighted_scores += score * (s_lens[s_idx] + i_lens[i_idx])
+            matched_index_tokens_len += i_lens[i_idx]
 
-    search_tokens_len = sum(len(x) for x in search_tokens)
-    index_tokens_len = sum(len(x) for x in index_tokens)
+    search_tokens_len = sum(s_lens)
+    index_tokens_len = sum(i_lens)
 
     if (search_tokens_len + matched_index_tokens_len) > 0:
         length_weighted_avg = total_weighted_scores / (search_tokens_len + matched_index_tokens_len)
@@ -144,8 +189,8 @@ def best_pair_combination_jaro_winkler(search_tokens: List[str], index_tokens: L
     Port of jaro_winkler.go BestPairCombinationJaroWinklerWithConfig.
     Evaluates variations across word combinations and returns maximum match score.
     """
-    s_combs = generate_word_combinations(search_tokens)
-    i_combs = generate_word_combinations(index_tokens)
+    s_combs = _generate_word_combinations_cached(tuple(search_tokens))
+    i_combs = _generate_word_combinations_cached(tuple(index_tokens))
 
     max_score = 0.0
     for sc in s_combs:

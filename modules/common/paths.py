@@ -73,6 +73,13 @@ def get_reports_dir() -> Path:
     return p
 
 
+def get_cache_dir() -> Path:
+    """Directory holding binary index caches."""
+    p = get_app_data_dir() / "cache"
+    p.mkdir(parents=True, exist_ok=True)
+    return p
+
+
 def get_index_db_path() -> Path:
     """Path to SQLite raw search index."""
     # In development mode, check repo data/raw_index.db first
