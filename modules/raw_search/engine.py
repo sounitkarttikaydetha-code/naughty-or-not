@@ -33,11 +33,15 @@ def load_sources_config() -> Dict[str, Dict[str, Any]]:
         return {}
     with open(SOURCES_YAML_PATH, "r", encoding="utf-8") as f:
         data = yaml.safe_load(f) or {}
+    srcs = data.get("sources", {})
+    if isinstance(srcs, dict):
+        return srcs
     res = {}
-    for s in data.get("sources", []):
-        sid = s.get("id")
-        if sid:
-            res[sid] = s
+    for s in srcs:
+        if isinstance(s, dict):
+            sid = s.get("id")
+            if sid:
+                res[sid] = s
     return res
 
 

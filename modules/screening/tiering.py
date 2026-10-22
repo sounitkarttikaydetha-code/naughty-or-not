@@ -35,6 +35,7 @@ from modules.screening.config import (
     KNOWN_CITIES as CONFIG_KNOWN_CITIES,
 )
 from modules.watchman.client import WatchmanClient
+from modules.engine.name_prep import get_transliteration
 
 # Tier Constants
 TIER_POTENTIAL_MATCH = "POTENTIAL_MATCH"            # 🔴
@@ -765,6 +766,7 @@ def screen_query_all_lists(
     dob: Optional[str] = None,
     yob: Optional[str] = None,
     nationality: Optional[str] = None,
+    enable_transliteration: bool = False,
 ) -> Dict[str, Dict[str, Any]]:
     """
     Screen a query across all 5 lists, applying all rules.
@@ -926,6 +928,42 @@ def screen_query_all_lists(
                 direct_results[src]["best_hit"]["orange_count"] = len(direct_results[src]["orange_hits"])
                 if direct_results[src]["best_hit"]["tier"] == TIER_NO_MATCH and len(direct_results[src]["info_hits"]) > 0:
                     direct_results[src]["best_hit"]["note"] = f"({len(direct_results[src]['info_hits'])} candidates below threshold — see list)"
+
+    # T8-6: Non-Latin input detection and metadata
+    is_nl, nl_warning, transliterated = get_transliteration(query)
+    for src in SOURCE_LISTS:
+        direct_results[src]["is_non_latin"] = is_nl
+        direct_results[src]["non_latin_warning"] = nl_warning
+        direct_results[src]["transliterated"] = transliterated
+        direct_results[src]["searched_as"] = f"searched as: {transliterated}" if transliterated else None
+        if is_nl:
+            direct_results[src]["warning"] = nl_warning
+            direct_results[src]["best_hit"]["warning"] = nl_warning
+
+    if enable_transliteration and is_nl and transliterated:
+        tl_res = _screen_direct_all_lists(
+            query=transliterated,
+            client=client,
+            query_type=query_type,
+            dob=dob,
+            yob=yob,
+            nationality=nationality,
+        )
+        for src in SOURCE_LISTS:
+            cur_best = direct_results[src]["best_hit"]
+            tl_best = tl_res[src]["best_hit"]
+            if tl_best["tier"] == TIER_POTENTIAL_MATCH:
+                if cur_best["tier"] != TIER_POTENTIAL_MATCH or tl_best["score"] > cur_best["score"]:
+                    tl_copy = dict(tl_best)
+                    tl_copy["transliterated_from"] = query
+                    direct_results[src]["best_hit"] = tl_copy
+                    if tl_copy not in direct_results[src]["red_hits"]:
+                        direct_results[src]["red_hits"].insert(0, tl_copy)
+            elif tl_best["tier"] == TIER_POSSIBLE_MATCH and cur_best["tier"] == TIER_NO_MATCH:
+                tl_copy = dict(tl_best)
+                tl_copy["transliterated_from"] = query
+                direct_results[src]["best_hit"] = tl_copy
+                direct_results[src]["orange_hits"].append(tl_copy)
 
     return direct_results
 

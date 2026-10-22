@@ -474,6 +474,7 @@ with tab_screened:
             query_type=w_query_type,
             dob=dob_input or None,
             nationality=nat_input or None,
+            enable_transliteration=True,
         )
 
         for src_id in ["us_ofac", "us_csl", "uk_csl", "eu_csl", "un_csl"]:
@@ -726,6 +727,11 @@ with tab_screened:
                     overall_tier = "POSSIBLE_MATCH_REVIEW"
 
 
+        # Non-Latin check (T8-6)
+        is_non_latin = any(w_results.get(s, {}).get("is_non_latin") for s in ["us_ofac", "us_csl", "uk_csl", "eu_csl", "un_csl"])
+        non_latin_warning = "This name contains non-Latin characters. Automatic matching is limited — also use Text search and Manual check." if is_non_latin else None
+        searched_as_text = next((w_results.get(s, {}).get("searched_as") for s in ["us_ofac", "us_csl", "uk_csl", "eu_csl", "un_csl"] if w_results.get(s, {}).get("searched_as")), None)
+
         # Overall banner calculation
         if is_incomplete:
             banner_text = "⚪ INCOMPLETE — One or more sources were unavailable"
@@ -737,8 +743,12 @@ with tab_screened:
             banner_text = "⚠️ POSSIBLE MATCH / RISK FLAG — Review and verification required"
             banner_type = "warning"
         else:
-            banner_text = "✅ NO MATCH — Clean on all checked sources"
-            banner_type = "success"
+            if is_non_latin:
+                banner_text = "⚠️ NO MATCH — This name contains non-Latin characters. Automatic matching is limited — also use Text search and Manual check."
+                banner_type = "warning"
+            else:
+                banner_text = "✅ NO MATCH — Clean on all checked sources"
+                banner_type = "success"
 
         # Generate Reports & Log
         pdf_path, excel_path = generate_reports(
@@ -763,6 +773,9 @@ with tab_screened:
         st.session_state.last_results = {
             "banner_text": banner_text,
             "banner_type": banner_type,
+            "is_non_latin": is_non_latin,
+            "non_latin_warning": non_latin_warning,
+            "searched_as": searched_as_text,
             "search_type": search_type,
             "primary_query": primary_query,
             "dob_entered": bool(dob_input),
@@ -792,6 +805,11 @@ with tab_screened:
 
         if res["search_type"] == "Person" and "🔴" in res["banner_text"] and not (res["dob_entered"] or res["nat_entered"]):
             st.info("💡 **Add DOB / nationality to refine** this person search and clear potential name conflicts.")
+
+        if res.get("is_non_latin") and res.get("banner_type") != "warning":
+            st.warning(f"⚠️ **Non-Latin Input:** {res.get('non_latin_warning')}")
+        if res.get("searched_as"):
+            st.info(f"ℹ️ **Transliteration:** {res.get('searched_as')}")
 
         # Download Reports Row
         col_d1, col_d2, _ = st.columns([1, 1, 3])

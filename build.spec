@@ -9,6 +9,7 @@ from PyInstaller.utils.hooks import copy_metadata, collect_data_files, collect_s
 streamlit_datas = collect_data_files('streamlit')
 streamlit_metadata = copy_metadata('streamlit')
 webview_datas = collect_data_files('webview')
+anyascii_datas = collect_data_files('anyascii')
 
 # ReportLab packaging filter: exclude DarkGarden font files
 # DarkGarden (DarkGardenMK / DarkGarden-Regular.afm) is GNU GPL v2 copyleft.
@@ -29,7 +30,7 @@ datas = [
     ('USER_GUIDE.pdf', '.'),
     ('THIRD_PARTY_NOTICES.md', '.'),
     ('LICENSE', '.'),
-] + streamlit_datas + streamlit_metadata + webview_datas + reportlab_datas + reportlab_metadata
+] + streamlit_datas + streamlit_metadata + webview_datas + reportlab_datas + reportlab_metadata + anyascii_datas
 
 hidden_imports = (
     collect_submodules('streamlit')
@@ -40,6 +41,7 @@ hidden_imports = (
     + collect_submodules('openpyxl')
     + collect_submodules('pypdf')
     + collect_submodules('rapidfuzz')
+    + collect_submodules('anyascii')
     + [
         'streamlit.web.bootstrap',
         'streamlit.runtime.scriptrunner.magic_expressions',

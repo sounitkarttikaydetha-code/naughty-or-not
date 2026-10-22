@@ -14,7 +14,7 @@ import os
 from pathlib import Path
 import re
 import unicodedata
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 # Reorder SDN names pattern:
 # looks for: a comma, optional whitespace, then letters/diacritics/apostrophes/hyphens/spaces to end of string
@@ -225,3 +225,34 @@ def prepare_name(name: str, entity_type: str = "") -> Tuple[str, List[str]]:
         norm = canonicalize_legal_forms(norm)
     norm_former = [normalize_text(f) for f in former if f.strip()]
     return norm, norm_former
+
+
+def is_non_latin(text: str) -> bool:
+    """Return True if text contains characters from non-Latin scripts (Cyrillic, Arabic, Han, etc.)."""
+    for ch in text:
+        if ch.isalpha():
+            name = unicodedata.name(ch, "")
+            if not ("LATIN" in name):
+                return True
+    return False
+
+
+def get_transliteration(text: str) -> Tuple[bool, Optional[str], Optional[str]]:
+    """
+    Check if text contains non-Latin characters and return transliteration using anyascii if available.
+    Returns (is_non_latin, warning_message, transliterated_text).
+    """
+    if not is_non_latin(text):
+        return False, None, None
+
+    warning = "This name contains non-Latin characters. Automatic matching is limited — also use Text search and Manual check."
+    transliterated = None
+    try:
+        import anyascii
+        tl = anyascii.anyascii(text).strip()
+        if tl and tl.lower() != text.lower():
+            transliterated = tl
+    except ImportError:
+        pass
+
+    return True, warning, transliterated
