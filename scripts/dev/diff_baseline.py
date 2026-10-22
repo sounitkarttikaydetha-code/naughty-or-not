@@ -19,13 +19,18 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from modules.screening.tiering import screen_query_all_lists
 from modules.watchman.client import WatchmanClient
 
-def run_diff(allowed_changes=None):
+def run_diff(baseline_file: str = None, allowed_changes=None):
     if allowed_changes is None:
-        allowed_changes = {
-            "Kadhafi::person::us_ofac": "T8-6A: Phonetic elevation for Kadhafi -> Qadhafi (record 15258) to 🟠 phonetic_name_person",
-        }
+        allowed_changes = {}
 
-    baseline_path = PROJECT_ROOT / "reviews" / "baseline_v1.0.2.json"
+    if baseline_file:
+        baseline_path = Path(baseline_file)
+        if not baseline_path.is_absolute():
+            baseline_path = PROJECT_ROOT / baseline_path
+    else:
+        v103 = PROJECT_ROOT / "reviews" / "baseline_v1.0.3.json"
+        baseline_path = v103 if v103.is_file() else (PROJECT_ROOT / "reviews" / "baseline_v1.0.2.json")
+
     if not baseline_path.is_file():
         print(f"Error: Baseline file not found at {baseline_path}")
         return False, []
@@ -96,7 +101,8 @@ def run_diff(allowed_changes=None):
     return len(unexplained) == 0, differences
 
 if __name__ == "__main__":
-    success, diffs = run_diff()
+    target_file = sys.argv[1] if len(sys.argv) > 1 else None
+    success, diffs = run_diff(baseline_file=target_file)
     if not success:
         sys.exit(1)
     print("Baseline diff PASSED with zero unexplained changes.")

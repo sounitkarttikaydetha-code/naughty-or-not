@@ -25,6 +25,27 @@ MUTEX_NAME = "NaughtyOrNot_SingleInstance_Mutex"
 APP_TITLE = "Naughty or not v1.0.3"
 
 
+class RECT(ctypes.Structure):
+    _fields_ = [("left", ctypes.c_long), ("top", ctypes.c_long), ("right", ctypes.c_long), ("bottom", ctypes.c_long)]
+
+
+def get_work_area_dimensions() -> tuple[int, int]:
+    """Calculate 90% of screen work area, clamped between 1000x640 and 1500x950."""
+    target_w, target_h = 1280, 850
+    if sys.platform == "win32":
+        try:
+            rect = RECT()
+            # SPI_GETWORKAREA = 0x0030
+            if ctypes.windll.user32.SystemParametersInfoW(0x0030, 0, ctypes.byref(rect), 0):
+                work_w = rect.right - rect.left
+                work_h = rect.bottom - rect.top
+                target_w = max(1000, min(1500, int(work_w * 0.90)))
+                target_h = max(640, min(950, int(work_h * 0.90)))
+        except Exception:
+            pass
+    return target_w, target_h
+
+
 def check_single_instance() -> bool:
     """Enforce single running instance. Brings existing window to front if duplicate."""
     if sys.platform != "win32":
@@ -148,6 +169,17 @@ def shutdown_cleanly():
 
 
 def main():
+    # 0. Set per-monitor DPI awareness (Windows)
+    if sys.platform == "win32":
+        try:
+            # 2 = PROCESS_PER_MONITOR_DPI_AWARE
+            ctypes.windll.shcore.SetProcessDpiAwareness(2)
+        except Exception:
+            try:
+                ctypes.windll.user32.SetProcessDPIAware()
+            except Exception:
+                pass
+
     # 1. Single instance check
     if not check_single_instance():
         sys.exit(0)
@@ -238,29 +270,61 @@ def main():
     icon_path = root / "assets" / "icon.ico"
     icon_str = str(icon_path) if icon_path.is_file() else None
 
+    from modules.common.settings import get_setting, set_setting
+
+    saved_win = get_setting("window") or {}
+    def_w, def_h = get_work_area_dimensions()
+    init_w = saved_win.get("width") or def_w
+    init_h = saved_win.get("height") or def_h
+    init_w = max(1000, min(1920, int(init_w)))
+    init_h = max(640, min(1200, int(init_h)))
+    init_x = saved_win.get("x")
+    init_y = saved_win.get("y")
+
     window = webview.create_window(
         title=APP_TITLE,
         url=f"http://127.0.0.1:{port}",
-        width=1280,
-        height=850,
-        min_size=(960, 650),
+        width=init_w,
+        height=init_h,
+        x=init_x,
+        y=init_y,
+        min_size=(1000, 640),
         text_select=True,
+        zoomable=True,
     )
 
     def on_closed():
+        # Remember window size and position in settings.json
+        try:
+            set_setting("window", {
+                "width": window.width,
+                "height": window.height,
+                "x": window.x,
+                "y": window.y,
+            })
+        except Exception:
+            pass
+
         # Clean process shutdown — flush databases and stop server
         shutdown_cleanly()
-        if sys.platform == "win32":
-            try:
-                import subprocess
-                subprocess.run(
-                    f"taskkill /F /T /PID {os.getpid()}",
-                    shell=True,
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                )
-            except Exception:
-                pass
+
+        # Stop gracefully first; wait up to 5s before force-killing if process remains
+        def delayed_force_kill():
+            time.sleep(5.0)
+            if sys.platform == "win32":
+                try:
+                    import subprocess
+                    subprocess.run(
+                        f"taskkill /F /T /PID {os.getpid()}",
+                        shell=True,
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                    )
+                except Exception:
+                    pass
+            os._exit(0)
+
+        threading.Thread(target=delayed_force_kill, daemon=True).start()
         os._exit(0)
 
     window.events.closed += on_closed

@@ -62,6 +62,8 @@ SOURCES_YAML = PROJECT_ROOT / "config" / "sources.yaml"
 from modules.common.paths import get_reports_dir, get_logs_dir, get_app_data_dir, get_index_db_path
 from modules.common.list_updater import init_lists_from_seed, ensure_text_search_index, get_lists_date
 from modules.common.reasons import translate_reason
+from modules.common.settings import get_setting, set_setting, get_display_scale
+from modules.common.ui import render_status_chip
 from modules.opensanctions.key_manager import (
     get_remembered_key,
     set_session_key,
@@ -95,6 +97,159 @@ st.set_page_config(
     page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded",
+)
+
+# Responsive Layout, Display Size Scaling & Status Chip Styling (T9-1)
+display_scale = get_display_scale()
+st.markdown(
+    f"""
+    <style>
+    :root {{
+        --app-scale: {display_scale};
+        font-size: calc(16px * var(--app-scale)) !important;
+    }}
+    html, body {{
+        overflow-x: hidden !important;
+        max-width: 100vw !important;
+    }}
+    .main .block-container {{
+        max-width: 100% !important;
+        padding-top: 1.5rem !important;
+        padding-bottom: 2rem !important;
+        padding-left: 2rem !important;
+        padding-right: 2rem !important;
+    }}
+    section[data-testid="stSidebar"] {{
+        min-width: 260px !important;
+        width: 260px !important;
+    }}
+    section[data-testid="stSidebar"] * {{
+        white-space: normal !important;
+        word-break: break-word !important;
+    }}
+    .status-chip {{
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        min-width: 6.8rem;
+        padding: 0.2rem 0.55rem;
+        border-radius: 0.25rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        line-height: 1.2;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        vertical-align: middle;
+        box-sizing: border-box;
+        white-space: nowrap;
+    }}
+    .chip-likely {{
+        background-color: #FEE2E2;
+        color: #991B1B;
+        border: 1px solid #DC2626;
+    }}
+    .chip-possible {{
+        background-color: #FEF3C7;
+        color: #92400E;
+        border: 1px solid #F59E0B;
+    }}
+    .chip-info {{
+        background-color: #DBEAFE;
+        color: #1E40AF;
+        border: 1px solid #3B82F6;
+    }}
+    .chip-clear {{
+        background-color: #D1FAE5;
+        color: #065F46;
+        border: 1px solid #10B981;
+    }}
+    .chip-not-checked {{
+        background-color: #F3F4F6;
+        color: #4B5563;
+        border: 1px solid #9CA3AF;
+    }}
+    .chip-safety {{
+        background-color: #FEF3C7;
+        color: #B45309;
+        border: 1px solid #F59E0B;
+    }}
+    .chip-export {{
+        background-color: #FEE2E2;
+        color: #991B1B;
+        border: 1px solid #DC2626;
+    }}
+    .source-header-grid {{
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+        gap: 0.75rem;
+        margin-bottom: 1.25rem;
+    }}
+    .source-card {{
+        background: #F9FAFB;
+        border: 1px solid #E5E7EB;
+        border-radius: 0.375rem;
+        padding: 0.65rem 0.75rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        min-width: 0;
+    }}
+    .source-card-title {{
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: #111827;
+        white-space: normal;
+        word-break: break-word;
+    }}
+    .source-card-status {{
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }}
+    .source-card-meta {{
+        font-size: 0.75rem;
+        color: #6B7280;
+        white-space: normal;
+    }}
+    .result-card {{
+        background: #FFFFFF;
+        border: 1px solid #E5E7EB;
+        border-radius: 0.5rem;
+        padding: 0.85rem 1rem;
+        margin-bottom: 0.85rem;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }}
+    .result-card-line1 {{
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        margin-bottom: 0.5rem;
+        flex-wrap: wrap;
+    }}
+    .result-card-name {{
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #111827;
+        word-break: break-word;
+    }}
+    .result-card-line2 {{
+        font-size: 0.875rem;
+        color: #374151;
+        line-height: 1.5;
+        margin-bottom: 0.6rem;
+        word-break: break-word;
+    }}
+    .result-card-line3 {{
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True,
 )
 
 # 1. Permanent Notice Banner
@@ -284,6 +439,20 @@ with st.sidebar:
         if st.button("📖 User Guide (PDF)"):
             if sys.platform == "win32":
                 os.startfile(str(ug_pdf))
+
+    with st.expander("⚙️ Settings", expanded=False):
+        cur_size = get_setting("display_size", "Medium")
+        size_opts = ["Small", "Medium", "Large", "Extra large"]
+        cur_idx = size_opts.index(cur_size) if cur_size in size_opts else 1
+        new_size = st.selectbox(
+            "Display size",
+            size_opts,
+            index=cur_idx,
+            help="Small (90%), Medium (100%, default), Large (115%), Extra large (130%)",
+        )
+        if new_size != cur_size:
+            set_setting("display_size", new_size)
+            st.rerun()
 
     with st.expander("About Naughty or not"):
         st.markdown(
@@ -883,24 +1052,40 @@ with tab_screened:
 
         # Section A — Sanctions
         st.subheader("Section A — Sanctions Findings")
-        status_cols = st.columns(len(res["source_statuses"]))
-        for i, s in enumerate(res["source_statuses"]):
-            with status_cols[i]:
-                tier = s.get("tier")
-                badge = "🔴" if tier == "POTENTIAL_MATCH" else ("🟠" if tier == "POSSIBLE_MATCH_REVIEW" else ("✅" if tier == "NO_MATCH" else "⚪"))
-                friendly_tier_name = {
-                    "POTENTIAL_MATCH": "Match to verify",
-                    "POSSIBLE_MATCH_REVIEW": "Review recommended",
-                    "NO_MATCH": "No match",
-                    "NOT_CHECKED": "Incomplete",
-                }.get(tier, tier)
-                delta_str = s.get("status")
-                below_cnt = s.get("below_count", 0)
-                if below_cnt > 0:
-                    delta_str = f"+{below_cnt}ℹ️ info"
-                st.metric(label=s["id"].upper().replace("_", " "), value=f"{badge} {friendly_tier_name}", delta=delta_str)
+        cards_html = []
+        for s in res["source_statuses"]:
+            sid = s.get("id", "")
+            fname = FRIENDLY_SOURCE_NAMES.get(sid, sid.upper().replace("_", " "))
+            tier = s.get("tier", "NO_MATCH")
+            chip = render_status_chip(tier)
+            below_cnt = s.get("below_count", 0)
 
-        # Render Flagged Hits (Expanded by default for 🔴 and 🟠)
+            cnt_text = ""
+            if tier == "POTENTIAL_MATCH":
+                cnt_text = "<span style='font-size:0.8rem; font-weight:600; color:#991B1B;'>1 match</span>"
+            elif tier == "POSSIBLE_MATCH_REVIEW":
+                cnt_text = "<span style='font-size:0.8rem; font-weight:600; color:#92400E;'>Review</span>"
+            elif tier == "NO_MATCH":
+                cnt_text = "<span style='font-size:0.8rem; color:#065F46;'>0 matches</span>"
+
+            if below_cnt > 0:
+                cnt_text += f" <span style='font-size:0.75rem; color:#1E40AF;'>+{below_cnt} info</span>"
+
+            pdate = s.get("date", "current")
+            last_ver = s.get("verified", "current")
+
+            cards_html.append(
+                f'<div class="source-card">'
+                f'  <div class="source-card-title">{fname}</div>'
+                f'  <div class="source-card-status">{chip} {cnt_text}</div>'
+                f'  <div class="source-card-meta">list dated {pdate} · verified {last_ver}</div>'
+                f'</div>'
+            )
+
+        grid_html = f'<div class="source-header-grid">{"".join(cards_html)}</div>'
+        st.markdown(grid_html, unsafe_allow_html=True)
+
+        # Render Flagged Hits as 3-Line Cards
         if res["sanctions_hits"]:
             for idx, h in enumerate(res["sanctions_hits"]):
                 src_id = h.get("source_list", "")
@@ -915,40 +1100,50 @@ with tab_screened:
                     direct_verify_url = verify_url
                     has_direct_link = False
 
-                tier_icon = h.get("tier_icon") or ("🔴" if h.get("tier") == "POTENTIAL_MATCH" else "🟠")
-                exp_label = f" — *Expanded from alias: `{h.get('expanded_from')}`*" if h.get("expanded_from") else ""
-                
-                with st.expander(
-                    f"{tier_icon} [{src_id}] {h.get('primary_name')} (Score: {h.get('score', 0.0):.4f}){exp_label}",
-                    expanded=True, # 🔴 and 🟠 rows expanded by default per T1.7 / T5.2
-                ):
-                    c1, c2 = st.columns(2)
-                    with c1:
-                        st.markdown(f"**Primary Name:** {h.get('primary_name')}")
-                        st.markdown(f"**Matched Alias / Name:** <mark style='background-color: #FFEB3B; padding: 2px 6px; font-weight: bold;'>{h.get('matched_name')}</mark>", unsafe_allow_html=True)
-                        if h.get("expanded_from"):
-                            st.markdown(f"**Expanded From:** `{h.get('expanded_from')}`")
-                        st.markdown(f"**Record ID:** `{rec_id}`")
+                tier = h.get("tier", "POTENTIAL_MATCH")
+                chip_html = render_status_chip(tier)
+                primary_name = h.get("primary_name") or "—"
+                matched_name = h.get("matched_name") or primary_name
+                exp_text = f" (via alias: {h.get('expanded_from')})" if h.get("expanded_from") else ""
+                prog = h.get("program") or "—"
+                score_val = float(h.get("score") or 0.0)
+                reason_code = h.get("tier_reason") or h.get("reason")
+                plain_reason = translate_reason(reason_code)
+                countries = h.get("country") or h.get("nationality") or ""
+                country_str = f" | Country: {countries}" if countries else ""
+
+                card_box = st.container(border=True)
+                with card_box:
+                    # Line 1: Status chip + listed name (wraps)
+                    l1_col1, l1_col2 = st.columns([1, 6])
+                    with l1_col1:
+                        st.markdown(chip_html, unsafe_allow_html=True)
+                    with l1_col2:
+                        st.markdown(f"**{primary_name}**")
+
+                    # Line 2: Matched name/alias, Record ID, Programme, Score, Reason (wraps)
+                    st.markdown(
+                        f"**Matched:** <mark style='background-color: #FFEB3B; padding: 2px 6px; font-weight: bold;'>{matched_name}</mark>{exp_text} &nbsp;|&nbsp; "
+                        f"**ID:** `{rec_id}` &nbsp;|&nbsp; **Prog:** {prog}{country_str} &nbsp;|&nbsp; "
+                        f"**Score:** `{score_val:.4f}` &nbsp;|&nbsp; **Reason:** {plain_reason}",
+                        unsafe_allow_html=True,
+                    )
+
+                    # Line 3: Verify and copy buttons (wrap)
+                    btn_c1, btn_c2, btn_c3, _ = st.columns([2, 1.5, 1.5, 3])
+                    with btn_c1:
+                        st.link_button(f"🔗 Verify on official {src_id}", direct_verify_url)
+                    with btn_c2:
+                        st.code(matched_name, language="")
+                        st.caption("Copy matched name")
+                    with btn_c3:
+                        st.code(str(rec_id), language="")
+                        st.caption("Copy record ID")
+
+                    with st.expander("Technical details & raw fields", expanded=False):
                         st.markdown(f"**Entity Type:** {h.get('entity_type')}")
-                    with c2:
-                        st.markdown(f"**Programme / Regime:** {h.get('program')}")
-                        reason_code = h.get("tier_reason") or h.get("reason")
-                        plain_reason = translate_reason(reason_code)
-                        st.markdown(f"**Reason:** {plain_reason}")
-                        with st.expander("Technical details"):
-                            st.markdown(f"**Match Score:** `{h.get('score', 0.0):.4f}`")
-                            st.markdown(f"**Internal Reason Code:** `{reason_code}`")
-                            st.markdown(f"**Score Source:** `{h.get('score_source')}`")
-                        
-                        # Official Verification link with Copy Name / Copy ID
-                        st.link_button(f"🔗 Verify on official {src_id} source", direct_verify_url)
-                        if not has_direct_link:
-                            st.caption(f"Copy values for official search box:")
-                            copy_c1, copy_c2 = st.columns(2)
-                            with copy_c1:
-                                st.code(h.get('matched_name') or h.get('primary_name') or "", language="")
-                            with copy_c2:
-                                st.code(str(rec_id), language="")
+                        st.markdown(f"**Score Source:** `{h.get('score_source')}`")
+                        st.markdown(f"**Internal Reason Code:** `{reason_code}`")
                         pub_date = src_info.get("publication_date", "current")
                         st.caption(f"*Our copy is dated {pub_date}. The official site may be more recent.*")
         else:
@@ -968,14 +1163,22 @@ with tab_screened:
                     if len(all_cands) >= 25:
                         st.info("Showing top 25 — more may exist; refine the search.")
                     for bc in below_cands:
-                        b_c1, b_c2 = st.columns([2, 1])
-                        with b_c1:
-                            st.markdown(f"ℹ️ **{bc.get('primary_name')}** (Matched: `{bc.get('matched_name')}`)")
-                            st.caption(f"ID: `{bc.get('source_id')}` | Entity Type: {bc.get('entity_type')} | Prog: {bc.get('program')}")
-                        with b_c2:
-                            st.markdown(f"Score: `{bc.get('score', 0.0):.4f}`")
-                            st.caption(f"Reason: {translate_reason(bc.get('reason'))}")
-                            # Verification link
+                        b_chip = render_status_chip("BELOW_THRESHOLD")
+                        b_box = st.container(border=True)
+                        with b_box:
+                            # Line 1: Chip + Name
+                            b_l1, b_l2 = st.columns([1, 6])
+                            with b_l1:
+                                st.markdown(b_chip, unsafe_allow_html=True)
+                            with b_l2:
+                                st.markdown(f"**{bc.get('primary_name')}** (Matched: `{bc.get('matched_name')}`)")
+                            # Line 2: Details
+                            st.caption(
+                                f"ID: `{bc.get('source_id')}` | Entity Type: {bc.get('entity_type')} | "
+                                f"Prog: {bc.get('program')} | Score: `{bc.get('score', 0.0):.4f}` | "
+                                f"Reason: {translate_reason(bc.get('reason'))}"
+                            )
+                            # Line 3: Verify button
                             l_info = source_dict.get(list_id, {})
                             v_url = l_info.get("verify_url") or "https://sanctionssearch.ofac.treas.gov/"
                             st.link_button(f"Verify {list_id}", v_url)
@@ -987,20 +1190,24 @@ with tab_screened:
                 rtype = av.get("result_type", "")
                 av_info = source_dict.get("bis_aircraft", {})
                 if rtype == "EAR_RESTRICTION":
-                    st.error(
-                        f"🔴 **Export-control restriction (US EAR) — verify before providing any service**\n\n"
-                        f"**Aircraft / Operator:** {av.get('details')}\n\n*Source: BIS Aircraft List*"
+                    st.markdown(
+                        f"<div class='result-card'>"
+                        f"  <div class='result-card-line1'>{render_status_chip('EXPORT_CONTROL')} <span class='result-card-name'>Export-control restriction (US EAR)</span></div>"
+                        f"  <div class='result-card-line2'><b>Aircraft / Operator:</b> {av.get('details')}<br/><span style='color:#6B7280; font-size:0.8rem;'>Source: BIS Aircraft List (copy dated {av_info.get('publication_date')})</span></div>"
+                        f"</div>",
+                        unsafe_allow_html=True,
                     )
                     st.link_button("🔗 Verify on official BIS document", av_info.get("verify_url", "https://www.bis.gov/"))
-                    st.caption(f"*Our copy is dated {av_info.get('publication_date')}. The official site may be more recent.*")
                 else:
                     eu_av = source_dict.get("eu_air_safety", {})
-                    st.warning(
-                        f"⚠️ **Safety flag — not a sanctions finding** ({rtype})\n\n"
-                        f"**Carrier / Scope:** {av.get('details')}\n\n*Source: EU Air Safety List / FAA IASA*"
+                    st.markdown(
+                        f"<div class='result-card'>"
+                        f"  <div class='result-card-line1'>{render_status_chip('SAFETY')} <span class='result-card-name'>Safety flag — not a sanctions finding ({rtype})</span></div>"
+                        f"  <div class='result-card-line2'><b>Carrier / Scope:</b> {av.get('details')}<br/><span style='color:#6B7280; font-size:0.8rem;'>Source: EU Air Safety List / FAA IASA (copy dated {eu_av.get('publication_date')})</span></div>"
+                        f"</div>",
+                        unsafe_allow_html=True,
                     )
                     st.link_button("🔗 Verify on official Aviation authority", eu_av.get("verify_url", "https://transport.ec.europa.eu/"))
-                    st.caption(f"*Our copy is dated {eu_av.get('publication_date')}. The official site may be more recent.*")
         else:
             st.write("✅ No aviation safety bans or export-control restrictions found.")
 
@@ -1009,13 +1216,14 @@ with tab_screened:
         if res["country_risk_hits"]:
             for cr in res["country_risk_hits"]:
                 fatf_info = source_dict.get("fatf_jurisdictions", {})
-                st.warning(
-                    f"⚠️ **Country risk flag — not a sanctions finding**\n\n"
-                    f"**Jurisdiction:** {cr.get('country')}\n\n"
-                    f"**FATF Status:** {cr.get('list_type')} — *{cr.get('call_to_action')}*"
+                st.markdown(
+                    f"<div class='result-card'>"
+                    f"  <div class='result-card-line1'>{render_status_chip('POSSIBLE_MATCH_REVIEW')} <span class='result-card-name'>Country risk flag — {cr.get('country')}</span></div>"
+                    f"  <div class='result-card-line2'><b>FATF Status:</b> {cr.get('list_type')} — <i>{cr.get('call_to_action')}</i><br/><span style='color:#6B7280; font-size:0.8rem;'>Source: FATF (copy dated {fatf_info.get('publication_date')})</span></div>"
+                    f"</div>",
+                    unsafe_allow_html=True,
                 )
                 st.link_button("🔗 Verify on official FATF website", fatf_info.get("verify_url", "https://www.fatf-gafi.org/"))
-                st.caption(f"*Our copy is dated {fatf_info.get('publication_date')}. The official site may be more recent.*")
         else:
             st.write("✅ No elevated FATF country risk flags.")
 

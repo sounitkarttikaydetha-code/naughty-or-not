@@ -38,6 +38,23 @@ def _safe_filename(s: str) -> str:
     return re.sub(r"[^\w\-]", "_", s)
 
 
+def format_chip_text(tier_or_status: str) -> str:
+    """Format status with both symbol and word for accessibility and colour-blind support."""
+    mapping = {
+        "POTENTIAL_MATCH": "🔴 LIKELY",
+        "POSSIBLE_MATCH_REVIEW": "🟠 POSSIBLE",
+        "BELOW_THRESHOLD": "ℹ️ INFO",
+        "NO_MATCH": "✅ CLEAR",
+        "NOT_CHECKED": "⚪ NOT CHECKED",
+        "FAILED": "⚪ NOT CHECKED",
+        "NOT_RUN": "⚪ NOT RUN",
+        "SAFETY": "✈️ SAFETY",
+        "EXPORT_CONTROL": "📦 EXPORT CONTROL",
+        "EAR_RESTRICTION": "📦 EXPORT CONTROL",
+    }
+    return mapping.get(str(tier_or_status), str(tier_or_status))
+
+
 def generate_reports(
     search_type: str,
     inputs: Dict[str, Any],
@@ -173,6 +190,19 @@ def _build_pdf(
         alignment=1, # Center
     )
 
+    cell_style = ParagraphStyle(
+        'TableCell',
+        parent=styles['Normal'],
+        fontSize=7,
+        leading=9,
+        wordWrap='CJK',
+    )
+    cell_style_bold = ParagraphStyle(
+        'TableCellBold',
+        parent=cell_style,
+        fontName='Helvetica-Bold',
+    )
+
     story = []
 
     # Title
@@ -220,16 +250,22 @@ def _build_pdf(
 
     # Sources Checked Table
     story.append(Paragraph("<b>Sources Checked & Status</b>", styles["Heading3"]))
-    src_table_data = [["Source ID", "Authority", "Publication Date", "Status", "Result"]]
+    src_table_data = [[
+        Paragraph("<b>Source ID</b>", cell_style_bold),
+        Paragraph("<b>Authority</b>", cell_style_bold),
+        Paragraph("<b>Publication Date</b>", cell_style_bold),
+        Paragraph("<b>Status</b>", cell_style_bold),
+        Paragraph("<b>Result</b>", cell_style_bold),
+    ]]
     for s in source_statuses:
         src_table_data.append([
-            s.get("id", "—"),
-            s.get("authority", "—"),
-            s.get("date", "—"),
-            s.get("status", "OK"),
-            s.get("tier", "NO_MATCH"),
+            Paragraph(str(s.get("id", "—")), cell_style),
+            Paragraph(str(s.get("authority", "—")), cell_style),
+            Paragraph(str(s.get("date", "—")), cell_style),
+            Paragraph(str(s.get("status", "OK")), cell_style),
+            Paragraph(format_chip_text(s.get("tier", "NO_MATCH")), cell_style_bold),
         ])
-    t_src = Table(src_table_data, colWidths=[100, 160, 100, 70, 110])
+    t_src = Table(src_table_data, colWidths=[90, 160, 95, 75, 120])
     t_src.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#ECEFF1")),
         ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
@@ -237,6 +273,7 @@ def _build_pdf(
         ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#CFD8DC")),
         ('TOPPADDING', (0,0), (-1,-1), 3),
         ('BOTTOMPADDING', (0,0), (-1,-1), 3),
+        ('VALIGN', (0,0), (-1,-1), 'TOP'),
     ]))
     story.append(t_src)
     story.append(Spacer(1, 12))
@@ -250,21 +287,28 @@ def _build_pdf(
         tier_weights = {"POTENTIAL_MATCH": 0, "POSSIBLE_MATCH_REVIEW": 1, "BELOW_THRESHOLD": 2}
         sorted_hits = sorted(hits_to_show, key=lambda h: (tier_weights.get(h.get("tier"), 9), -float(h.get("score") or 0.0)))
 
-        sanc_data = [["Source", "Tier", "Listed / Matched Name", "ID", "Score", "Reason"]]
+        sanc_data = [[
+            Paragraph("<b>Source</b>", cell_style_bold),
+            Paragraph("<b>Tier</b>", cell_style_bold),
+            Paragraph("<b>Listed / Matched Name</b>", cell_style_bold),
+            Paragraph("<b>ID</b>", cell_style_bold),
+            Paragraph("<b>Score</b>", cell_style_bold),
+            Paragraph("<b>Reason</b>", cell_style_bold),
+        ]]
         for h in sorted_hits:
             m_name = h.get("matched_name", "—")
             p_name = h.get("primary_name", "—")
             exp = f" [via {h.get('expanded_from')}]" if h.get("expanded_from") else ""
-            display_name = f"{p_name}\n(Matched: {m_name}{exp})"
+            display_name = f"<b>{p_name}</b><br/><font color='#555555'>Matched: {m_name}{exp}</font>"
             sanc_data.append([
-                h.get("source_list") or h.get("source", "—"),
-                h.get("tier", "—"),
-                display_name,
-                h.get("source_id", "—"),
-                f"{float(h.get('score') or 0.0):.4f}",
-                h.get("reason") or h.get("reason_code", "—"),
+                Paragraph(str(h.get("source_list") or h.get("source", "—")), cell_style),
+                Paragraph(format_chip_text(h.get("tier", "—")), cell_style_bold),
+                Paragraph(display_name, cell_style),
+                Paragraph(str(h.get("source_id", "—")), cell_style),
+                Paragraph(f"{float(h.get('score') or 0.0):.4f}", cell_style),
+                Paragraph(str(h.get("reason") or h.get("reason_code", "—")), cell_style),
             ])
-        t_sanc = Table(sanc_data, colWidths=[70, 90, 200, 60, 50, 70])
+        t_sanc = Table(sanc_data, colWidths=[65, 95, 200, 55, 45, 80])
         t_sanc.setStyle(TableStyle([
             ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#ECEFF1")),
             ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
@@ -272,6 +316,7 @@ def _build_pdf(
             ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#CFD8DC")),
             ('TOPPADDING', (0,0), (-1,-1), 3),
             ('BOTTOMPADDING', (0,0), (-1,-1), 3),
+            ('VALIGN', (0,0), (-1,-1), 'TOP'),
         ]))
         story.append(t_sanc)
     else:
@@ -281,15 +326,21 @@ def _build_pdf(
     # Section B: Aviation
     if aviation_hits:
         story.append(Paragraph("<b>Section B — Aviation Safety & Export Controls</b>", styles["Heading3"]))
-        av_data = [["Source / Scope", "Type", "Finding Details", "Official Note"]]
+        av_data = [[
+            Paragraph("<b>Source / Scope</b>", cell_style_bold),
+            Paragraph("<b>Type</b>", cell_style_bold),
+            Paragraph("<b>Finding Details</b>", cell_style_bold),
+            Paragraph("<b>Official Note</b>", cell_style_bold),
+        ]]
         for a in aviation_hits:
+            f_type = a.get("result_type") or a.get("finding") or "—"
             av_data.append([
-                a.get("source", "—"),
-                a.get("finding", "—"),
-                a.get("detail", "—"),
-                a.get("note", "—"),
+                Paragraph(str(a.get("source", "—")), cell_style),
+                Paragraph(format_chip_text(f_type), cell_style_bold),
+                Paragraph(str(a.get("detail", a.get("details", "—"))), cell_style),
+                Paragraph(str(a.get("note", "—")), cell_style),
             ])
-        t_av = Table(av_data, colWidths=[100, 110, 210, 120])
+        t_av = Table(av_data, colWidths=[90, 105, 215, 130])
         t_av.setStyle(TableStyle([
             ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#ECEFF1")),
             ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
@@ -297,6 +348,7 @@ def _build_pdf(
             ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#CFD8DC")),
             ('TOPPADDING', (0,0), (-1,-1), 3),
             ('BOTTOMPADDING', (0,0), (-1,-1), 3),
+            ('VALIGN', (0,0), (-1,-1), 'TOP'),
         ]))
         story.append(t_av)
         story.append(Spacer(1, 10))
@@ -304,15 +356,20 @@ def _build_pdf(
     # Section C: Country Risk (FATF)
     if country_risk_hits:
         story.append(Paragraph("<b>Section C — Country Risk (FATF Jurisdictions)</b>", styles["Heading3"]))
-        cr_data = [["Country", "List Type", "Official Summary", "Advisory"]]
+        cr_data = [[
+            Paragraph("<b>Country</b>", cell_style_bold),
+            Paragraph("<b>List Type</b>", cell_style_bold),
+            Paragraph("<b>Official Summary</b>", cell_style_bold),
+            Paragraph("<b>Advisory</b>", cell_style_bold),
+        ]]
         for c in country_risk_hits:
             cr_data.append([
-                c.get("country", "—"),
-                c.get("list_type", "—"),
-                c.get("summary", "—"),
-                c.get("advisory", "—"),
+                Paragraph(str(c.get("country", "—")), cell_style),
+                Paragraph(str(c.get("list_type", "—")), cell_style_bold),
+                Paragraph(str(c.get("summary", c.get("call_to_action", "—"))), cell_style),
+                Paragraph(str(c.get("advisory", c.get("risk_label", "—"))), cell_style),
             ])
-        t_cr = Table(cr_data, colWidths=[90, 80, 240, 130])
+        t_cr = Table(cr_data, colWidths=[85, 95, 220, 140])
         t_cr.setStyle(TableStyle([
             ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#ECEFF1")),
             ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
@@ -320,6 +377,7 @@ def _build_pdf(
             ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#CFD8DC")),
             ('TOPPADDING', (0,0), (-1,-1), 3),
             ('BOTTOMPADDING', (0,0), (-1,-1), 3),
+            ('VALIGN', (0,0), (-1,-1), 'TOP'),
         ]))
         story.append(t_cr)
         story.append(Spacer(1, 10))
@@ -327,16 +385,22 @@ def _build_pdf(
     # Section D: Manual Official Checks
     if manual_checks:
         story.append(Paragraph("<b>Section D — Manual Official Checks Performed</b>", styles["Heading3"]))
-        man_data = [["Timestamp", "Source / Portal", "Result", "Notes & Comments", "Official Verify Link"]]
+        man_data = [[
+            Paragraph("<b>Timestamp</b>", cell_style_bold),
+            Paragraph("<b>Source / Portal</b>", cell_style_bold),
+            Paragraph("<b>Result</b>", cell_style_bold),
+            Paragraph("<b>Notes & Comments</b>", cell_style_bold),
+            Paragraph("<b>Official Verify Link</b>", cell_style_bold),
+        ]]
         for mc in manual_checks:
             man_data.append([
-                mc.get("timestamp", "—"),
-                mc.get("source_name", mc.get("source", "—")),
-                mc.get("result", "—"),
-                mc.get("comment", "—"),
-                mc.get("verify_url", "—"),
+                Paragraph(str(mc.get("timestamp", "—")), cell_style),
+                Paragraph(str(mc.get("source_name", mc.get("source", "—"))), cell_style),
+                Paragraph(format_chip_text(mc.get("result", "—")), cell_style_bold),
+                Paragraph(str(mc.get("comment", "—")), cell_style),
+                Paragraph(str(mc.get("verify_url", "—")), cell_style),
             ])
-        t_man = Table(man_data, colWidths=[90, 110, 80, 130, 130])
+        t_man = Table(man_data, colWidths=[85, 110, 85, 130, 130])
         t_man.setStyle(TableStyle([
             ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#ECEFF1")),
             ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
@@ -344,6 +408,7 @@ def _build_pdf(
             ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#CFD8DC")),
             ('TOPPADDING', (0,0), (-1,-1), 3),
             ('BOTTOMPADDING', (0,0), (-1,-1), 3),
+            ('VALIGN', (0,0), (-1,-1), 'TOP'),
         ]))
         story.append(t_man)
         story.append(Spacer(1, 10))
@@ -416,7 +481,7 @@ def _build_excel(
             s.get("authority", "—"),
             s.get("date", "—"),
             s.get("status", "OK"),
-            s.get("tier", "NO_MATCH"),
+            format_chip_text(s.get("tier", "NO_MATCH")),
         ])
 
     # Sheet 3: Sanctions Findings & Candidates
@@ -434,7 +499,7 @@ def _build_excel(
     for h in sorted_hits:
         ws_sanc.append([
             h.get("source_list") or h.get("source", "—"),
-            h.get("tier", "—"),
+            format_chip_text(h.get("tier", "—")),
             h.get("primary_name", "—"),
             h.get("matched_name", "—"),
             h.get("expanded_from") or "—",
@@ -488,17 +553,20 @@ def _build_excel(
             ws_man.append([
                 mc.get("timestamp", "—"),
                 mc.get("source_name", mc.get("source", "—")),
-                mc.get("result", "—"),
+                format_chip_text(mc.get("result", "—")),
                 mc.get("comment", "—"),
                 mc.get("verify_url", "—"),
             ])
 
-    # Column autofit on all sheets
+    # Column autofit and wrapping on all sheets
     for ws in wb.worksheets:
+        for row in ws.iter_rows(min_row=2):
+            for cell in row:
+                cell.alignment = Alignment(wrap_text=True, vertical="top")
         for col in ws.columns:
             max_len = max([len(str(cell.value or '')) for cell in col], default=0)
             col_letter = openpyxl.utils.get_column_letter(col[0].column)
-            ws.column_dimensions[col_letter].width = max(max_len + 2, 12)
+            ws.column_dimensions[col_letter].width = min(max(max_len + 2, 12), 50)
 
     wb.save(str(excel_path))
 
