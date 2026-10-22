@@ -1,4 +1,6 @@
+import os
 import re
+import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 from datetime import datetime, timezone
@@ -15,12 +17,17 @@ from reportlab.lib import colors
 from modules.common.paths import get_app_data_dir
 
 def _get_base_reports_dir() -> Path:
+    if getattr(sys, "frozen", False):
+        local_app = os.environ.get("LOCALAPPDATA")
+        if local_app:
+            return Path(local_app) / "NaughtyOrNot" / "reports"
     try:
         return get_app_data_dir() / "reports"
     except Exception:
         return Path("reports")
 
 REPORTS_DIR = _get_base_reports_dir()
+_get_reports_dir = _get_base_reports_dir
 NOTICE_TEXT = (
     "COMPLIANCE NOTICE: Naughty or not (Sanction checK) performs name-matching and open-source intelligence aggregation only. "
     "It does not provide legal advice, official sanctions determinations, or comprehensive ownership/control analysis (e.g. EU/OFAC 50% rules). "

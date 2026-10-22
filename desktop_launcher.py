@@ -146,19 +146,6 @@ def shutdown_cleanly():
     except Exception:
         pass
 
-    # Terminate process group to guarantee no orphaned child processes remain
-    if sys.platform == "win32":
-        try:
-            import subprocess
-            subprocess.run(
-                f"taskkill /F /T /PID {os.getpid()}",
-                shell=True,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
-        except Exception:
-            pass
-
 
 def main():
     # 1. Single instance check
@@ -263,6 +250,17 @@ def main():
     def on_closed():
         # Clean process shutdown — flush databases and stop server
         shutdown_cleanly()
+        if sys.platform == "win32":
+            try:
+                import subprocess
+                subprocess.run(
+                    f"taskkill /F /T /PID {os.getpid()}",
+                    shell=True,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+            except Exception:
+                pass
         os._exit(0)
 
     window.events.closed += on_closed

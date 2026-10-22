@@ -1,0 +1,111 @@
+{
+  "platform": {
+    "os": "Windows 11 (10.0.26300)",
+    "python": "3.12.10",
+    "arch": "AMD64"
+  },
+  "test_suite": {
+    "total": 133,
+    "passed": 133,
+    "failures": 0,
+    "errors": 0,
+    "duration_s": 90.17,
+    "status": "PASS"
+  },
+  "failsafe_matrix": {
+    "lists_tested": 5,
+    "failure_types": 4,
+    "total_cases": 20,
+    "passed_cases": 20,
+    "pass_rate": "100.0%",
+    "status": "PASS"
+  },
+  "baseline_diff": {
+    "queries_tested": 60,
+    "total_diffs": 1,
+    "unexplained_diffs": 0,
+    "expected_changes": [
+      "Kadhafi (person) on us_ofac -> \ud83d\udfe0 phonetic_name_person (T8-6A elevation)"
+    ],
+    "status": "PASS"
+  },
+  "phonetic": {
+    "inverted_index_tokens": 41115,
+    "total_postings": 230900,
+    "max_df_pct": 20.0,
+    "max_candidates": 50,
+    "recall_orange_target": ">= 98.0%",
+    "recall_orange_measured": "100.0% (200/200)",
+    "clean_controls_false_positives": 0,
+    "status": "PASS"
+  },
+  "source_counts": {
+    "us_ofac": 19457,
+    "us_csl": 6702,
+    "uk_csl": 6408,
+    "eu_csl": 6234,
+    "un_csl": 1010
+  },
+  "t8_checklist": {
+    "T8-1": {
+      "title": "Real list refresh and list-change detection",
+      "commit": "4d89ac4",
+      "status": "MET"
+    },
+    "T8-2": {
+      "title": "FATF data integration and staleness rule",
+      "commit": "55d3f68",
+      "status": "MET"
+    },
+    "T8-3": {
+      "title": "Performance optimizations and disk cache",
+      "commit": "c7fc794",
+      "status": "MET"
+    },
+    "T8-4": {
+      "title": "Lock historical results and golden set",
+      "commit": "079c4fe",
+      "status": "MET"
+    },
+    "T8-5": {
+      "title": "Alias expansion safety and ambiguous capping",
+      "commit": "0b35b6f",
+      "status": "MET"
+    },
+    "T8-6": {
+      "title": "Short names and non-Latin input handling",
+      "commit": "08182c9",
+      "status": "MET"
+    },
+    "T8-6A": {
+      "title": "Sound-alike phonetic matching",
+      "commit": "0b7eafd",
+      "status": "MET"
+    },
+    "T8-7": {
+      "title": "Threshold slider, labels and official links",
+      "commit": "7fc30d3",
+      "status": "MET"
+    },
+    "T8-8": {
+      "title": "Log and report completeness and candidate table",
+      "commit": "5a8ae4e",
+      "status": "MET"
+    },
+    "T8-9": {
+      "title": "Manual check tab and official registry cards",
+      "commit": "65d1fc1",
+      "status": "MET"
+    },
+    "T8-10": {
+      "title": "T7.1 FINAL leftovers, clean deployment and shutdown",
+      "commit": "9bc8c77",
+      "status": "MET"
+    },
+    "T8-11": {
+      "title": "Integrated debugging sweep & release v1.0.3",
+      "commit": "PENDING",
+      "status": "MET"
+    }
+  }
+}

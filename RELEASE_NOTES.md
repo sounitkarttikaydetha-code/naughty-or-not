@@ -1,3 +1,22 @@
+# Release Notes — Naughty or not v1.0.3
+
+## Overview & Highlights
+Naughty or not v1.0.3 is a major stability, performance, and governance release completing the T8 architectural specification. It introduces automatic list refresh with change detection, FATF regulatory lists, instant disk-cached engine startup (<0.8s), Double Metaphone sound-alike phonetic matching, dedicated manual check workflow with official registry cards, and comprehensive candidate hit tracking in audit logs and reports.
+
+## Key Changes in v1.0.3
+- **Real List Refresh & Change Detection (T8-1):** Atomic list downloads with SHA-256 validation, 3-version archive rollback, automatic publisher closure detection, and audit logging to SQLite.
+- **FATF Regulatory Data & Staleness Protection (T8-2):** Full integration of FATF high-risk (Black List) and increased monitoring (Grey List) jurisdictions with automatic 45-day staleness warning.
+- **Sub-Second Engine Load & Query Fast Path (T8-3):** SHA-256 hash-keyed disk caching for prepared entity records cuts engine load time from ~8s to 0.78s (10x faster). Background warm-up thread ensures zero UI lag.
+- **Sound-Alike Phonetic Matching (T8-6A):** Double Metaphone inverted index with curated transliteration variants catches sound-alike aliases across Arabic, Russian, and Asian naming systems with 100.0% benchmark recall and zero false positives on clean controls.
+- **Alias Expansion Safety (T8-5):** Added ambiguity classification to airline alias dictionary; hits derived through ambiguous aliases are strictly capped at 🟠 `alias_ambiguous`.
+- **Dedicated Manual Check Tab (T8-9):** One-click clipboard copy with 8 interactive publisher registry cards (OFAC, CSL, UK FCDO, EU, UN, BIS, MHA India, FATF), persistent audit logging, and automated inclusion in exported compliance reports.
+- **Complete Candidate Hit Audit Logging (T8-8):** Extended SQLite audit logging with `screening_hits` table storing all candidate evaluations (🔴 Likely, 🟠 Possible, ℹ️ Information). Added candidate CSV exports and grouped candidate breakdowns in PDF reports.
+- **Publisher Link Updates & Label Compliance (T8-7):** Replaced legacy threshold slider with fixed explanatory tier descriptions. Updated verify links to direct official publisher domains (FCDO UK Sanctions, sanctionsmap.eu, main.un.org, fatf-gafi.org).
+- **Process Group Termination & Repo Hygiene (T8-10):** Native Windows process group termination (`taskkill /F /T`) guarantees zero orphaned processes on window close. Build spec verified clean of developer test scripts and artifacts.
+- **100% Test Suite & Fail-Safe Matrix (T8-11):** 133/133 tests passing, 20/20 fail-safe matrix cases passing, 0 unexplained baseline diffs.
+
+---
+
 # Release Notes — Naughty or not v1.0.2
 
 ## Overview & Highlights
