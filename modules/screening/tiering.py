@@ -579,11 +579,14 @@ def get_airline_alias_row(query: str) -> Optional[Dict[str, Any]]:
                     for name in [canonical] + aliases:
                         if name and name not in all_aliases:
                             all_aliases.append(name)
+                    amb_raw = row.get("ambiguous", "")
+                    amb_list = [a.strip() for a in amb_raw.split(";") if a.strip()]
                     return {
                         "canonical": canonical,
                         "aliases": all_aliases,
                         "icao": icao,
                         "iata": iata,
+                        "ambiguous_aliases": set(amb_list) | {a for a in all_aliases if len(a.strip()) <= 4},
                     }
     except (OSError, csv.Error) as e:
         logger.warning(f"Error reading airline aliases file: {e}")
@@ -839,7 +842,9 @@ def screen_query_all_lists(
             seen_norm_aliases.add(norm_a)
             filtered_aliases.append(exp_alias)
 
+        ambiguous_set = expansion_row.get("ambiguous_aliases", set())
         for exp_alias in filtered_aliases:
+            is_ambiguous = (exp_alias in ambiguous_set or len(exp_alias.strip()) <= 4)
             exp_res = _screen_direct_all_lists(
                 query=exp_alias,
                 client=client,
@@ -853,15 +858,32 @@ def screen_query_all_lists(
                 exp_best = exp_res[src]["best_hit"]
 
                 if exp_best["tier"] == TIER_POTENTIAL_MATCH:
-                    if cur_best["tier"] != TIER_POTENTIAL_MATCH or (cur_best.get("expanded_from") and exp_best["score"] > cur_best["score"]):
-                        exp_best_copy = dict(exp_best)
-                        exp_best_copy["expanded_from"] = exp_alias
-                        direct_results[src]["best_hit"] = exp_best_copy
-                        if exp_best_copy not in direct_results[src]["red_hits"]:
-                            direct_results[src]["red_hits"].insert(0, exp_best_copy)
+                    if is_ambiguous:
+                        # T8-5: A hit that matched ONLY through an ambiguous alias is capped at 🟠 with reason alias_ambiguous
+                        if cur_best["tier"] != TIER_POTENTIAL_MATCH:
+                            exp_best_copy = dict(exp_best)
+                            exp_best_copy["tier"] = TIER_POSSIBLE_MATCH
+                            exp_best_copy["tier_icon"] = "🟠"
+                            exp_best_copy["reason"] = "alias_ambiguous"
+                            exp_best_copy["tier_reason"] = "alias_ambiguous"
+                            exp_best_copy["expanded_from"] = exp_alias
+                            if cur_best["tier"] == TIER_NO_MATCH or (cur_best.get("expanded_from") and exp_best["score"] > cur_best["score"]):
+                                direct_results[src]["best_hit"] = exp_best_copy
+                            if exp_best_copy not in direct_results[src]["orange_hits"]:
+                                direct_results[src]["orange_hits"].append(exp_best_copy)
+                    else:
+                        if cur_best["tier"] != TIER_POTENTIAL_MATCH or (cur_best.get("expanded_from") and exp_best["score"] > cur_best["score"]):
+                            exp_best_copy = dict(exp_best)
+                            exp_best_copy["expanded_from"] = exp_alias
+                            direct_results[src]["best_hit"] = exp_best_copy
+                            if exp_best_copy not in direct_results[src]["red_hits"]:
+                                direct_results[src]["red_hits"].insert(0, exp_best_copy)
                 elif exp_best["tier"] == TIER_POSSIBLE_MATCH and cur_best["tier"] == TIER_NO_MATCH:
                     exp_best_copy = dict(exp_best)
                     exp_best_copy["expanded_from"] = exp_alias
+                    if is_ambiguous:
+                        exp_best_copy["reason"] = "alias_ambiguous"
+                        exp_best_copy["tier_reason"] = "alias_ambiguous"
                     direct_results[src]["best_hit"] = exp_best_copy
                     direct_results[src]["orange_hits"].append(exp_best_copy)
 
@@ -874,6 +896,12 @@ def screen_query_all_lists(
                     if sid not in existing_cands:
                         cand_copy = dict(cand)
                         cand_copy["expanded_from"] = exp_alias
+                        if is_ambiguous and cand_copy.get("tier") == TIER_POTENTIAL_MATCH:
+                            cand_copy["tier"] = TIER_POSSIBLE_MATCH
+                            cand_copy["tier_icon"] = "🟠"
+                            cand_copy["reason"] = "alias_ambiguous"
+                            cand_copy["tier_reason"] = "alias_ambiguous"
+
                         direct_results[src]["all_candidates"].append(cand_copy)
                         existing_cands[sid] = cand_copy
                         if cand_copy.get("tier") == TIER_BELOW_THRESHOLD:
