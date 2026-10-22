@@ -792,6 +792,7 @@ with tab_screened:
                 })
 
         # Generate Reports & Log
+        session_manual_checks = st.session_state.manual_checks_saved.get(primary_query, [])
         pdf_path, excel_path = generate_reports(
             search_type=search_type,
             inputs=inputs_dict,
@@ -802,6 +803,7 @@ with tab_screened:
             country_risk_hits=country_risk_hits,
             opensanctions_used=use_opensanctions,
             all_candidates=all_screening_candidates,
+            manual_checks=session_manual_checks,
         )
 
         log_search(
@@ -1180,89 +1182,120 @@ with tab_raw:
 
 
 # =========================================================================
-# TAB 3: MANUAL CHECK (T5.2)
+# TAB 3: MANUAL CHECK (T5.2 / T8-9)
 # =========================================================================
 with tab_manual:
     st.markdown("### Manual Official List Check")
     st.caption("Verify query names directly on official search portals and record manual compliance determinations.")
 
-    manual_name = st.text_input(
-        "Subject / Entity Name for Manual Check*",
-        value=st.session_state.manual_check_name,
-        placeholder="e.g. Sberbank or Aeroflot",
-        key="manual_name_box",
-    )
+    m_col1, m_col2 = st.columns([3, 1])
+    with m_col1:
+        manual_name = st.text_input(
+            "Subject / Entity Name for Manual Check*",
+            value=st.session_state.manual_check_name,
+            placeholder="e.g. Sberbank or Aeroflot",
+            key="manual_name_box",
+        )
+    with m_col2:
+        if manual_name:
+            st.code(manual_name, language="")
+            st.caption("Copy name to clipboard")
 
-    official_manual_sources = [
-        {"id": "us_ofac", "name": "US OFAC (SDN & Consolidated)", "authority": "US Treasury, OFAC", "inst": "Search by name; check aliases and date of birth."},
-        {"id": "us_csl", "name": "US Consolidated Screening List", "authority": "US ITA (Commerce, State, Treasury)", "inst": "Search entity or person name across CSL agencies."},
-        {"id": "uk_csl", "name": "UK Sanctions List", "authority": "UK FCDO", "inst": "Search UK Sanctions service; review designation details."},
-        {"id": "eu_csl", "name": "EU Sanctions Map & Tracker", "authority": "European Commission", "inst": "Search EU Sanctions Map; verify regime and listing date."},
-        {"id": "un_csl", "name": "UN SC Consolidated List", "authority": "UN Security Council", "inst": "Search UN Consolidated list by name or UN Reference number."},
-        {"id": "bis_aircraft", "name": "BIS Commercial & Private Aircraft", "authority": "US BIS", "inst": "Search tail number, serial number (MSN), or operator."},
-        {"id": "bis_tdo", "name": "BIS Temporary Denial Orders (TDO)", "authority": "US BIS Export Violations", "inst": "Check active Temporary Denial Orders and export violation notices."},
-        {"id": "eu_air_safety", "name": "EU Air Safety List", "authority": "European Commission DG MOVE", "inst": "Check Annex A (banned carriers) and Annex B (operational restrictions)."},
-        {"id": "faa_iasa", "name": "FAA IASA Program Results", "authority": "US FAA", "inst": "Check country civil aviation authority safety assessment (Category 2)."},
-        {"id": "in_mha_first_schedule", "name": "MHA First Schedule (Terrorist Organisations)", "authority": "Ministry of Home Affairs, India", "inst": "Check terrorist organizations and designated fronts/aliases under UAPA."},
-        {"id": "in_mha_fourth_schedule", "name": "MHA Fourth Schedule (Individual Terrorists)", "authority": "Ministry of Home Affairs, India", "inst": "Check individual terrorists designated under UAPA."},
-        {"id": "in_mha_unlawful_assoc", "name": "MHA Section 3 Unlawful Associations", "authority": "Ministry of Home Affairs, India", "inst": "Check unlawful associations declared under Section 3 of UAPA."},
-        {"id": "fatf_jurisdictions", "name": "FATF High-Risk & Monitored Jurisdictions", "authority": "Financial Action Task Force (FATF)", "inst": "Check FATF Black list (Call for Action) and Grey list (Increased Monitoring)."},
+    clean_subj = manual_name.strip()
+    if clean_subj:
+        recent_checks = get_manual_checks_for_entity(clean_subj, limit=5)
+        if recent_checks:
+            with st.expander(f"🕒 Recent manual checks for '{clean_subj}' ({len(recent_checks)} recorded)", expanded=False):
+                for rc in recent_checks:
+                    st.markdown(f"• **{rc['source']}** — Result: `{rc['result']}` | Note: *{rc['comment']}* ({rc['timestamp'][:19]})")
+
+    official_publishers = [
+        {"id": "us_ofac", "name": "US OFAC (SDN & Consolidated Lists)", "authority": "US Treasury, OFAC", "inst": "Enter entity or person name into Name field. Set minimum match threshold. Review aliases, IDs, and date of birth details."},
+        {"id": "us_csl", "name": "US Consolidated Screening List", "authority": "US ITA (Commerce, State, Treasury)", "inst": "Search across Commerce (BIS), State (ISN/DTC), and Treasury agencies on the consolidated search page."},
+        {"id": "uk_csl", "name": "UK Sanctions List (FCDO)", "authority": "UK Foreign, Commonwealth & Development Office", "inst": "Search UK Sanctions service; review non-Latin name spellings, regime, and sanctions imposition reason."},
+        {"id": "eu_csl", "name": "EU Sanctions Map & Tracker", "authority": "European Commission", "inst": "Use global search bar. Filter by Persons, Entities, or Regimes. Verify legal acts and asset freeze measures."},
+        {"id": "un_csl", "name": "UN Security Council Consolidated List", "authority": "UN Security Council", "inst": "Search consolidated XML/HTML list. Match reference numbers, aliases, and Interpol-UN notices."},
+        {"id": "bis_aircraft", "name": "US BIS (Aircraft & Denial Orders)", "authority": "US Bureau of Industry and Security", "inst": "Verify tail numbers, MSNs, and commercial/private operators subject to Temporary Denial Orders and EAR export restrictions."},
+        {"id": "in_mha_first_schedule", "name": "India MHA (UAPA Schedules)", "authority": "Ministry of Home Affairs, Government of India", "inst": "Search 1st Schedule (Terrorist Organisations), 4th Schedule (Individuals), and Section 3 (Unlawful Associations)."},
+        {"id": "fatf_jurisdictions", "name": "FATF High-Risk & Monitored Jurisdictions", "authority": "Financial Action Task Force (FATF)", "inst": "Check High-Risk Jurisdictions subject to a Call for Action (Black list) and Jurisdictions under Increased Monitoring (Grey list)."},
     ]
 
     manual_form_values = {}
 
     st.markdown("---")
-    st.markdown("#### Official Search Verification Rows")
+    st.markdown("#### Official Publisher Verification Cards")
 
-    for src in official_manual_sources:
-        sid = src["id"]
+    for pub in official_publishers:
+        sid = pub["id"]
         cfg = source_dict.get(sid, {})
         v_url = cfg.get("verify_url") or cfg.get("landing_page") or "https://sanctionssearch.ofac.treas.gov/"
         p_date = cfg.get("publication_date", "current")
 
-        with st.container():
-            m_c1, m_c2, m_c3, m_c4 = st.columns([3, 2, 2, 3])
-            with m_c1:
-                st.markdown(f"**{src['name']}**")
-                st.caption(f"Authority: {src['authority']}\n\n*Instruction: {src['inst']}*")
-                st.caption(f"Our copy: {p_date} (official site may be more recent)")
-            with m_c2:
-                st.link_button("🌐 Open official search", v_url)
-                if manual_name:
-                    st.caption("Copy name to clipboard:")
-                    st.code(manual_name, language="")
-            with m_c3:
-                sel = st.selectbox(
-                    f"Result ({sid})",
-                    ["Not checked", "No match", "Possible match", "Match"],
+        with st.expander(f"🏛️ {pub['name']} — {pub['authority']}", expanded=False):
+            st.markdown(f"**Authority:** {pub['authority']}")
+            st.markdown(f"**Instructions:** {pub['inst']}")
+            st.caption(f"Our dataset version: {p_date} (official site is real-time)")
+            st.link_button("🌐 Open official search portal", v_url)
+
+            card_c1, card_c2 = st.columns([1, 2])
+            with card_c1:
+                res_val = st.radio(
+                    f"Determination ({sid})",
+                    ["Clean", "Partial", "Match", "Unavailable"],
                     index=0,
                     key=f"manual_res_{sid}",
                 )
-            with m_c4:
-                comm = st.text_input(
-                    f"Comment / Note ({sid})",
-                    placeholder="e.g. Verified clean on official portal",
-                    key=f"manual_comm_{sid}",
+            with card_c2:
+                notes_val = st.text_area(
+                    f"Findings / Notes ({sid})",
+                    placeholder="e.g. Verified clean on official portal; no active designations found.",
+                    key=f"manual_notes_{sid}",
+                    height=80,
                 )
+
+            if st.button(f"💾 Save {pub['name']} Check", key=f"save_btn_{sid}"):
+                if not clean_subj:
+                    st.error("Please enter Subject Name at the top before saving.")
+                else:
+                    log_manual_check(
+                        name=clean_subj,
+                        source=sid,
+                        result=res_val,
+                        comment=notes_val,
+                    )
+                    saved_item = {
+                        "source": sid,
+                        "source_name": pub["name"],
+                        "authority": pub["authority"],
+                        "result": res_val,
+                        "comment": notes_val,
+                        "verify_url": v_url,
+                    }
+                    if clean_subj not in st.session_state.manual_checks_saved:
+                        st.session_state.manual_checks_saved[clean_subj] = []
+                    st.session_state.manual_checks_saved[clean_subj].append(saved_item)
+                    st.success(f"Saved {pub['name']} check as '{res_val}' (`mode = manual`)!")
+
             manual_form_values[sid] = {
                 "source": sid,
-                "authority": src["authority"],
-                "result": sel,
-                "comment": comm,
+                "source_name": pub["name"],
+                "authority": pub["authority"],
+                "result": res_val,
+                "comment": notes_val,
                 "verify_url": v_url,
             }
-            st.divider()
 
-    if st.button("💾 Save Manual Check Results", type="primary"):
-        if not manual_name.strip():
+    st.markdown("---")
+    if st.button("💾 Save All Completed Checks", type="primary"):
+        if not clean_subj:
             st.error("Please provide the Subject Name at the top before saving manual check results.")
         else:
             saved_count = 0
             checks_to_save = []
             for sid, val in manual_form_values.items():
-                if val["result"] != "Not checked" or val["comment"]:
+                if val["comment"] or val["result"] != "Clean":
                     log_manual_check(
-                        name=manual_name.strip(),
+                        name=clean_subj,
                         source=sid,
                         result=val["result"],
                         comment=val["comment"],
@@ -1270,20 +1303,22 @@ with tab_manual:
                     checks_to_save.append(val)
                     saved_count += 1
 
-            st.session_state.manual_checks_saved[manual_name.strip()] = checks_to_save
+            if clean_subj not in st.session_state.manual_checks_saved:
+                st.session_state.manual_checks_saved[clean_subj] = []
+            st.session_state.manual_checks_saved[clean_subj].extend(checks_to_save)
 
             # If screened results exist for the same name, regenerate reports with manual check included
-            if st.session_state.last_results and st.session_state.last_results.get("primary_query") == manual_name.strip():
+            if st.session_state.last_results and st.session_state.last_results.get("primary_query") == clean_subj:
                 res = st.session_state.last_results
                 pdf_p, excel_p = generate_reports(
                     search_type=res["search_type"],
-                    inputs={"name": manual_name.strip()},
+                    inputs={"name": clean_subj},
                     overall_banner=res["banner_text"],
                     source_statuses=res["source_statuses"],
                     sanctions_hits=res["sanctions_hits"],
                     aviation_hits=res["aviation_hits"],
                     country_risk_hits=res["country_risk_hits"],
-                    manual_checks=checks_to_save,
+                    manual_checks=st.session_state.manual_checks_saved[clean_subj],
                 )
                 res["pdf_path"] = str(pdf_p)
                 res["excel_path"] = str(excel_p)
