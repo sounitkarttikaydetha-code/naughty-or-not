@@ -48,6 +48,7 @@ def download_official_sanctions_lists(force: bool = False):
 
     sources_map = {
         "us_ofac_sdn.csv": "https://www.treasury.gov/ofac/downloads/sdn.csv",
+        "us_ofac_alt.csv": "https://www.treasury.gov/ofac/downloads/alt.csv",
         "us_csl.csv": "https://data.trade.gov/downloadable_consolidated_screening_list/v1/consolidated.csv",
         "uk_csl.csv": "https://sanctionslist.fcdo.gov.uk/docs/UK-Sanctions-List.csv",
         "eu_csl.xml": "https://webgate.ec.europa.eu/fsd/fsf/public/files/xmlFullSanctionsList_1_1/content?token=dG9rZW4tMjAxNw",
