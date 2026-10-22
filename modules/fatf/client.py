@@ -100,16 +100,20 @@ GREY_LIST = GREY_LIST_MAP
 def check_plenary_refresh(current_date: Optional[datetime] = None) -> Dict[str, Any]:
     """Check whether a new FATF plenary statement check is due.
     FATF holds 3 plenaries per year: February, June, October.
+    October 2026 plenary runs 28-30 October; outcome update due from 31 October 2026.
     """
     now = current_date or datetime.now(timezone.utc)
-    current_month = now.month
+    # The June 2026 statement remains current until October 31, 2026
+    plenary_closure = datetime(2026, 10, 31, 0, 0, 0, tzinfo=timezone.utc)
+    refresh_due = now >= plenary_closure
+    status = "UPDATE_DUE" if refresh_due else "UP_TO_DATE"
     return {
         "statement_date": FATF_STATEMENT_DATE,
         "plenary_cycle": PLENARY_CYCLE,
         "plenary_note": PLENARY_NOTE,
         "last_checked": now.strftime("%Y-%m-%d"),
-        "refresh_due": current_month in PLENARY_MONTHS,
-        "status": "UP_TO_DATE",
+        "refresh_due": refresh_due,
+        "status": status,
         "source_urls": SOURCE_URLS,
     }
 

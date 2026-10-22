@@ -7,6 +7,7 @@ secondary identifier conflict checks, and multi-tier categorization.
 
 import csv
 import difflib
+from functools import lru_cache
 import logging
 import os
 import re
@@ -117,6 +118,7 @@ def extract_all_aliases(entity: Dict[str, Any]) -> List[str]:
 
 
 
+@lru_cache(maxsize=32768)
 def is_fuzzy_word_pair(w1: str, w2: str) -> bool:
     """Check if two words are a fuzzy match: >= 5 chars each and >= 90% similarity."""
     if len(w1) < FUZZY_WORD_MIN_LEN or len(w2) < FUZZY_WORD_MIN_LEN:

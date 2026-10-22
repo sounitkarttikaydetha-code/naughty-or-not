@@ -372,7 +372,8 @@
         "source_id": "\u2014",
         "program": "\u2014",
         "verified": true,
-        "evidence": "known_clean_entity"
+        "evidence": "known_clean_entity",
+        "needs_official_check": true
       },
       "eu_csl": {
         "tier": "NO_MATCH",
@@ -383,7 +384,8 @@
         "source_id": "\u2014",
         "program": "\u2014",
         "verified": true,
-        "evidence": "known_clean_entity"
+        "evidence": "known_clean_entity",
+        "needs_official_check": true
       },
       "un_csl": {
         "tier": "NO_MATCH",
@@ -429,7 +431,8 @@
         "source_id": "\u2014",
         "program": "\u2014",
         "verified": true,
-        "evidence": "known_clean_entity"
+        "evidence": "known_clean_entity",
+        "needs_official_check": true
       },
       "eu_csl": {
         "tier": "POTENTIAL_MATCH",
@@ -440,7 +443,8 @@
         "source_id": "171617",
         "program": "UKR",
         "verified": true,
-        "evidence": "list_record_id: 171617"
+        "evidence": "list_record_id: 171617",
+        "needs_official_check": true
       },
       "un_csl": {
         "tier": "NO_MATCH",

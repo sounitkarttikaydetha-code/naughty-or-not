@@ -31,7 +31,7 @@ _get_reports_dir = _get_base_reports_dir
 NOTICE_TEXT = (
     "COMPLIANCE NOTICE: Naughty or not (Sanction checK) performs name-matching and open-source intelligence aggregation only. "
     "It does not provide legal advice, official sanctions determinations, or comprehensive ownership/control analysis (e.g. EU/OFAC 50% rules). "
-    "Verify all findings against official publications."
+    "The local audit log is append-only, not tamper-evident. Verify all findings against official publications."
 )
 
 def _safe_filename(s: str) -> str:

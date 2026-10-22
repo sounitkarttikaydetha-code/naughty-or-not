@@ -273,6 +273,7 @@ if not st.session_state.acknowledged:
         > Not to be relied upon for transaction decisions.
         >
         > **Important:** Results must be verified on the official source and escalated under the Sanctions Compliance Policy.
+        > The local audit log is append-only, not tamper-evident.
         """
     )
     ack_col1, ack_col2 = st.columns([1, 4])
@@ -1436,17 +1437,23 @@ with tab_manual:
         if recent_checks:
             with st.expander(f"🕒 Recent manual checks for '{clean_subj}' ({len(recent_checks)} recorded)", expanded=False):
                 for rc in recent_checks:
-                    st.markdown(f"• **{rc['source']}** — Result: `{rc['result']}` | Note: *{rc['comment']}* ({rc['timestamp'][:19]})")
+                    st.markdown(f"• **{rc['source']}** — Result: `{rc['result']}` | User: `{rc.get('user', '—')}` | Date: `{rc['timestamp'][:19]}` | Note: *{rc['comment']}*")
 
     official_publishers = [
         {"id": "us_ofac", "name": "US OFAC (SDN & Consolidated Lists)", "authority": "US Treasury, OFAC", "inst": "Enter entity or person name into Name field. Set minimum match threshold. Review aliases, IDs, and date of birth details."},
-        {"id": "us_csl", "name": "US Consolidated Screening List", "authority": "US ITA (Commerce, State, Treasury)", "inst": "Search across Commerce (BIS), State (ISN/DTC), and Treasury agencies on the consolidated search page."},
+        {"id": "us_csl", "name": "US Consolidated Screening List (CSL)", "authority": "US ITA (Commerce, State, Treasury)", "inst": "Search across Commerce (BIS), State (ISN/DTC), and Treasury agencies on the consolidated search page."},
         {"id": "uk_csl", "name": "UK Sanctions List (FCDO)", "authority": "UK Foreign, Commonwealth & Development Office", "inst": "Search UK Sanctions service; review non-Latin name spellings, regime, and sanctions imposition reason."},
         {"id": "eu_csl", "name": "EU Sanctions Map & Tracker", "authority": "European Commission", "inst": "Use global search bar. Filter by Persons, Entities, or Regimes. Verify legal acts and asset freeze measures."},
         {"id": "un_csl", "name": "UN Security Council Consolidated List", "authority": "UN Security Council", "inst": "Search consolidated XML/HTML list. Match reference numbers, aliases, and Interpol-UN notices."},
-        {"id": "bis_aircraft", "name": "US BIS (Aircraft & Denial Orders)", "authority": "US Bureau of Industry and Security", "inst": "Verify tail numbers, MSNs, and commercial/private operators subject to Temporary Denial Orders and EAR export restrictions."},
-        {"id": "in_mha_first_schedule", "name": "India MHA (UAPA Schedules)", "authority": "Ministry of Home Affairs, Government of India", "inst": "Search 1st Schedule (Terrorist Organisations), 4th Schedule (Individuals), and Section 3 (Unlawful Associations)."},
+        {"id": "eu_air_safety_list", "name": "EU Air Safety List", "authority": "European Commission / DG MOVE", "inst": "Verify air carriers subject to an operating ban or operational restrictions within the European Union (Annex A & B)."},
+        {"id": "faa_iasa", "name": "FAA International Aviation Safety Assessment (IASA)", "authority": "US Federal Aviation Administration", "inst": "Review country aviation oversight category (Category 1 meets ICAO standards; Category 2 does not meet standards)."},
+        {"id": "bis_tdo", "name": "US BIS Denial Orders (Temporary Denial Orders)", "authority": "US Bureau of Industry and Security", "inst": "Search Denied Persons List (DPL) and active Temporary Denial Orders for export privilege bans."},
+        {"id": "bis_aircraft", "name": "US BIS Aircraft List", "authority": "US Bureau of Industry and Security", "inst": "Verify tail numbers, MSNs, and commercial/private operators subject to EAR export restrictions."},
+        {"id": "in_mha_first_schedule", "name": "India MHA 1st Schedule (Terrorist Organisations)", "authority": "Ministry of Home Affairs, Government of India", "inst": "Search First Schedule of the Unlawful Activities (Prevention) Act, 1967 (Banned Terrorist Organisations)."},
+        {"id": "in_mha_fourth_schedule", "name": "India MHA 4th Schedule (Individuals)", "authority": "Ministry of Home Affairs, Government of India", "inst": "Search Fourth Schedule of the Unlawful Activities (Prevention) Act, 1967 (Designated Terrorist Individuals)."},
+        {"id": "in_mha_unlawful_assoc", "name": "India MHA Section 3 (Unlawful Associations)", "authority": "Ministry of Home Affairs, Government of India", "inst": "Search notifications issued under Section 3 of the Unlawful Activities (Prevention) Act declaring associations unlawful."},
         {"id": "fatf_jurisdictions", "name": "FATF High-Risk & Monitored Jurisdictions", "authority": "Financial Action Task Force (FATF)", "inst": "Check High-Risk Jurisdictions subject to a Call for Action (Black list) and Jurisdictions under Increased Monitoring (Grey list)."},
+        {"id": "os_bulk", "name": "OpenSanctions Database (Global Consolidated)", "authority": "OpenSanctions", "inst": "Search OpenSanctions international consolidated entities database across 40+ international sanctions bodies."},
     ]
 
     manual_form_values = {}
@@ -1470,7 +1477,7 @@ with tab_manual:
             with card_c1:
                 res_val = st.radio(
                     f"Determination ({sid})",
-                    ["Clean", "Partial", "Match", "Unavailable"],
+                    ["Not checked", "No match", "Possible match", "Match"],
                     index=0,
                     key=f"manual_res_{sid}",
                 )
@@ -1522,7 +1529,7 @@ with tab_manual:
             saved_count = 0
             checks_to_save = []
             for sid, val in manual_form_values.items():
-                if val["comment"] or val["result"] != "Clean":
+                if val["comment"] or val["result"] != "Not checked":
                     log_manual_check(
                         name=clean_subj,
                         source=sid,

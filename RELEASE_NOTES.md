@@ -6,8 +6,8 @@ Naughty or not v1.0.3 is a major stability, performance, and governance release 
 ## Key Changes in v1.0.3
 - **Real List Refresh & Change Detection (T8-1):** Atomic list downloads with SHA-256 validation, 3-version archive rollback, automatic publisher closure detection, and audit logging to SQLite.
 - **FATF Regulatory Data & Staleness Protection (T8-2):** Full integration of FATF high-risk (Black List) and increased monitoring (Grey List) jurisdictions with automatic 45-day staleness warning.
-- **Sub-Second Engine Load & Query Fast Path (T8-3):** SHA-256 hash-keyed disk caching for prepared entity records cuts engine load time from ~8s to 0.78s (10x faster). Background warm-up thread ensures zero UI lag.
-- **Sound-Alike Phonetic Matching (T8-6A):** Double Metaphone inverted index with curated transliteration variants catches sound-alike aliases across Arabic, Russian, and Asian naming systems with 100.0% benchmark recall and zero false positives on clean controls.
+- **Sub-Second Engine Load & Query Fast Path (T8-3):** SHA-256 hash-keyed disk caching for prepared entity records cuts engine load time from ~8s to 0.78s (10x faster). Background warm-up thread ensures responsive queries (median ~147ms warmed search latency, cold start ~1.0s).
+- **Sound-Alike Phonetic Matching (T8-6A):** Double Metaphone inverted index with curated transliteration variants catches sound-alike aliases across Arabic, Russian, and Asian naming systems with 100.0% recall on 500 tested leave-one-out alias pairs and 0 new false 🔴 on 260 clean controls.
 - **Alias Expansion Safety (T8-5):** Added ambiguity classification to airline alias dictionary; hits derived through ambiguous aliases are strictly capped at 🟠 `alias_ambiguous`.
 - **Dedicated Manual Check Tab (T8-9):** One-click clipboard copy with 8 interactive publisher registry cards (OFAC, CSL, UK FCDO, EU, UN, BIS, MHA India, FATF), persistent audit logging, and automated inclusion in exported compliance reports.
 - **Complete Candidate Hit Audit Logging (T8-8):** Extended SQLite audit logging with `screening_hits` table storing all candidate evaluations (🔴 Likely, 🟠 Possible, ℹ️ Information). Added candidate CSV exports and grouped candidate breakdowns in PDF reports.
@@ -25,11 +25,11 @@ Naughty or not v1.0.2 resolves dynamic submodule import handling for PDF report 
 ## Key Changes in v1.0.2
 - **PDF Report Generator Fix:** Added recursive packaging of all `reportlab` submodules (including `reportlab.lib.colors`, `reportlab.platypus`, and styling modules), resolving runtime import errors when generating screening reports.
 - **Standalone Portable `.zip` Release:** Provided zero-install `NaughtyOrNot_v1.0.2_Portable.zip` containing the complete application bundle and pre-seeded sanction lists. Users can unzip anywhere and run `Naughty or not.exe` directly without setup.
-- **Zero-Trace "True Portable" Mode:** Placing a `.portable` marker file inside the application directory directs all audit logs, databases, and cached lists to an internal `data/` directory instead of `%LOCALAPPDATA%`, leaving zero footprint on host systems when running from USB drives.
+- **Portable Mode (Personal Testing Only):** Placing a `.portable` marker file inside the application directory directs audit logs, databases, and cached lists to an internal `data/` directory instead of `%LOCALAPPDATA%`. Portable mode is intended for personal evaluation and offline testing; production compliance screening requires the standard Windows installer to comply with long-term audit trail retention requirements.
 
 ---
 
-# Release Notes — Naughty or not v1.0.1
+# Release Notes — Naughty or not v1.0.0
 
 ## Overview & Highlights
 Naughty or not v1.0.0 is the official self-contained Windows desktop release for non-technical users. It operates as a native standalone application running in its own window without requiring Docker, Python installations, administrative privileges, or terminal execution.
@@ -73,5 +73,5 @@ The installer bundles official seed copies dated **2026-10-18**:
 10. **FATF High-Risk & Monitored Jurisdictions** — 2026-06-28
 
 ## Known Limitations
-- **Name-Only Matching:** Screening algorithms evaluate primary and alternate names, known aliases, distinctive words, and secondary identifiers (DOB, nationality, registration IDs). Ownership and control structures (such as the US OFAC 50% rule) are not assessed and must be evaluated under corporate compliance policy.
+- **Name-Only Matching:** Screening algorithms evaluate primary and alternate names, known aliases, and distinctive core-name words. Secondary identifiers (DOB, nationality, registration IDs) adjust the match tier only when candidate names match; they do not drive the primary matching score. Ownership and control structures (such as the US OFAC 50% rule) are not assessed and must be evaluated under corporate compliance policy.
 - **Evaluation Notice:** Test version for internal evaluation. OpenSanctions data is licensed CC BY-NC 4.0; commercial use requires a licence from OpenSanctions.

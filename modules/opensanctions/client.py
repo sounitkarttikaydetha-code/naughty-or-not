@@ -153,6 +153,16 @@ def credits_used() -> Dict[str, int]:
     return {"total_credits": total_credits, "total_calls": total_calls}
 
 
+MAX_CREDIT_BUDGET = 15
+
+
+def check_credit_budget(current_usage: Optional[int] = None, max_budget: int = MAX_CREDIT_BUDGET) -> bool:
+    """Check whether current usage is strictly below the hard-capped credit budget."""
+    if current_usage is None:
+        current_usage = credits_used().get("total_credits", 0)
+    return current_usage < max_budget
+
+
 class OpenSanctionsClient:
     """Client for screening entities via the OpenSanctions Hosted API."""
 
@@ -216,7 +226,20 @@ class OpenSanctionsClient:
                 "hits": [],
             }
 
-        # 2. Check if API Key is configured
+        # 2. Credit Budget Cap Guard: Strictly refuse if total credits >= 15
+        current_spent = credits_used().get("total_credits", 0)
+        if not check_credit_budget(current_usage=current_spent, max_budget=MAX_CREDIT_BUDGET):
+            return {
+                "status": STATUS_ERROR,
+                "tier": TIER_NOT_CHECKED,
+                "reason": "credit_cap_reached",
+                "message": f"OpenSanctions credit budget exhausted ({current_spent}/{MAX_CREDIT_BUDGET} credits consumed). Live call refused.",
+                "credits_consumed": 0,
+                "best_hit": None,
+                "hits": [],
+            }
+
+        # 3. Check if API Key is configured
         if not self.is_configured():
             return {
                 "status": STATUS_DISABLED,

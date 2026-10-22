@@ -47,3 +47,10 @@ Once completed, the main screening interface appears immediately.
 - **100% Offline Default:** All name queries are screened locally in-process. No candidate or screening input ever leaves your machine.
 - **OpenSanctions:** Opt-in only. Requires explicitly entering an API key. Uses session credits with masked key display (`...XXXX`).
 - **Reports & Audit Trail:** Every search automatically writes an immutable log row and generates an audit-ready PDF/Excel report in `%LOCALAPPDATA%\NaughtyOrNot\reports\`.
+
+
+---
+
+## 4. Deployment Modes: Installer vs. Portable Mode
+- **Production Compliance Screening (Installer):** For regulatory compliance and audit readiness, deploy using the per-user Windows Installer (`NaughtyOrNot_Setup_v1.0.4.exe`). It installs to `%LOCALAPPDATA%\Programs\NaughtyOrNot` and retains audit logs in `%LOCALAPPDATA%\NaughtyOrNot\logs\screening.db` to satisfy long-term compliance record retention mandates.
+- **Personal Evaluation (Portable Mode):** The zero-install portable `.zip` (`NaughtyOrNot_v1.0.4_Portable.zip`) is provided strictly for personal evaluation, temporary testing, and offline trials. It can be unpacked into any user folder without installation. Placing a `.portable` marker file inside the application directory directs logs and cache to a local `data/` folder instead of `%LOCALAPPDATA%`.
