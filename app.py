@@ -204,7 +204,7 @@ source_dict = {s["id"]: s for s in source_reg.get("sources", [])}
 FRIENDLY_SOURCE_NAMES = {
     "us_ofac": "US Treasury (OFAC)",
     "us_csl": "US Consolidated Screening List",
-    "uk_csl": "UK Sanctions List",
+    "uk_csl": "UK Sanctions List (FCDO)",
     "eu_csl": "EU Financial Sanctions",
     "un_csl": "UN Security Council Sanctions",
     "bis_aircraft": "BIS Identified Aircraft",
@@ -390,6 +390,7 @@ with tab_screened:
                 flag_input = st.text_input("Flag State (optional)", placeholder="e.g. Russia")
 
         st.markdown("##### Screening Sources & Thresholds")
+        st.caption("Red = likely match · Amber = possible match · Grey list = shown for information")
         st.markdown(
             """
             <style>
@@ -915,7 +916,7 @@ with tab_screened:
                     f"ℹ️ Show candidates below threshold ({len(below_cands)}) — [{list_id}]",
                     expanded=(st.query_params.get("expand_info") == "true"),
                 ):
-                    st.caption("Shown for information — below match threshold. These candidates do not affect the list result or overall banner.")
+                    st.caption("Candidate matches below threshold are shown for information only. They are not matches.")
                     if len(all_cands) >= 25:
                         st.info("Showing top 25 — more may exist; refine the search.")
                     for bc in below_cands:

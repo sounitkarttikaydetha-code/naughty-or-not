@@ -73,7 +73,7 @@ sources:
   verify_url: https://www.trade.gov/consolidated-screening-list
   record_url_template: https://www.trade.gov/consolidated-screening-list?search={id}
 - id: uk_csl
-  authority: UK Foreign, Commonwealth & Development Office (FCDO)
+  authority: UK Sanctions List (FCDO)
   landing_page: https://www.gov.uk/government/publications/the-uk-sanctions-list
   candidate_urls:
   - https://assets.publishing.service.gov.uk/media/uk_sanctions_list.csv
@@ -143,7 +143,7 @@ sources:
   - archived
   - discontinued
   - moved to
-  verify_url: https://data.europa.eu/data/datasets/consolidated-list-of-sanctions
+  verify_url: https://www.sanctionsmap.eu/
   record_url_template: https://data.europa.eu/data/datasets/consolidated-list-of-sanctions?record={id}
 - id: un_csl
   authority: UN Security Council Committee
@@ -178,7 +178,7 @@ sources:
   - archived
   - discontinued
   - moved to
-  verify_url: https://scsanctions.un.org/consolidated/
+  verify_url: https://main.un.org/securitycouncil/en/content/un-sc-consolidated-list
   record_url_template: https://scsanctions.un.org/consolidated/#rec_{id}
 - id: in_mha_first_schedule
   authority: Ministry of Home Affairs (India)

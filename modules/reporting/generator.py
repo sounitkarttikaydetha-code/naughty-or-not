@@ -265,6 +265,8 @@ def _build_pdf(
 
     # Section A: Sanctions
     story.append(Paragraph("<b>Section A — Sanctions Findings</b>", styles["Heading3"]))
+    story.append(Paragraph("<i>Candidate matches below threshold are shown for information only. They are not matches.</i>", meta_style))
+    story.append(Spacer(1, 4))
     if sanctions_hits:
         sanc_data = [["Source", "Tier", "Listed / Matched Name", "ID", "Score", "Reason"]]
         for h in sanctions_hits:
@@ -425,9 +427,11 @@ def _build_excel(
 
     # Sheet 3: Sanctions Findings
     ws_sanc = wb.create_sheet(title="Sanctions Findings")
+    ws_sanc.append(["Candidate matches below threshold are shown for information only. They are not matches."])
+    ws_sanc["A1"].font = Font(size=9, italic=True, color="555555")
     headers_sanc = ["Source", "Tier", "Primary Name", "Matched Name", "Expanded From", "Record ID", "Score", "Reason", "Program"]
     ws_sanc.append(headers_sanc)
-    for cell in ws_sanc[1]:
+    for cell in ws_sanc[2]:
         cell.font = Font(bold=True)
         cell.fill = PatternFill(start_color="ECEFF1", end_color="ECEFF1", fill_type="solid")
     for h in sanctions_hits:
