@@ -1,0 +1,44 @@
+{
+  "layout_url": "https://www.opensanctions.org/docs/bulk/ and https://followthemoney.tech/docs/entities/",
+  "documented_fields": [
+    "id",
+    "schema",
+    "caption",
+    "properties.name",
+    "properties.alias",
+    "properties.birthDate",
+    "properties.nationality",
+    "properties.jurisdiction",
+    "datasets"
+  ],
+  "benchmarks": {
+    "1k": {
+      "count": 1000,
+      "file_size_mb": 0.35,
+      "entities_loaded": 1000,
+      "malformed_count": 1,
+      "load_time_s": 0.134,
+      "peak_mem_mb": 1.88,
+      "search_latency_ms": {
+        "min": 159.2,
+        "median": 1217.2,
+        "p95": 2503.8,
+        "max": 3150.8
+      }
+    },
+    "50k": {
+      "count": 50000,
+      "file_size_mb": 17.23,
+      "entities_loaded": 50000,
+      "malformed_count": 1,
+      "load_time_s": 7.8,
+      "peak_mem_mb": 93.26,
+      "search_latency_ms": {
+        "min": 159.2,
+        "median": 1030.8,
+        "p95": 2545.6,
+        "max": 2952.2
+      }
+    }
+  }
+}

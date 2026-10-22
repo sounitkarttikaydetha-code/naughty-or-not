@@ -115,6 +115,16 @@ def get_db_connection(db_path: Optional[Path] = None) -> sqlite3.Connection:
             app_version TEXT
         )
     """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS bulk_acknowledgement_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TEXT NOT NULL,
+            windows_user TEXT,
+            machine_name TEXT,
+            app_version TEXT,
+            permission_ref TEXT
+        )
+    """)
 
     # Schema migration to add any missing columns in screening_logs and screening_hits on older databases
     try:
@@ -189,6 +199,51 @@ def has_user_acknowledged(
         cur.execute(
             """
             SELECT COUNT(*) FROM acknowledgement_logs
+            WHERE windows_user = ? AND app_version = ?
+            """,
+            (user, app_version),
+        )
+        count = cur.fetchone()[0]
+        return count > 0
+    finally:
+        conn.close()
+
+
+def log_bulk_acknowledgement(
+    permission_ref: str = "",
+    user: Optional[str] = None,
+    app_version: str = APP_VERSION,
+) -> None:
+    """Log in-app acknowledgement of holding OpenSanctions written permission."""
+    user = user or getpass.getuser()
+    machine = platform.node()
+    now_iso = datetime.now(timezone.utc).isoformat()
+    conn = get_db_connection()
+    try:
+        conn.execute(
+            """
+            INSERT INTO bulk_acknowledgement_logs (timestamp, windows_user, machine_name, app_version, permission_ref)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (now_iso, user, machine, app_version, permission_ref),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def has_user_bulk_acknowledged(
+    user: Optional[str] = None,
+    app_version: str = APP_VERSION,
+) -> bool:
+    """Check if user has acknowledged holding written permission for bulk use."""
+    user = user or getpass.getuser()
+    conn = get_db_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT COUNT(*) FROM bulk_acknowledgement_logs
             WHERE windows_user = ? AND app_version = ?
             """,
             (user, app_version),

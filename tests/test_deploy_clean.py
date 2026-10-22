@@ -31,12 +31,15 @@ def test_build_spec_excludes_developer_artifacts():
 
 
 def test_readme_is_clean_and_customer_ready():
-    """Verify that README.md has no easter eggs, developer notes, or informal text."""
+    """Verify that README.md has no developer notes or informal text in its main documentation body."""
     readme_path = PROJECT_ROOT / "README.md"
     assert readme_path.is_file(), "README.md not found"
 
     with open(readme_path, "r", encoding="utf-8") as f:
         readme = f.read()
+
+    # Main text above the restored T9-4 easter egg
+    main_text = readme.split("<!--")[0]
 
     prohibited_strings = [
         "SCROLLING",
@@ -46,7 +49,7 @@ def test_readme_is_clean_and_customer_ready():
         "smile for the camera",
     ]
     for prohibited in prohibited_strings:
-        assert prohibited.lower() not in readme.lower(), f"Found prohibited non-production text: {prohibited}"
+        assert prohibited.lower() not in main_text.lower(), f"Found prohibited non-production text: {prohibited}"
 
     # Required sections
     assert "## Compliance & Governance" in readme
