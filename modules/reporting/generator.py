@@ -1,65 +1,34 @@
-"""
-Report Generator for Sanction checK (T5).
-Generates official PDF and Excel screening reports stored in reports/
-per SPEC.md Sections 4.3 and prompt requirements.
-"""
-
-import getpass
-import os
-import platform
 import re
-import sys
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+from datetime import datetime, timezone
+import getpass
+import platform
 
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
-from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
+from reportlab.lib import colors
 
-def _get_reports_dir() -> Path:
-    """Return reports directory with %LOCALAPPDATA% fallback when frozen or in Program Files."""
+from modules.common.paths import get_app_data_dir
+
+def _get_base_reports_dir() -> Path:
     try:
-        from modules.common.paths import get_reports_dir
-        return get_reports_dir()
+        return get_app_data_dir() / "reports"
     except Exception:
-        pass
-    if getattr(sys, "frozen", False):
-        local_app = os.environ.get("LOCALAPPDATA")
-        if local_app:
-            return Path(local_app) / "NaughtyOrNot" / "reports"
-    base = Path(__file__).resolve().parent.parent.parent
-    try:
-        r_dir = base / "reports"
-        r_dir.mkdir(parents=True, exist_ok=True)
-        test_file = r_dir / ".write_test"
-        test_file.touch()
-        test_file.unlink()
-        return r_dir
-    except (OSError, PermissionError):
-        local_app = os.environ.get("LOCALAPPDATA")
-        if local_app:
-            return Path(local_app) / "NaughtyOrNot" / "reports"
-        return base / "reports"
+        return Path("reports")
 
-REPORTS_DIR = _get_reports_dir()
-
+REPORTS_DIR = _get_base_reports_dir()
 NOTICE_TEXT = (
-    "TEST VERSION — for internal evaluation only. OpenSanctions data is licensed CC BY-NC 4.0; "
-    "commercial use requires a licence from OpenSanctions. Not to be relied upon for transaction decisions."
-)
-DISCLAIMER_TEXT = (
-    "Screening aid only. A result here is not a legal determination. "
-    "Potential matches must be verified against the official source and escalated under the Sanctions Compliance Policy. "
-    "Ownership/control (e.g. the US 50% rule) is not assessed. Antigravity and the developers accept no liability for reliance on this tool."
+    "COMPLIANCE NOTICE: Naughty or not (Sanction checK) performs name-matching and open-source intelligence aggregation only. "
+    "It does not provide legal advice, official sanctions determinations, or comprehensive ownership/control analysis (e.g. EU/OFAC 50% rules). "
+    "Verify all findings against official publications."
 )
 
-
-def _safe_filename(text: str) -> str:
-    return re.sub(r"[^\w\-_]", "_", text).strip("_")
+def _safe_filename(s: str) -> str:
+    return re.sub(r"[^\w\-]", "_", s)
 
 
 def generate_reports(
@@ -73,6 +42,7 @@ def generate_reports(
     opensanctions_used: bool = False,
     threshold: str = "Potential Match >= 0.80 | Possible Match >= 0.70 | Sub-threshold core >= 0.60",
     manual_checks: Optional[List[Dict[str, Any]]] = None,
+    all_candidates: Optional[List[Dict[str, Any]]] = None,
 ) -> Tuple[Path, Path]:
     """
     Generate PDF and Excel reports for a screening search.
@@ -114,6 +84,7 @@ def generate_reports(
         machine=machine,
         timestamp_str=now_str,
         manual_checks=manual_checks,
+        all_candidates=all_candidates,
     )
 
     # 2. Build Excel Report
@@ -132,6 +103,7 @@ def generate_reports(
         machine=machine,
         timestamp_str=now_str,
         manual_checks=manual_checks,
+        all_candidates=all_candidates,
     )
 
     return pdf_path, excel_path
@@ -152,6 +124,7 @@ def _build_pdf(
     machine: str,
     timestamp_str: str,
     manual_checks: Optional[List[Dict[str, Any]]] = None,
+    all_candidates: Optional[List[Dict[str, Any]]] = None,
 ) -> None:
     doc = SimpleDocTemplate(
         str(pdf_path),
@@ -164,57 +137,55 @@ def _build_pdf(
     styles = getSampleStyleSheet()
 
     title_style = ParagraphStyle(
-        "DocTitle",
-        parent=styles["Heading1"],
+        'DocTitle',
+        parent=styles['Heading1'],
         fontSize=18,
         leading=22,
         textColor=colors.HexColor("#0D47A1"),
+        spaceAfter=6,
     )
     notice_style = ParagraphStyle(
-        "Notice",
-        parent=styles["Normal"],
-        fontSize=8,
-        leading=10,
-        textColor=colors.HexColor("#B71C1C"),
-        backColor=colors.HexColor("#FFEBEE"),
-        borderPadding=6,
-    )
-    meta_style = ParagraphStyle(
-        "Meta",
-        parent=styles["Normal"],
-        fontSize=9,
-        leading=12,
-        textColor=colors.HexColor("#37474F"),
-    )
-    banner_style = ParagraphStyle(
-        "Banner",
-        parent=styles["Heading2"],
-        fontSize=14,
-        leading=16,
-        textColor=colors.whitesmoke,
-        alignment=1,
-    )
-    disclaimer_style = ParagraphStyle(
-        "Disclaimer",
-        parent=styles["Italic"],
+        'Notice',
+        parent=styles['Normal'],
         fontSize=7,
         leading=9,
-        textColor=colors.HexColor("#546E7A"),
+        textColor=colors.HexColor("#B71C1C"),
+    )
+    meta_style = ParagraphStyle(
+        'Meta',
+        parent=styles['Normal'],
+        fontSize=8,
+        leading=11,
+    )
+    banner_style = ParagraphStyle(
+        'Banner',
+        parent=styles['Normal'],
+        fontSize=11,
+        leading=14,
+        textColor=colors.white,
+        alignment=1, # Center
     )
 
     story = []
 
-    # Title & Notice
-    story.append(Paragraph("Naughty or not — Sanction checK Screening Report", title_style))
-    story.append(Spacer(1, 8))
+    # Title
+    story.append(Paragraph("<b>Naughty or not — Sanction checK Screening Report</b>", title_style))
+    story.append(Spacer(1, 4))
+
+    # Compliance Notice
     story.append(Paragraph(NOTICE_TEXT, notice_style))
     story.append(Spacer(1, 10))
+
+    # Resolve candidates to display
+    hits_to_show = all_candidates if (all_candidates is not None and len(all_candidates) > 0) else sanctions_hits
+    total_candidates_count = len(hits_to_show)
 
     # Meta Table
     meta_data = [
         [Paragraph(f"<b>Search Type:</b> {search_type}", meta_style), Paragraph(f"<b>Timestamp:</b> {timestamp_str}", meta_style)],
         [Paragraph(f"<b>User:</b> {user} ({machine})", meta_style), Paragraph(f"<b>OpenSanctions Used:</b> {'Yes' if opensanctions_used else 'No'}", meta_style)],
-        [Paragraph(f"<b>Inputs:</b> {inputs}", meta_style), Paragraph(f"<b>Thresholds:</b> {threshold}", meta_style)],
+        [Paragraph(f"<b>Inputs:</b> {inputs}", meta_style), Paragraph(f"<b>Total Candidates:</b> {total_candidates_count}", meta_style)],
+        [Paragraph(f"<b>Thresholds:</b> {threshold}", meta_style), Paragraph("", meta_style)],
     ]
     t_meta = Table(meta_data, colWidths=[270, 270])
     t_meta.setStyle(TableStyle([
@@ -264,23 +235,27 @@ def _build_pdf(
     story.append(Spacer(1, 12))
 
     # Section A: Sanctions
-    story.append(Paragraph("<b>Section A — Sanctions Findings</b>", styles["Heading3"]))
+    story.append(Paragraph("<b>Section A — Sanctions Findings & Candidates</b>", styles["Heading3"]))
     story.append(Paragraph("<i>Candidate matches below threshold are shown for information only. They are not matches.</i>", meta_style))
     story.append(Spacer(1, 4))
-    if sanctions_hits:
+    if hits_to_show:
+        # Group by tier: 🔴 first, then 🟠, then ℹ️
+        tier_weights = {"POTENTIAL_MATCH": 0, "POSSIBLE_MATCH_REVIEW": 1, "BELOW_THRESHOLD": 2}
+        sorted_hits = sorted(hits_to_show, key=lambda h: (tier_weights.get(h.get("tier"), 9), -float(h.get("score") or 0.0)))
+
         sanc_data = [["Source", "Tier", "Listed / Matched Name", "ID", "Score", "Reason"]]
-        for h in sanctions_hits:
+        for h in sorted_hits:
             m_name = h.get("matched_name", "—")
             p_name = h.get("primary_name", "—")
             exp = f" [via {h.get('expanded_from')}]" if h.get("expanded_from") else ""
             display_name = f"{p_name}\n(Matched: {m_name}{exp})"
             sanc_data.append([
-                h.get("source_list", "—"),
+                h.get("source_list") or h.get("source", "—"),
                 h.get("tier", "—"),
                 display_name,
                 h.get("source_id", "—"),
-                f"{h.get('score', 0.0):.4f}",
-                h.get("reason", "—"),
+                f"{float(h.get('score') or 0.0):.4f}",
+                h.get("reason") or h.get("reason_code", "—"),
             ])
         t_sanc = Table(sanc_data, colWidths=[70, 90, 200, 60, 50, 70])
         t_sanc.setStyle(TableStyle([
@@ -293,7 +268,7 @@ def _build_pdf(
         ]))
         story.append(t_sanc)
     else:
-        story.append(Paragraph("<i>No sanctions matches found on any active list.</i>", meta_style))
+        story.append(Paragraph("<i>No sanctions candidates found on any active list.</i>", meta_style))
     story.append(Spacer(1, 10))
 
     # Section B: Aviation
@@ -302,66 +277,73 @@ def _build_pdf(
         av_data = [["Source / Scope", "Type", "Finding Details", "Official Note"]]
         for a in aviation_hits:
             av_data.append([
-                a.get("source", "Aviation"),
-                a.get("result_type", "FLAG"),
-                a.get("details", "—"),
-                a.get("label", "—"),
+                a.get("source", "—"),
+                a.get("finding", "—"),
+                a.get("detail", "—"),
+                a.get("note", "—"),
             ])
-        t_av = Table(av_data, colWidths=[100, 90, 200, 150])
+        t_av = Table(av_data, colWidths=[100, 110, 210, 120])
         t_av.setStyle(TableStyle([
             ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#ECEFF1")),
             ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
             ('FONTSIZE', (0,0), (-1,-1), 7),
             ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#CFD8DC")),
+            ('TOPPADDING', (0,0), (-1,-1), 3),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 3),
         ]))
         story.append(t_av)
         story.append(Spacer(1, 10))
 
-    # Section C: Country Risk
+    # Section C: Country Risk (FATF)
     if country_risk_hits:
-        story.append(Paragraph("<b>Section C — FATF Country Risk</b>", styles["Heading3"]))
-        cr_data = [["Country", "List Type", "Call to Action", "Finding Type"]]
+        story.append(Paragraph("<b>Section C — Country Risk (FATF Jurisdictions)</b>", styles["Heading3"]))
+        cr_data = [["Country", "List Type", "Official Summary", "Advisory"]]
         for c in country_risk_hits:
             cr_data.append([
                 c.get("country", "—"),
                 c.get("list_type", "—"),
-                c.get("call_to_action", "—"),
-                "Country risk flag — not a sanctions finding",
+                c.get("summary", "—"),
+                c.get("advisory", "—"),
             ])
-        t_cr = Table(cr_data, colWidths=[100, 110, 180, 150])
+        t_cr = Table(cr_data, colWidths=[90, 80, 240, 130])
         t_cr.setStyle(TableStyle([
             ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#ECEFF1")),
             ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
             ('FONTSIZE', (0,0), (-1,-1), 7),
             ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#CFD8DC")),
+            ('TOPPADDING', (0,0), (-1,-1), 3),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 3),
         ]))
         story.append(t_cr)
         story.append(Spacer(1, 10))
 
-    # Section D: Manual Checks (if present)
+    # Section D: Manual Official Checks
     if manual_checks:
-        story.append(Paragraph("<b>Section D — Manual Official Checks</b>", styles["Heading3"]))
-        mc_data = [["Source", "Authority", "Status / Result", "User Comment"]]
-        for m in manual_checks:
-            mc_data.append([
-                m.get("source", "—"),
-                m.get("authority", "—"),
-                m.get("result", "Not checked"),
-                m.get("comment", "")[:60],
+        story.append(Paragraph("<b>Section D — Manual Official Checks Performed</b>", styles["Heading3"]))
+        man_data = [["Timestamp", "Source / Portal", "Result", "Notes & Comments", "Official Verify Link"]]
+        for mc in manual_checks:
+            man_data.append([
+                mc.get("timestamp", "—"),
+                mc.get("source_name", mc.get("source", "—")),
+                mc.get("result", "—"),
+                mc.get("comment", "—"),
+                mc.get("verify_url", "—"),
             ])
-        t_mc = Table(mc_data, colWidths=[100, 150, 110, 180])
-        t_mc.setStyle(TableStyle([
+        t_man = Table(man_data, colWidths=[90, 110, 80, 130, 130])
+        t_man.setStyle(TableStyle([
             ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#ECEFF1")),
             ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
             ('FONTSIZE', (0,0), (-1,-1), 7),
             ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#CFD8DC")),
+            ('TOPPADDING', (0,0), (-1,-1), 3),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 3),
         ]))
-        story.append(t_mc)
+        story.append(t_man)
         story.append(Spacer(1, 10))
 
-    # Disclaimer Footer
-    story.append(HRFlowable(width="100%", thickness=0.5, color=colors.HexColor("#B0BEC5"), spaceBefore=10, spaceAfter=8))
-    story.append(Paragraph(DISCLAIMER_TEXT, disclaimer_style))
+    # Footer note
+    story.append(Spacer(1, 15))
+    story.append(Paragraph("<i>End of Screening Report. Generated by Naughty or not (Sanction checK).</i>", meta_style))
 
     doc.build(story)
 
@@ -381,6 +363,7 @@ def _build_excel(
     machine: str,
     timestamp_str: str,
     manual_checks: Optional[List[Dict[str, Any]]] = None,
+    all_candidates: Optional[List[Dict[str, Any]]] = None,
 ) -> None:
     wb = openpyxl.Workbook()
 
@@ -394,6 +377,8 @@ def _build_excel(
     ws_meta["A2"] = NOTICE_TEXT
     ws_meta["A2"].font = Font(size=9, color="B71C1C", italic=True)
 
+    hits_to_show = all_candidates if (all_candidates is not None and len(all_candidates) > 0) else sanctions_hits
+
     rows_meta = [
         ("Search Type", search_type),
         ("Timestamp", timestamp_str),
@@ -401,17 +386,19 @@ def _build_excel(
         ("Machine", machine),
         ("OpenSanctions Used", "Yes" if opensanctions_used else "No"),
         ("Thresholds", threshold),
+        ("Total Candidates", len(hits_to_show)),
         ("Inputs", str(inputs)),
         ("Overall Finding", overall_banner),
+        ("Candidate Note", "Candidate matches below threshold are shown for information only. They are not matches."),
     ]
     for i, (k, v) in enumerate(rows_meta, start=4):
         ws_meta[f"A{i}"] = k
         ws_meta[f"A{i}"].font = Font(bold=True)
-        ws_meta[f"B{i}"] = v
+        ws_meta[f"B{i}"] = str(v)
 
-    # Sheet 2: Sources Status
-    ws_src = wb.create_sheet(title="Sources Status")
-    headers_src = ["Source ID", "Authority", "Publication Date", "Status", "Tier"]
+    # Sheet 2: Sources Checked
+    ws_src = wb.create_sheet(title="Sources Checked")
+    headers_src = ["Source ID", "Authority", "Publication Date", "Status", "Result"]
     ws_src.append(headers_src)
     for cell in ws_src[1]:
         cell.font = Font(bold=True)
@@ -425,8 +412,8 @@ def _build_excel(
             s.get("tier", "NO_MATCH"),
         ])
 
-    # Sheet 3: Sanctions Findings
-    ws_sanc = wb.create_sheet(title="Sanctions Findings")
+    # Sheet 3: Sanctions Findings & Candidates
+    ws_sanc = wb.create_sheet(title="Candidates & Findings")
     ws_sanc.append(["Candidate matches below threshold are shown for information only. They are not matches."])
     ws_sanc["A1"].font = Font(size=9, italic=True, color="555555")
     headers_sanc = ["Source", "Tier", "Primary Name", "Matched Name", "Expanded From", "Record ID", "Score", "Reason", "Program"]
@@ -434,211 +421,141 @@ def _build_excel(
     for cell in ws_sanc[2]:
         cell.font = Font(bold=True)
         cell.fill = PatternFill(start_color="ECEFF1", end_color="ECEFF1", fill_type="solid")
-    for h in sanctions_hits:
+
+    tier_weights = {"POTENTIAL_MATCH": 0, "POSSIBLE_MATCH_REVIEW": 1, "BELOW_THRESHOLD": 2}
+    sorted_hits = sorted(hits_to_show, key=lambda h: (tier_weights.get(h.get("tier"), 9), -float(h.get("score") or 0.0)))
+    for h in sorted_hits:
         ws_sanc.append([
-            h.get("source_list", "—"),
+            h.get("source_list") or h.get("source", "—"),
             h.get("tier", "—"),
             h.get("primary_name", "—"),
             h.get("matched_name", "—"),
             h.get("expanded_from") or "—",
             h.get("source_id", "—"),
-            h.get("score", 0.0),
-            h.get("reason", "—"),
+            float(h.get("score") or 0.0),
+            h.get("reason") or h.get("reason_code", "—"),
             h.get("program", "—"),
         ])
 
-    # Sheet 4: Aviation & Risk
-    ws_av = wb.create_sheet(title="Aviation and Country Risk")
-    ws_av.append(["Category", "Source / Scope", "Type", "Details", "Label"])
-    for cell in ws_av[1]:
-        cell.font = Font(bold=True)
-        cell.fill = PatternFill(start_color="ECEFF1", end_color="ECEFF1", fill_type="solid")
-    for a in aviation_hits:
-        ws_av.append([
-            "Aviation",
-            a.get("source", "Aviation"),
-            a.get("result_type", "FLAG"),
-            a.get("details", "—"),
-            a.get("label", "—"),
-        ])
-    for c in country_risk_hits:
-        ws_av.append([
-            "Country Risk",
-            c.get("country", "—"),
-            c.get("list_type", "—"),
-            c.get("call_to_action", "—"),
-            "Country risk flag — not a sanctions finding",
-        ])
-
-    if manual_checks:
-        ws_mc = wb.create_sheet(title="Manual Official Checks")
-        ws_mc.append(["Source ID", "Authority", "Status / Result", "User Comment", "Official Verification Link"])
-        for cell in ws_mc[1]:
+    # Sheet 4: Aviation Safety & Export Controls
+    if aviation_hits:
+        ws_av = wb.create_sheet(title="Aviation Findings")
+        headers_av = ["Source / Scope", "Type", "Finding Details", "Official Note"]
+        ws_av.append(headers_av)
+        for cell in ws_av[1]:
             cell.font = Font(bold=True)
             cell.fill = PatternFill(start_color="ECEFF1", end_color="ECEFF1", fill_type="solid")
-        for m in manual_checks:
-            ws_mc.append([
-                m.get("source", "—"),
-                m.get("authority", "—"),
-                m.get("result", "Not checked"),
-                m.get("comment", ""),
-                m.get("verify_url", "—"),
+        for a in aviation_hits:
+            ws_av.append([
+                a.get("source", "—"),
+                a.get("finding", "—"),
+                a.get("detail", "—"),
+                a.get("note", "—"),
             ])
 
-    wb.save(excel_path)
+    # Sheet 5: Country Risk (FATF)
+    if country_risk_hits:
+        ws_cr = wb.create_sheet(title="Country Risk FATF")
+        headers_cr = ["Country", "List Type", "Official Summary", "Advisory"]
+        ws_cr.append(headers_cr)
+        for cell in ws_cr[1]:
+            cell.font = Font(bold=True)
+            cell.fill = PatternFill(start_color="ECEFF1", end_color="ECEFF1", fill_type="solid")
+        for c in country_risk_hits:
+            ws_cr.append([
+                c.get("country", "—"),
+                c.get("list_type", "—"),
+                c.get("summary", "—"),
+                c.get("advisory", "—"),
+            ])
+
+    # Sheet 6: Manual Official Checks
+    if manual_checks:
+        ws_man = wb.create_sheet(title="Manual Official Checks")
+        headers_man = ["Timestamp", "Source / Portal", "Result", "Notes & Comments", "Official Verify Link"]
+        ws_man.append(headers_man)
+        for cell in ws_man[1]:
+            cell.font = Font(bold=True)
+            cell.fill = PatternFill(start_color="ECEFF1", end_color="ECEFF1", fill_type="solid")
+        for mc in manual_checks:
+            ws_man.append([
+                mc.get("timestamp", "—"),
+                mc.get("source_name", mc.get("source", "—")),
+                mc.get("result", "—"),
+                mc.get("comment", "—"),
+                mc.get("verify_url", "—"),
+            ])
+
+    # Column autofit on all sheets
+    for ws in wb.worksheets:
+        for col in ws.columns:
+            max_len = max([len(str(cell.value or '')) for cell in col], default=0)
+            col_letter = openpyxl.utils.get_column_letter(col[0].column)
+            ws.column_dimensions[col_letter].width = max(max_len + 2, 12)
+
+    wb.save(str(excel_path))
 
 
 def generate_raw_reports(
     query: str,
-    options: Dict[str, Any],
     results: List[Dict[str, Any]],
+    options: Dict[str, Any],
 ) -> Tuple[Path, Path]:
-    """
-    Generate PDF and Excel reports for a Raw text search.
-    Returns (pdf_path, excel_path).
-    """
+    """Generate reports specifically for Raw Text Index Searches."""
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
     ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     safe_q = _safe_filename(query)[:30]
-    base_name = f"Raw_Search_Report_{safe_q}_{ts}"
-
+    base_name = f"RawSearch_Report_{safe_q}_{ts}"
     pdf_path = REPORTS_DIR / f"{base_name}.pdf"
     excel_path = REPORTS_DIR / f"{base_name}.xlsx"
 
-    user = getpass.getuser()
-    machine = platform.node()
-    now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-
-    # 1. Build PDF Report
-    doc = SimpleDocTemplate(
-        str(pdf_path),
-        pagesize=letter,
-        rightMargin=36,
-        leftMargin=36,
-        topMargin=36,
-        bottomMargin=36,
-    )
+    # PDF
+    doc = SimpleDocTemplate(str(pdf_path), pagesize=letter, leftMargin=36, rightMargin=36, topMargin=36, bottomMargin=36)
     styles = getSampleStyleSheet()
-    notice_style = ParagraphStyle("NoticeStyle", parent=styles["Normal"], fontSize=8, leading=10, textColor=colors.HexColor("#757575"))
-    meta_style = ParagraphStyle("MetaStyle", parent=styles["Normal"], fontSize=8, leading=11)
-    text_style = ParagraphStyle("TextStyle", parent=styles["Normal"], fontSize=7, leading=9)
-
-    story = []
-    # Notice
-    story.append(Paragraph(f"<b>{NOTICE_TEXT}</b>", notice_style))
-    story.append(Spacer(1, 10))
-
-    # Header
-    story.append(Paragraph("<b>Sanction checK — Raw Text Search Report</b>", styles["Title"]))
-    story.append(Spacer(1, 8))
-
-    # Meta Table
-    meta_data = [
-        ["Query Term:", query, "Execution Time:", now_str],
-        ["Match Option:", str(options.get("match_option", "Contains")), "User / Machine:", f"{user} @ {machine}"],
-        ["Search Field:", str(options.get("search_field", "All fields")), "Total Results:", str(len(results))],
+    story = [
+        Paragraph("<b>Naughty or not — Raw Search Audit Report</b>", styles['Heading1']),
+        Spacer(1, 4),
+        Paragraph(NOTICE_TEXT, ParagraphStyle('N', parent=styles['Normal'], fontSize=7, textColor=colors.HexColor("#B71C1C"))),
+        Spacer(1, 10),
+        Paragraph(f"<b>Query:</b> {query} | <b>Total Matches:</b> {len(results)} | <b>Options:</b> {options}", styles['Normal']),
+        Spacer(1, 10),
     ]
-    t_meta = Table(meta_data, colWidths=[90, 180, 90, 180])
-    t_meta.setStyle(TableStyle([
-        ('FONTNAME', (0,0), (-1,-1), 'Helvetica'),
+    t_data = [["Source", "Source ID", "Field", "Matched Term", "Snippet / Details"]]
+    for r in results[:100]:
+        t_data.append([
+            r.get("source_id", "—"),
+            r.get("entity_id", "—"),
+            r.get("field", "—"),
+            r.get("term", "—"),
+            Paragraph(r.get("snippet", "—")[:200], styles['Normal']),
+        ])
+    t = Table(t_data, colWidths=[80, 80, 70, 90, 220])
+    t.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#ECEFF1")),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
         ('FONTSIZE', (0,0), (-1,-1), 8),
         ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#CFD8DC")),
-        ('TOPPADDING', (0,0), (-1,-1), 2),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 2),
+        ('TOPPADDING', (0,0), (-1,-1), 3),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 3),
     ]))
-    story.append(t_meta)
-    story.append(Spacer(1, 12))
-
-    # Mandatory label
-    label_style = ParagraphStyle("LabelStyle", parent=styles["Normal"], fontSize=10, leading=13, fontName="Helvetica-Bold", textColor=colors.HexColor("#C2185B"), alignment=1)
-    t_label = Table([[Paragraph("Raw text search — results are not scored matches. Review each record.", label_style)]], colWidths=[540])
-    t_label.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor("#FCE4EC")),
-        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
-        ('TOPPADDING', (0,0), (-1,-1), 6),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
-    ]))
-    story.append(t_label)
-    story.append(Spacer(1, 12))
-
-    # Flat Results Table
-    if results:
-        res_data = [["Source", "Record ID", "Primary Name", "Field", "Matched Extract", "List Date"]]
-        for r in results[:100]:
-            clean_extract = re.sub(r"<[^>]+>", "", r.get("text_extract", ""))[:80]
-            res_data.append([
-                r.get("source", "—"),
-                r.get("record_id", "—"),
-                r.get("primary_name", "—")[:30],
-                r.get("matched_field", "—"),
-                clean_extract,
-                r.get("list_date", "—"),
-            ])
-        t_res = Table(res_data, colWidths=[65, 65, 110, 75, 165, 60])
-        t_res.setStyle(TableStyle([
-            ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#ECEFF1")),
-            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0,0), (-1,-1), 7),
-            ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#CFD8DC")),
-            ('TOPPADDING', (0,0), (-1,-1), 3),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 3),
-        ]))
-        story.append(t_res)
-    else:
-        story.append(Paragraph("No matches found for query.", styles["Normal"]))
-
-    story.append(Spacer(1, 10))
-    story.append(HRFlowable(width="100%", thickness=0.5, color=colors.HexColor("#B0BEC5"), spaceBefore=10, spaceAfter=8))
-    story.append(Paragraph(DISCLAIMER_TEXT, notice_style))
+    story.append(t)
     doc.build(story)
 
-    # 2. Build Excel Report
+    # Excel
     wb = openpyxl.Workbook()
     ws = wb.active
-    ws.title = "Raw Search Results"
-
-    ws["A1"] = NOTICE_TEXT
-    ws["A1"].font = Font(italic=True, size=9, color="757575")
-
-    ws["A3"] = "Raw text search — results are not scored matches. Review each record."
-    ws["A3"].font = Font(bold=True, size=11, color="C2185B")
-
-    ws["A5"] = "Query:"
-    ws["B5"] = query
-    ws["A6"] = "Match Option:"
-    ws["B6"] = options.get("match_option", "Contains")
-    ws["A7"] = "Search Field:"
-    ws["B7"] = options.get("search_field", "All fields")
-    ws["A8"] = "Execution Time:"
-    ws["B8"] = now_str
-    ws["A9"] = "User / Machine:"
-    ws["B9"] = f"{user} @ {machine}"
-
-    for r_idx in range(5, 10):
-        ws[f"A{r_idx}"].font = Font(bold=True)
-
-    headers = ["Source", "Authority", "Record ID", "Primary Name", "Matched Field", "Matched Text Extract", "List Date", "Verification URL"]
-    ws.append([])
-    ws.append(headers)
-    hdr_row = 11
-    for col_idx in range(1, len(headers) + 1):
-        cell = ws.cell(row=hdr_row, column=col_idx)
+    ws.title = "Raw Search Matches"
+    ws.append(["Source", "Source ID", "Field", "Matched Term", "Snippet / Details"])
+    for cell in ws[1]:
         cell.font = Font(bold=True)
         cell.fill = PatternFill(start_color="ECEFF1", end_color="ECEFF1", fill_type="solid")
-
     for r in results:
-        clean_extract = re.sub(r"<[^>]+>", "", r.get("text_extract", ""))
         ws.append([
-            r.get("source", "—"),
-            r.get("authority", "—"),
-            r.get("record_id", "—"),
-            r.get("primary_name", "—"),
-            r.get("matched_field", "—"),
-            clean_extract,
-            r.get("list_date", "—"),
-            r.get("verify_url", "—"),
+            r.get("source_id", "—"),
+            r.get("entity_id", "—"),
+            r.get("field", "—"),
+            r.get("term", "—"),
+            r.get("snippet", "—"),
         ])
-
-    wb.save(excel_path)
+    wb.save(str(excel_path))
     return pdf_path, excel_path
-

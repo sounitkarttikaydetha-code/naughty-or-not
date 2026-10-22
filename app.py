@@ -7,6 +7,7 @@ import getpass
 import os
 import platform
 import sys
+import time
 from pathlib import Path
 
 # Ensure project root is in sys.path
@@ -468,6 +469,7 @@ with tab_screened:
         per_list_data: Dict[str, Any] = {}
 
         # 1. Sanctions Screening (Watchman 5 lists)
+        search_t0 = time.time()
         w_query_type = "person" if search_type == "Person" else ("airline" if search_type == "Airline" else "organisation")
         w_results = screen_query_all_lists(
             query=primary_query,
@@ -751,6 +753,44 @@ with tab_screened:
                 banner_text = "✅ NO MATCH — Clean on all checked sources"
                 banner_type = "success"
 
+        duration_ms = int((time.time() - search_t0) * 1000)
+
+        # Collect all candidates across all lists for complete audit trail and reports
+        all_screening_candidates: List[Dict[str, Any]] = []
+        for src_id in ["us_ofac", "us_csl", "uk_csl", "eu_csl", "un_csl"]:
+            res_data = per_list_data.get(src_id, {})
+            best_id = str(res_data.get("best_hit", {}).get("source_id") or "")
+            for c in res_data.get("all_candidates", []):
+                cand_copy = dict(c)
+                cand_copy["is_top_hit"] = 1 if (cand_copy.get("source_id") and str(cand_copy.get("source_id")) == best_id) else 0
+                all_screening_candidates.append(cand_copy)
+
+        if use_india:
+            for m in in_res.get("matches", []):
+                all_screening_candidates.append({
+                    "source_list": "in_mha",
+                    "tier": in_tier,
+                    "primary_name": m.get("listed_name"),
+                    "matched_name": m.get("matched_name"),
+                    "source_id": m.get("id"),
+                    "score": float(m.get("score") or 0.0),
+                    "reason": "mha_core_match" if in_tier == "POTENTIAL_MATCH" else "mha_partial",
+                    "is_top_hit": 1,
+                })
+
+        if use_opensanctions and 'hits' in locals():
+            for h in hits:
+                all_screening_candidates.append({
+                    "source_list": "opensanctions",
+                    "tier": "POTENTIAL_MATCH" if (h.get("score") or 0) >= 0.85 else "POSSIBLE_MATCH_REVIEW",
+                    "primary_name": h.get("caption"),
+                    "matched_name": h.get("caption"),
+                    "source_id": h.get("id"),
+                    "score": float(h.get("score") or 0.0),
+                    "reason": "opensanctions_score",
+                    "is_top_hit": 0,
+                })
+
         # Generate Reports & Log
         pdf_path, excel_path = generate_reports(
             search_type=search_type,
@@ -761,6 +801,7 @@ with tab_screened:
             aviation_hits=aviation_hits,
             country_risk_hits=country_risk_hits,
             opensanctions_used=use_opensanctions,
+            all_candidates=all_screening_candidates,
         )
 
         log_search(
@@ -769,6 +810,11 @@ with tab_screened:
             source_results=source_statuses,
             report_file_name=pdf_path.name,
             opensanctions_used=use_opensanctions,
+            query_type=w_query_type,
+            sources_checked=[s["id"] for s in source_statuses if s.get("status") != "NOT_RUN"],
+            duration_ms=duration_ms,
+            all_candidates=all_screening_candidates,
+            overall_tier=overall_tier,
         )
 
         st.session_state.last_results = {
