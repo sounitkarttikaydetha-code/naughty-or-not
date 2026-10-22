@@ -22,7 +22,7 @@ except Exception:
     pass
 
 MUTEX_NAME = "NaughtyOrNot_SingleInstance_Mutex"
-APP_TITLE = "Naughty or not v1.0.2"
+APP_TITLE = "Naughty or not v1.0.3"
 
 
 def check_single_instance() -> bool:
@@ -145,6 +145,19 @@ def shutdown_cleanly():
             server.stop()
     except Exception:
         pass
+
+    # Terminate process group to guarantee no orphaned child processes remain
+    if sys.platform == "win32":
+        try:
+            import subprocess
+            subprocess.run(
+                f"taskkill /F /T /PID {os.getpid()}",
+                shell=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+        except Exception:
+            pass
 
 
 def main():

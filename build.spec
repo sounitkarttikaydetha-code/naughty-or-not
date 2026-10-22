@@ -14,7 +14,14 @@ anyascii_datas = collect_data_files('anyascii')
 # ReportLab packaging filter: exclude DarkGarden font files
 # DarkGarden (DarkGardenMK / DarkGarden-Regular.afm) is GNU GPL v2 copyleft.
 # Naughty or not uses standard core PDF fonts (Helvetica) exclusively.
-datas_filter = lambda d: 'DarkGarden' not in str(d[0]) and 'darkgarden' not in str(d[0]).lower()
+datas_filter = lambda d: (
+    'DarkGarden' not in str(d[0])
+    and 'darkgarden' not in str(d[0]).lower()
+    and not str(d[0]).endswith('.pyc')
+    and not str(d[0]).endswith('.db')
+    and not str(d[0]).endswith('.log')
+    and '__pycache__' not in str(d[0])
+)
 
 reportlab_datas = [d for d in collect_data_files('reportlab') if datas_filter(d)]
 reportlab_metadata = [d for d in copy_metadata('reportlab') if datas_filter(d)]
@@ -72,6 +79,10 @@ a = Analysis(
         'pytest',
         'ruff',
         'mypy',
+        'unittest',
+        'tests',
+        'pdb',
+        'doctest',
         'reportlab.fonts.DarkGarden',
         'reportlab.fonts.DarkGardenMK',
     ],
