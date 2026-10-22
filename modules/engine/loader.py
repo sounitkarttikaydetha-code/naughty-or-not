@@ -382,7 +382,7 @@ def load_uk_csl(path: Path) -> Tuple[List[EntityRecord], str]:
         try:
             h1 = next(r)
             h2 = next(r)
-            header = h1 or h2
+            header = h2 if len(h2) >= 5 else h1
             if not header or len(header) < 5 or not any("name" in col.lower() for col in header):
                 return [], list_hash
         except StopIteration:
