@@ -64,6 +64,7 @@ from modules.common.list_updater import init_lists_from_seed, ensure_text_search
 from modules.common.reasons import translate_reason
 from modules.common.settings import get_setting, set_setting, get_display_scale
 from modules.common.ui import render_status_chip
+from modules.screening.config import PHONETIC_ENABLED
 from modules.opensanctions.key_manager import (
     get_remembered_key,
     set_session_key,
@@ -973,6 +974,7 @@ with tab_screened:
             opensanctions_used=use_opensanctions,
             all_candidates=all_screening_candidates,
             manual_checks=session_manual_checks,
+            phonetic_enabled=PHONETIC_ENABLED,
         )
 
         log_search(
@@ -986,6 +988,7 @@ with tab_screened:
             duration_ms=duration_ms,
             all_candidates=all_screening_candidates,
             overall_tier=overall_tier,
+            phonetic_enabled=PHONETIC_ENABLED,
         )
 
         st.session_state.last_results = {
@@ -1020,6 +1023,9 @@ with tab_screened:
             st.success(f"### {res['banner_text']}")
         else:
             st.info(f"### {res['banner_text']}")
+
+        if not PHONETIC_ENABLED:
+            st.warning("⚠️ **Sound-alike matching OFF** — Screening conducted with phonetic expansion disabled.")
 
         if res["search_type"] == "Person" and "🔴" in res["banner_text"] and not (res["dob_entered"] or res["nat_entered"]):
             st.info("💡 **Add DOB / nationality to refine** this person search and clear potential name conflicts.")
@@ -1085,67 +1091,82 @@ with tab_screened:
         grid_html = f'<div class="source-header-grid">{"".join(cards_html)}</div>'
         st.markdown(grid_html, unsafe_allow_html=True)
 
-        # Render Flagged Hits as 3-Line Cards
+        def render_sanctions_hit_card(h: Dict[str, Any], is_soundalike: bool = False):
+            src_id = h.get("source_list", "")
+            src_info = source_dict.get(src_id, {})
+            verify_url = src_info.get("verify_url") or src_info.get("landing_page") or "https://sanctionssearch.ofac.treas.gov/"
+            rec_template = src_info.get("record_url_template", "")
+            rec_id = h.get("source_id", "")
+            if rec_template and rec_id:
+                direct_verify_url = rec_template.replace("{id}", str(rec_id))
+            else:
+                direct_verify_url = verify_url
+
+            tier = h.get("tier", "POTENTIAL_MATCH")
+            chip_html = render_status_chip(tier)
+            if is_soundalike:
+                chip_html = f"{chip_html} &nbsp;{render_status_chip('SOUNDS_LIKE')}"
+
+            primary_name = h.get("primary_name") or "—"
+            matched_name = h.get("matched_name") or primary_name
+            exp_text = f" (via alias: {h.get('expanded_from')})" if h.get("expanded_from") else ""
+            prog = h.get("program") or "—"
+            score_val = float(h.get("score") or 0.0)
+            reason_code = h.get("tier_reason") or h.get("reason")
+            plain_reason = translate_reason(reason_code)
+            countries = h.get("country") or h.get("nationality") or ""
+            country_str = f" | Country: {countries}" if countries else ""
+
+            card_box = st.container(border=True)
+            with card_box:
+                # Line 1: Status chip + listed name (wraps)
+                l1_col1, l1_col2 = st.columns([2 if is_soundalike else 1, 5])
+                with l1_col1:
+                    st.markdown(chip_html, unsafe_allow_html=True)
+                with l1_col2:
+                    st.markdown(f"**{primary_name}**")
+
+                # Line 2: Matched name/alias, Record ID, Programme, Score, Reason (wraps)
+                st.markdown(
+                    f"**Matched:** <mark style='background-color: #FFEB3B; padding: 2px 6px; font-weight: bold;'>{matched_name}</mark>{exp_text} &nbsp;|&nbsp; "
+                    f"**ID:** `{rec_id}` &nbsp;|&nbsp; **Prog:** {prog}{country_str} &nbsp;|&nbsp; "
+                    f"**Score:** `{score_val:.4f}` &nbsp;|&nbsp; **Reason:** {plain_reason}",
+                    unsafe_allow_html=True,
+                )
+
+                # Line 3: Verify and copy buttons (wrap)
+                btn_c1, btn_c2, btn_c3, _ = st.columns([2, 1.5, 1.5, 3])
+                with btn_c1:
+                    st.link_button(f"🔗 Verify on official {src_id}", direct_verify_url)
+                with btn_c2:
+                    st.code(matched_name, language="")
+                    st.caption("Copy matched name")
+                with btn_c3:
+                    st.code(str(rec_id), language="")
+                    st.caption("Copy record ID")
+
+                with st.expander("Technical details & raw fields", expanded=False):
+                    st.markdown(f"**Entity Type:** {h.get('entity_type')}")
+                    st.markdown(f"**Score Source:** `{h.get('score_source')}`")
+                    st.markdown(f"**Internal Reason Code:** `{reason_code}`")
+                    if h.get("phonetic_evidence"):
+                        st.caption(f"Phonetic comparison details: `{h.get('phonetic_evidence')}`")
+                    pub_date = src_info.get("publication_date", "current")
+                    st.caption(f"*Our copy is dated {pub_date}. The official site may be more recent.*")
+
+        # Render Flagged Hits as 3-Line Cards with Sound-alike grouping (T9-2)
         if res["sanctions_hits"]:
-            for idx, h in enumerate(res["sanctions_hits"]):
-                src_id = h.get("source_list", "")
-                src_info = source_dict.get(src_id, {})
-                verify_url = src_info.get("verify_url") or src_info.get("landing_page") or "https://sanctionssearch.ofac.treas.gov/"
-                rec_template = src_info.get("record_url_template", "")
-                rec_id = h.get("source_id", "")
-                if rec_template and rec_id:
-                    direct_verify_url = rec_template.replace("{id}", str(rec_id))
-                    has_direct_link = True
-                else:
-                    direct_verify_url = verify_url
-                    has_direct_link = False
+            standard_hits = [h for h in res["sanctions_hits"] if not (h.get("tier") == "POSSIBLE_MATCH_REVIEW" and str(h.get("reason") or "").startswith("phonetic"))]
+            soundalike_hits = [h for h in res["sanctions_hits"] if (h.get("tier") == "POSSIBLE_MATCH_REVIEW" and str(h.get("reason") or "").startswith("phonetic"))]
 
-                tier = h.get("tier", "POTENTIAL_MATCH")
-                chip_html = render_status_chip(tier)
-                primary_name = h.get("primary_name") or "—"
-                matched_name = h.get("matched_name") or primary_name
-                exp_text = f" (via alias: {h.get('expanded_from')})" if h.get("expanded_from") else ""
-                prog = h.get("program") or "—"
-                score_val = float(h.get("score") or 0.0)
-                reason_code = h.get("tier_reason") or h.get("reason")
-                plain_reason = translate_reason(reason_code)
-                countries = h.get("country") or h.get("nationality") or ""
-                country_str = f" | Country: {countries}" if countries else ""
+            for h in standard_hits:
+                render_sanctions_hit_card(h, is_soundalike=False)
 
-                card_box = st.container(border=True)
-                with card_box:
-                    # Line 1: Status chip + listed name (wraps)
-                    l1_col1, l1_col2 = st.columns([1, 6])
-                    with l1_col1:
-                        st.markdown(chip_html, unsafe_allow_html=True)
-                    with l1_col2:
-                        st.markdown(f"**{primary_name}**")
-
-                    # Line 2: Matched name/alias, Record ID, Programme, Score, Reason (wraps)
-                    st.markdown(
-                        f"**Matched:** <mark style='background-color: #FFEB3B; padding: 2px 6px; font-weight: bold;'>{matched_name}</mark>{exp_text} &nbsp;|&nbsp; "
-                        f"**ID:** `{rec_id}` &nbsp;|&nbsp; **Prog:** {prog}{country_str} &nbsp;|&nbsp; "
-                        f"**Score:** `{score_val:.4f}` &nbsp;|&nbsp; **Reason:** {plain_reason}",
-                        unsafe_allow_html=True,
-                    )
-
-                    # Line 3: Verify and copy buttons (wrap)
-                    btn_c1, btn_c2, btn_c3, _ = st.columns([2, 1.5, 1.5, 3])
-                    with btn_c1:
-                        st.link_button(f"🔗 Verify on official {src_id}", direct_verify_url)
-                    with btn_c2:
-                        st.code(matched_name, language="")
-                        st.caption("Copy matched name")
-                    with btn_c3:
-                        st.code(str(rec_id), language="")
-                        st.caption("Copy record ID")
-
-                    with st.expander("Technical details & raw fields", expanded=False):
-                        st.markdown(f"**Entity Type:** {h.get('entity_type')}")
-                        st.markdown(f"**Score Source:** `{h.get('score_source')}`")
-                        st.markdown(f"**Internal Reason Code:** `{reason_code}`")
-                        pub_date = src_info.get("publication_date", "current")
-                        st.caption(f"*Our copy is dated {pub_date}. The official site may be more recent.*")
+            if soundalike_hits:
+                with st.expander(f"🔊 Sound-alike matches ({len(soundalike_hits)})", expanded=True):
+                    st.caption("Sound-alike candidates match via Double Metaphone or variant group rules. Review spelling differences.")
+                    for h in soundalike_hits:
+                        render_sanctions_hit_card(h, is_soundalike=True)
         else:
             st.write("✅ No flagged sanctions records identified.")
 

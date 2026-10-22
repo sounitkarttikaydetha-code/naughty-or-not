@@ -67,11 +67,18 @@ def generate_reports(
     threshold: str = "Potential Match >= 0.80 | Possible Match >= 0.70 | Sub-threshold core >= 0.60",
     manual_checks: Optional[List[Dict[str, Any]]] = None,
     all_candidates: Optional[List[Dict[str, Any]]] = None,
+    phonetic_enabled: Optional[bool] = None,
 ) -> Tuple[Path, Path]:
     """
     Generate PDF and Excel reports for a screening search.
     Returns (pdf_path, excel_path).
     """
+    if phonetic_enabled is None:
+        try:
+            from modules.screening.config import PHONETIC_ENABLED
+            phonetic_enabled = PHONETIC_ENABLED
+        except Exception:
+            phonetic_enabled = True
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
     ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     entity_key = (
@@ -109,6 +116,7 @@ def generate_reports(
         timestamp_str=now_str,
         manual_checks=manual_checks,
         all_candidates=all_candidates,
+        phonetic_enabled=phonetic_enabled,
     )
 
     # 2. Build Excel Report
@@ -128,6 +136,7 @@ def generate_reports(
         timestamp_str=now_str,
         manual_checks=manual_checks,
         all_candidates=all_candidates,
+        phonetic_enabled=phonetic_enabled,
     )
 
     return pdf_path, excel_path
@@ -149,6 +158,7 @@ def _build_pdf(
     timestamp_str: str,
     manual_checks: Optional[List[Dict[str, Any]]] = None,
     all_candidates: Optional[List[Dict[str, Any]]] = None,
+    phonetic_enabled: bool = True,
 ) -> None:
     doc = SimpleDocTemplate(
         str(pdf_path),
@@ -218,11 +228,12 @@ def _build_pdf(
     total_candidates_count = len(hits_to_show)
 
     # Meta Table
+    ph_note = "ON" if phonetic_enabled else "<font color='#B71C1C'><b>OFF (Sound-alike matching OFF)</b></font>"
     meta_data = [
         [Paragraph(f"<b>Search Type:</b> {search_type}", meta_style), Paragraph(f"<b>Timestamp:</b> {timestamp_str}", meta_style)],
         [Paragraph(f"<b>User:</b> {user} ({machine})", meta_style), Paragraph(f"<b>OpenSanctions Used:</b> {'Yes' if opensanctions_used else 'No'}", meta_style)],
         [Paragraph(f"<b>Inputs:</b> {inputs}", meta_style), Paragraph(f"<b>Total Candidates:</b> {total_candidates_count}", meta_style)],
-        [Paragraph(f"<b>Thresholds:</b> {threshold}", meta_style), Paragraph("", meta_style)],
+        [Paragraph(f"<b>Thresholds:</b> {threshold}", meta_style), Paragraph(f"<b>Sound-alike Matching:</b> {ph_note}", meta_style)],
     ]
     t_meta = Table(meta_data, colWidths=[270, 270])
     t_meta.setStyle(TableStyle([
@@ -231,6 +242,10 @@ def _build_pdf(
     ]))
     story.append(t_meta)
     story.append(Spacer(1, 10))
+
+    if not phonetic_enabled:
+        story.append(Paragraph("<b><font color='#B71C1C'>Sound-alike matching OFF</font></b>", meta_style))
+        story.append(Spacer(1, 6))
 
     # Banner
     banner_bg = colors.HexColor("#D32F2F") if "POTENTIAL" in overall_banner or "🔴" in overall_banner else (
@@ -436,6 +451,7 @@ def _build_excel(
     timestamp_str: str,
     manual_checks: Optional[List[Dict[str, Any]]] = None,
     all_candidates: Optional[List[Dict[str, Any]]] = None,
+    phonetic_enabled: bool = True,
 ) -> None:
     wb = openpyxl.Workbook()
 
@@ -458,6 +474,7 @@ def _build_excel(
         ("Machine", machine),
         ("OpenSanctions Used", "Yes" if opensanctions_used else "No"),
         ("Thresholds", threshold),
+        ("Sound-alike Matching", "ON" if phonetic_enabled else "OFF (Sound-alike matching OFF)"),
         ("Total Candidates", len(hits_to_show)),
         ("Inputs", str(inputs)),
         ("Overall Finding", overall_banner),

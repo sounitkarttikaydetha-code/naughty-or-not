@@ -1,0 +1,130 @@
+{
+  "leave_one_out": {
+    "n_pairs": 500,
+    "recall_orange_off": 1.0,
+    "recall_orange_on": 1.0,
+    "recall_info_off": 1.0,
+    "recall_info_on": 1.0,
+    "rescued_orange": 0,
+    "rescued_info": 0,
+    "per_list_off": {
+      "us_ofac": {
+        "orange": 205,
+        "info": 205,
+        "total": 205
+      },
+      "us_csl": {
+        "orange": 51,
+        "info": 51,
+        "total": 51
+      },
+      "uk_csl": {
+        "orange": 65,
+        "info": 65,
+        "total": 65
+      },
+      "eu_csl": {
+        "orange": 165,
+        "info": 165,
+        "total": 165
+      },
+      "un_csl": {
+        "orange": 14,
+        "info": 14,
+        "total": 14
+      }
+    },
+    "per_list_on": {
+      "us_ofac": {
+        "orange": 205,
+        "info": 205,
+        "total": 205,
+        "rescued": 0
+      },
+      "us_csl": {
+        "orange": 51,
+        "info": 51,
+        "total": 51,
+        "rescued": 0
+      },
+      "uk_csl": {
+        "orange": 65,
+        "info": 65,
+        "total": 65,
+        "rescued": 0
+      },
+      "eu_csl": {
+        "orange": 165,
+        "info": 165,
+        "total": 165,
+        "rescued": 0
+      },
+      "un_csl": {
+        "orange": 14,
+        "info": 14,
+        "total": 14,
+        "rescued": 0
+      }
+    }
+  },
+  "noise_test": {
+    "dataset_size": 260,
+    "mean_new_orange": 0.0,
+    "p95_new_orange": 0.0,
+    "max_new_orange": 0,
+    "max_new_red": 0,
+    "mean_new_info": 0.0,
+    "p95_new_info": 0.0,
+    "max_new_info": 0,
+    "acceptance_met": true
+  },
+  "performance": {
+    "search_time_ms_off": {
+      "min": 15.949100023135543,
+      "median": 124.47389999579173,
+      "p95": 1445.4283549988759,
+      "max": 1517.4644000071567
+    },
+    "search_time_ms_on": {
+      "min": 34.34059998835437,
+      "median": 147.47940000961535,
+      "p95": 1568.2257900218247,
+      "max": 1665.5467000091448
+    }
+  },
+  "variant_groups": {
+    "mohammed": {
+      "source": "Arabic romanisation variants (Standard, Egyptian, South Asian, Abbrev)",
+      "status": "applied, not yet approved"
+    },
+    "hussein": {
+      "source": "Arabic romanisation variants",
+      "status": "applied, not yet approved"
+    },
+    "yevgeny": {
+      "source": "Russian Cyrillic romanisation and European cognate variants",
+      "status": "applied, not yet approved"
+    },
+    "qaddafi": {
+      "source": "Arabic/Libyan dialectal romanisation variants",
+      "status": "applied, not yet approved"
+    },
+    "sheikh": {
+      "source": "Arabic title romanisation variants (English and French Maghreb)",
+      "status": "applied, not yet approved"
+    },
+    "chaudhary": {
+      "source": "South Asian surname romanisation variants (Hindi, Bengali, Urdu)",
+      "status": "applied, not yet approved"
+    },
+    "vladimir": {
+      "source": "Slavic personal name variants (Russian, German, Ukrainian)",
+      "status": "applied, not yet approved"
+    },
+    "alexander": {
+      "source": "European/Russian personal name variants",
+      "status": "applied, not yet approved"
+    }
+  },
+  "verdict": "BETTER"
+}

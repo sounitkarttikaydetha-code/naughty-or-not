@@ -1,6 +1,37 @@
-# Curated name variant groups (T8-6A)
+# Curated name variant groups (T8-6A / T9-2)
 # These feed the name matching and phonetic layers.
 # Matches derived through variants are capped at 🟠.
+# Status of all groups below: applied, not yet approved (pending final compliance review).
+
+metadata:
+  status: "applied, not yet approved"
+  audit_note: "Applied in T8; awaiting formal compliance sign-off in T9-2."
+
+variant_sources:
+  mohammed:
+    source: "Arabic romanisation variants (Standard, Egyptian, South Asian, Abbrev)"
+    status: "applied, not yet approved"
+  hussein:
+    source: "Arabic romanisation variants"
+    status: "applied, not yet approved"
+  yevgeny:
+    source: "Russian Cyrillic romanisation and European cognate variants"
+    status: "applied, not yet approved"
+  qaddafi:
+    source: "Arabic/Libyan dialectal romanisation variants"
+    status: "applied, not yet approved"
+  sheikh:
+    source: "Arabic title romanisation variants (English and French Maghreb)"
+    status: "applied, not yet approved"
+  chaudhary:
+    source: "South Asian surname romanisation variants (Hindi, Bengali, Urdu)"
+    status: "applied, not yet approved"
+  vladimir:
+    source: "Slavic personal name variants (Russian, German, Ukrainian)"
+    status: "applied, not yet approved"
+  alexander:
+    source: "European/Russian personal name variants"
+    status: "applied, not yet approved"
 
 variants:
   mohammed:

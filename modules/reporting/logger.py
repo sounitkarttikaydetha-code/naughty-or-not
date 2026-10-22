@@ -83,7 +83,10 @@ def get_db_connection(db_path: Optional[Path] = None) -> sqlite3.Connection:
             report_file_name TEXT,
             app_version TEXT,
             acknowledged INTEGER,
-            comment TEXT
+            comment TEXT,
+            phonetic_enabled INTEGER DEFAULT 1,
+            publication_date TEXT,
+            last_verified_at TEXT
         )
     """)
     conn.execute("""
@@ -98,6 +101,8 @@ def get_db_connection(db_path: Optional[Path] = None) -> sqlite3.Connection:
             primary_name TEXT,
             reason_code TEXT,
             is_top_hit INTEGER DEFAULT 0,
+            expanded_from TEXT,
+            score_source TEXT,
             FOREIGN KEY(log_id) REFERENCES screening_logs(id)
         )
     """)
@@ -111,7 +116,7 @@ def get_db_connection(db_path: Optional[Path] = None) -> sqlite3.Connection:
         )
     """)
 
-    # Schema migration to add any missing columns in screening_logs on older databases
+    # Schema migration to add any missing columns in screening_logs and screening_hits on older databases
     try:
         cur = conn.cursor()
         cols = {c[1] for c in cur.execute("PRAGMA table_info(screening_logs);").fetchall()}
@@ -126,12 +131,24 @@ def get_db_connection(db_path: Optional[Path] = None) -> sqlite3.Connection:
             "red_count": "INTEGER DEFAULT 0",
             "orange_count": "INTEGER DEFAULT 0",
             "info_count": "INTEGER DEFAULT 0",
+            "phonetic_enabled": "INTEGER DEFAULT 1",
+            "publication_date": "TEXT",
+            "last_verified_at": "TEXT",
         }
         for col_name, col_type in col_defs.items():
             if col_name not in cols:
                 conn.execute(f"ALTER TABLE screening_logs ADD COLUMN {col_name} {col_type};")
+
+        cols_hits = {c[1] for c in cur.execute("PRAGMA table_info(screening_hits);").fetchall()}
+        col_hits_defs = {
+            "expanded_from": "TEXT",
+            "score_source": "TEXT",
+        }
+        for col_name, col_type in col_hits_defs.items():
+            if col_name not in cols_hits:
+                conn.execute(f"ALTER TABLE screening_hits ADD COLUMN {col_name} {col_type};")
     except sqlite3.OperationalError as e:
-        logger.debug("Schema migration notice for screening_logs: %s", e)
+        logger.debug("Schema migration notice for screening audit tables: %s", e)
 
     conn.commit()
     return conn
@@ -199,6 +216,9 @@ def log_search(
     overall_tier: Optional[str] = None,
     top_match: Optional[str] = None,
     top_score: Optional[float] = None,
+    phonetic_enabled: Optional[bool] = None,
+    publication_date: Optional[str] = None,
+    last_verified_at: Optional[str] = None,
     db_conn: Optional[sqlite3.Connection] = None,
 ) -> int:
     """
@@ -262,6 +282,12 @@ def log_search(
         close_after = True
 
     try:
+        from modules.screening.config import PHONETIC_ENABLED
+    except Exception:
+        PHONETIC_ENABLED = True
+    ph_int = 1 if (phonetic_enabled if phonetic_enabled is not None else PHONETIC_ENABLED) else 0
+
+    try:
         cur = conn.cursor()
         cur.execute(
             """
@@ -269,15 +295,17 @@ def log_search(
                 timestamp, windows_user, machine_name, mode, search_type, query_type, inputs,
                 threshold, source, sources_checked, result, top_match, score, duration_ms,
                 result_hash, candidate_count, red_count, orange_count, info_count,
-                list_version, opensanctions_used, report_file_name, app_version, acknowledged
+                list_version, opensanctions_used, report_file_name, app_version, acknowledged,
+                phonetic_enabled, publication_date, last_verified_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 now_iso, user, machine, "screened", search_type, q_type, inputs_json,
                 threshold, "all_sources", sources_checked_json, overall_tier, top_match, float(top_score),
                 duration_ms, result_hash, candidate_count, red_count, orange_count, info_count,
                 "current", os_used_str, report_file_name or "—", app_version, ack_int,
+                ph_int, publication_date or "current", last_verified_at or "current",
             ),
         )
         log_id = cur.lastrowid
@@ -287,9 +315,10 @@ def log_search(
             conn.execute(
                 """
                 INSERT INTO screening_hits (
-                    log_id, source, source_id, tier, score, matched_name, primary_name, reason_code, is_top_hit
+                    log_id, source, source_id, tier, score, matched_name, primary_name, reason_code, is_top_hit,
+                    expanded_from, score_source
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     log_id,
@@ -301,6 +330,8 @@ def log_search(
                     c.get("primary_name") or "—",
                     c.get("reason") or c.get("reason_code") or "score",
                     1 if c.get("is_top_hit") else 0,
+                    c.get("expanded_from") or None,
+                    c.get("score_source") or "query",
                 ),
             )
 

@@ -19,6 +19,7 @@ CHIP_DEFINITIONS = {
     "SAFETY": ("✈️", "SAFETY", "chip-safety"),
     "EXPORT_CONTROL": ("📦", "EXPORT CONTROL", "chip-export"),
     "EAR_RESTRICTION": ("📦", "EXPORT CONTROL", "chip-export"),
+    "SOUNDS_LIKE": ("🔊", "SOUNDS LIKE", "chip-possible"),
 }
 
 
