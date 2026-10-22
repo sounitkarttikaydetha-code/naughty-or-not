@@ -88,11 +88,11 @@
     "bytes": 146803
   },
   "fatf_jurisdictions": {
-    "file_path": "config/fatf_lists.json",
-    "record_count": 43,
-    "publication_date": "2026-06-28",
+    "file_path": "config/fatf.json",
+    "record_count": 25,
+    "publication_date": "2026-06-19",
     "last_verified_at": "2026-10-22T00:00:00Z",
-    "sha256": "d2fb7fe17c16789277ef4e4cbbc6755374e24d32b2b0a6ba7fbd13d7e1c78f6d",
-    "bytes": 1656
+    "sha256": "b5d45daa2b91bd896a4091599a1f79da6c9d50e9ed6e3496133ea5520db7cf41",
+    "bytes": 2964
   }
 }

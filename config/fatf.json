@@ -1,0 +1,114 @@
+{
+  "statement_date": "2026-06-19",
+  "plenary_cycle": "February / June / October",
+  "plenary_note": "FATF Plenaries are held three times a year in February, June, and October. Next plenary: October 2026.",
+  "source_urls": {
+    "landing_page": "https://www.fatf-gafi.org/en/topics/high-risk-and-other-monitored-jurisdictions.html",
+    "high_risk": "https://www.fatf-gafi.org/en/publications/High-risk-and-other-monitored-jurisdictions/Call-for-action-june-2026.html",
+    "increased_monitoring": "https://www.fatf-gafi.org/en/publications/High-risk-and-other-monitored-jurisdictions/Increased-monitoring-june-2026.html"
+  },
+  "black_list": [
+    {
+      "name": "Democratic People's Republic of Korea",
+      "aliases": ["DPRK", "Democratic People's Republic of Korea", "North Korea", "Korea, Democratic People's Republic of"]
+    },
+    {
+      "name": "Iran",
+      "aliases": ["Iran", "Islamic Republic of Iran", "Iran, Islamic Republic of"]
+    },
+    {
+      "name": "Myanmar",
+      "aliases": ["Myanmar", "Burma"]
+    }
+  ],
+  "grey_list": [
+    {
+      "name": "Angola",
+      "aliases": ["Angola"]
+    },
+    {
+      "name": "Bolivia",
+      "aliases": ["Bolivia", "Plurinational State of Bolivia"]
+    },
+    {
+      "name": "Bosnia and Herzegovina",
+      "aliases": ["Bosnia and Herzegovina", "Bosnia", "Herzegovina"]
+    },
+    {
+      "name": "Bulgaria",
+      "aliases": ["Bulgaria"]
+    },
+    {
+      "name": "Cameroon",
+      "aliases": ["Cameroon"]
+    },
+    {
+      "name": "Côte d'Ivoire",
+      "aliases": ["Côte d'Ivoire", "Cote d'Ivoire", "Ivory Coast"]
+    },
+    {
+      "name": "Democratic Republic of the Congo",
+      "aliases": ["Democratic Republic of the Congo", "DRC", "Congo, Democratic Republic of the", "Congo (Kinshasa)"]
+    },
+    {
+      "name": "Haiti",
+      "aliases": ["Haiti"]
+    },
+    {
+      "name": "Iraq",
+      "aliases": ["Iraq"]
+    },
+    {
+      "name": "Kenya",
+      "aliases": ["Kenya"]
+    },
+    {
+      "name": "Kuwait",
+      "aliases": ["Kuwait"]
+    },
+    {
+      "name": "Lao PDR",
+      "aliases": ["Lao PDR", "Laos", "Lao People's Democratic Republic"]
+    },
+    {
+      "name": "Lebanon",
+      "aliases": ["Lebanon"]
+    },
+    {
+      "name": "Monaco",
+      "aliases": ["Monaco"]
+    },
+    {
+      "name": "Nepal",
+      "aliases": ["Nepal"]
+    },
+    {
+      "name": "Papua New Guinea",
+      "aliases": ["Papua New Guinea", "PNG"]
+    },
+    {
+      "name": "South Sudan",
+      "aliases": ["South Sudan"]
+    },
+    {
+      "name": "Syria",
+      "aliases": ["Syria", "Syrian Arab Republic"]
+    },
+    {
+      "name": "Venezuela",
+      "aliases": ["Venezuela", "Bolivarian Republic of Venezuela"]
+    },
+    {
+      "name": "Vietnam",
+      "aliases": ["Vietnam", "Viet Nam"]
+    },
+    {
+      "name": "Virgin Islands (UK)",
+      "aliases": ["Virgin Islands (UK)", "British Virgin Islands", "BVI"]
+    },
+    {
+      "name": "Yemen",
+      "aliases": ["Yemen"]
+    }
+  ]
+}

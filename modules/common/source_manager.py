@@ -142,7 +142,7 @@ def get_source_file_path(source_id: str) -> Path:
             "bis_aircraft": seed_dir / "aviation" / "bis_aircraft.pdf",
             "eu_air_safety_list": seed_dir / "aviation" / "eu_air_safety_list.pdf",
             "faa_iasa": seed_dir / "aviation" / "faa_iasa.pdf",
-            "fatf_jurisdictions": Path(__file__).resolve().parent.parent.parent / "config" / "fatf_lists.json",
+            "fatf_jurisdictions": Path(__file__).resolve().parent.parent.parent / "config" / "fatf.json",
         }
         fallback = seed_map.get(source_id)
         if fallback and fallback.is_file():
@@ -531,6 +531,7 @@ class SourceManager:
         successful_url = None
         address_changed = False
         rejection_reason = None
+        validation_rejected = False
 
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp_path = Path(tmp_dir) / f"{source_id}.download.tmp"
@@ -570,7 +571,8 @@ class SourceManager:
                     # Validate file
                     is_valid, v_msg, count_after = validate_file(tmp_path, spec, last_good_count=count_before)
                     if not is_valid:
-                        rejection_reason = v_msg
+                        rejection_reason = f"Validation failed: {v_msg}"
+                        validation_rejected = True
                         log_source_event(source_id, "VALIDATION_FAILED", url, final_url, count_before, count_after, hash_before, "", v_msg)
                         continue
 
@@ -642,7 +644,7 @@ class SourceManager:
                     except Exception:
                         pass
 
-                if rejection_reason and "validation" in rejection_reason.lower() or "outside allowed range" in str(rejection_reason).lower() or "missing required" in str(rejection_reason).lower():
+                if validation_rejected or (rejection_reason and ("validation" in rejection_reason.lower() or "outside allowed range" in str(rejection_reason).lower() or "missing required" in str(rejection_reason).lower())):
                     new_state = STATE_UPDATE_REJECTED
                     note = f"Update rejected ({rejection_reason}); using copy dated {current_state.get('publication_date', '2026-10-18')}"
                 elif age_days > max_age:
