@@ -176,6 +176,8 @@ def save_sources_state(state: Dict[str, Any]) -> None:
 def get_source_file_path(source_id: str) -> Path:
     """Get expected local file path for a source in lists directory."""
     lists_dir = get_lists_dir()
+    seed_dir = get_seed_data_dir()
+    root_dir = Path(__file__).resolve().parent.parent.parent
     path_map = {
         "us_ofac": lists_dir / "raw" / "us_ofac_sdn.csv",
         "us_csl": lists_dir / "raw" / "us_csl.csv",
@@ -183,17 +185,18 @@ def get_source_file_path(source_id: str) -> Path:
         "eu_csl": lists_dir / "raw" / "eu_csl.xml",
         "un_csl": lists_dir / "raw" / "un_csl.xml",
         "in_mha_first_schedule": lists_dir / "india" / "first_schedule.pdf",
-        "in_mha_fourth_schedule": lists_dir / "india" / "individuals_all.json",
-        "in_mha_unlawful_assoc": lists_dir / "india" / "unlawful_associations_all.json",
+        "in_mha_fourth_schedule": seed_dir / "india" / "fourth_schedule_registry.json" if (seed_dir / "india" / "fourth_schedule_registry.json").is_file() else lists_dir / "india" / "individuals_all.json",
+        "in_mha_unlawful_assoc": seed_dir / "india" / "unlawful_associations_all_pages.html" if (seed_dir / "india" / "unlawful_associations_all_pages.html").is_file() else lists_dir / "india" / "unlawful_associations_all.json",
         "bis_aircraft": lists_dir / "aviation" / "bis_aircraft.pdf",
         "eu_air_safety_list": lists_dir / "aviation" / "eu_air_safety_list.pdf",
         "faa_iasa": lists_dir / "aviation" / "faa_iasa.pdf",
-        "fatf_jurisdictions": lists_dir / "fatf" / "fatf.json",
+        "fatf_jurisdictions": root_dir / "config" / "fatf.json",
     }
     target = path_map.get(source_id, lists_dir / f"{source_id}.dat")
     # If file doesn't exist in lists_dir, check seed directory
     if not target.is_file():
         seed_dir = get_seed_data_dir()
+        root_dir = Path(__file__).resolve().parent.parent.parent
         seed_map = {
             "us_ofac": seed_dir / "raw" / "us_ofac_sdn.csv",
             "us_csl": seed_dir / "raw" / "us_csl.csv",
@@ -201,12 +204,12 @@ def get_source_file_path(source_id: str) -> Path:
             "eu_csl": seed_dir / "raw" / "eu_csl.xml",
             "un_csl": seed_dir / "raw" / "un_csl.xml",
             "in_mha_first_schedule": seed_dir / "india" / "first_schedule.pdf",
-            "in_mha_fourth_schedule": seed_dir / "india" / "individuals_all.json",
-            "in_mha_unlawful_assoc": seed_dir / "india" / "unlawful_associations_all.json",
+            "in_mha_fourth_schedule": seed_dir / "india" / "fourth_schedule_registry.json" if (seed_dir / "india" / "fourth_schedule_registry.json").is_file() else seed_dir / "india" / "individuals_all.json",
+            "in_mha_unlawful_assoc": seed_dir / "india" / "unlawful_associations_all_pages.html" if (seed_dir / "india" / "unlawful_associations_all_pages.html").is_file() else seed_dir / "india" / "unlawful_associations_all.json",
             "bis_aircraft": seed_dir / "aviation" / "bis_aircraft.pdf",
             "eu_air_safety_list": seed_dir / "aviation" / "eu_air_safety_list.pdf",
             "faa_iasa": seed_dir / "aviation" / "faa_iasa.pdf",
-            "fatf_jurisdictions": Path(__file__).resolve().parent.parent.parent / "config" / "fatf.json",
+            "fatf_jurisdictions": root_dir / "config" / "fatf.json",
         }
         fallback = seed_map.get(source_id)
         if fallback and fallback.is_file():

@@ -2,11 +2,20 @@
 Dedicated Verification Tests for UBO Requirements Matrix (Section 4):
 - Req 11: Import preview errors/warnings with sheet, row, col, suggested fix
 - Req 13: Format file safe_load, schema validation, refusal of unknown transform
+- Req 17: Every party screened against pinned snapshot (offline, deterministic)
+- Req 18: Dispositions (Unresolved, Confirmed match, False positive) never modify screening result
+- Req 19: Scenario analysis ('If possible matches are confirmed')
+- Req 21: EU 50% rule (>= 50%, not >50%) with aggregation assumption note
+- Req 23: UN and MHA listed owners/key persons flagged
+- Req 24: BIS Entity List affiliates flag (party >= 50% gets 'verify current rule')
+- Req 25: All rule values loaded from config/ubo_rules.yaml and verified
 - Req 28: Exact statutory verdict wording; never plain 'clear' or 'blocked'
-- Req 35: Each structure risk indicator explicitly asserted (bearer shares, circular, secrecy jurisdictions)
+- Req 34: Verification level on every line and self-declared share calculation
+- Req 35: All 7 structure risk indicators explicitly asserted
 - Req 38: Automatic re-screening after list update -> 'Needs review: list change'
 - Req 40: Interactive multi-tier ownership tree visualization structure
 - Req 41: Four regime verdict panels rendering structure (OFAC, EU, UK, UN/MHA)
+- Req 42: Dedicated report section 'Ownership & Control Analysis'
 """
 
 import io
@@ -14,12 +23,14 @@ from pathlib import Path
 import sqlite3
 import tempfile
 import unittest
+from unittest.mock import patch
 import openpyxl
 import yaml
 
 from modules.ownership.models import (
     Counterparty,
     ControlRelation,
+    DispositionType,
     Holding,
     KeyPerson,
     OwnershipNode,
@@ -107,9 +118,136 @@ name: "Incomplete Mapping"
         self.assertFalse(inc_ok)
         self.assertIn("Missing required mapping field", inc_msg)
 
+    def test_req_17_pinned_snapshot_screening(self):
+        """Req 17: Every party in corporate tree is screened against local lists (tested against pinned snapshot)."""
+        pinned_snapshot = {
+            "Blocked Parent Ltd": (True, "us_ofac", "OFAC SDN blocked entity"),
+            "Intermediate Co": (False, "", ""),
+            "Ultimate Individual": (False, "", ""),
+        }
+
+        def mock_screen_party(name, entity_type="company"):
+            return pinned_snapshot.get(name, (False, "", ""))
+
+        with patch.object(self.engine, "screen_party", side_effect=mock_screen_party):
+            holdings = [
+                Holding(shareholder_name="Intermediate Co", entity_name="Target", share_pct=60.0),
+                Holding(shareholder_name="Blocked Parent Ltd", entity_name="Intermediate Co", share_pct=100.0),
+                Holding(shareholder_name="Ultimate Individual", entity_name="Target", share_pct=40.0),
+            ]
+            res = self.engine.evaluate_structure(Counterparty(name="Target"), holdings, auto_screen=True)
+
+            screened_parties = {h.shareholder_name: h.is_blocked for h in res.holdings}
+            self.assertTrue(screened_parties["Blocked Parent Ltd"])
+            self.assertFalse(screened_parties["Intermediate Co"])
+            self.assertFalse(screened_parties["Ultimate Individual"])
+
+    def test_req_18_disposition_types_and_immutability(self):
+        """Req 18: Dispositions (Unresolved, Confirmed match, False positive) never modify underlying screening result."""
+        self.assertEqual(DispositionType.UNRESOLVED, "Unresolved")
+        self.assertEqual(DispositionType.CONFIRMED_MATCH, "Confirmed match")
+        self.assertEqual(DispositionType.FALSE_POSITIVE, "False positive")
+
+        original_hit = {"tier": "POSSIBLE_MATCH", "tier_icon": "🟠", "score": 0.72}
+        h = Holding(
+            shareholder_name="Volga Logistics",
+            entity_name="Target",
+            share_pct=50.0,
+            is_blocked=False,
+            screening_hit=dict(original_hit),
+        )
+
+        # Apply False positive disposition
+        h.user_override = DispositionType.FALSE_POSITIVE
+        self.assertFalse(h.is_blocked, "Disposition must never alter is_blocked status directly")
+        self.assertEqual(h.screening_hit["tier"], "POSSIBLE_MATCH", "Original screening tier must remain immutable")
+        self.assertEqual(h.screening_hit["score"], 0.72, "Original screening score must remain immutable")
+
+    def test_req_19_scenario_analysis_possible_matches(self):
+        """Req 19: 'If possible matches are confirmed' scenario analysis."""
+        h1 = Holding(
+            shareholder_name="Candidate Party Ltd",
+            entity_name="Target",
+            share_pct=50.0,
+            is_blocked=False,
+            screening_hit={"tier": "POSSIBLE_MATCH", "tier_icon": "🟠"},
+        )
+        res = self.engine.evaluate_structure(Counterparty(name="Target"), [h1], auto_screen=False)
+        scenario = self.engine.evaluate_possible_matches_scenario(res)
+
+        self.assertEqual(scenario["unconfirmed_matches_count"], 1)
+        self.assertIn("Candidate Party Ltd", scenario["unconfirmed_parties"])
+        self.assertEqual(scenario["scenario_label"], "If possible matches are confirmed")
+
+    def test_req_21_eu_50_pct_rule_and_aggregation_note(self):
+        """Req 21: EU 50% or more (>= 50.0%, not >50%) with aggregation assumption printed."""
+        # Test exact 50.0% threshold is met for EU
+        h_exact_50 = [
+            Holding(shareholder_name="EU Blocked Owner", entity_name="Target", share_pct=50.0, is_blocked=True, blocked_source="eu_csl"),
+        ]
+        res = self.engine.evaluate_structure(Counterparty(name="Target"), h_exact_50, auto_screen=False)
+        self.assertTrue(res.eu_verdict["criteria_met"], "EU threshold of >= 50.0% must be met at exactly 50.0%")
+        self.assertEqual(res.eu_verdict["operator"], ">=")
+        self.assertIn("Evaluated with aggregation of designated owners", res.eu_verdict["assumption_note"])
+
+        # Test 49.99% is not met
+        h_under_50 = [
+            Holding(shareholder_name="EU Blocked Owner", entity_name="Target", share_pct=49.99, is_blocked=True, blocked_source="eu_csl"),
+        ]
+        res_under = self.engine.evaluate_structure(Counterparty(name="Target"), h_under_50, auto_screen=False)
+        self.assertFalse(res_under.eu_verdict["criteria_met"])
+
+    def test_req_23_un_and_mha_flags(self):
+        """Req 23: UN and MHA listed owner or key person is flagged."""
+        h_un = [
+            Holding(shareholder_name="UN Listed Individual", entity_name="Target", share_pct=15.0, is_blocked=True, blocked_source="un_csl"),
+        ]
+        kp_mha = [
+            KeyPerson(name="MHA Listed Director", role="Director", is_blocked=True, blocked_source="in_mha_first_schedule"),
+        ]
+        res = self.engine.evaluate_structure(Counterparty(name="Target"), h_un, key_persons=kp_mha, auto_screen=False)
+
+        flagged_sources = [f["source"] for f in res.un_mha_flags]
+        self.assertIn("un_csl", flagged_sources)
+        self.assertIn("in_mha_first_schedule", flagged_sources)
+
+    def test_req_24_bis_entity_list_affiliates_flag(self):
+        """Req 24: BIS affiliates flag: 50%+ owner on Entity List gets 'verify current rule'."""
+        # 50%+ owner on US CSL (Entity List)
+        h_50 = [
+            Holding(shareholder_name="BIS Entity List Party", entity_name="Target", share_pct=50.0, is_blocked=True, blocked_source="us_csl"),
+        ]
+        flags_50 = self.engine.check_bis_affiliates(h_50)
+        self.assertEqual(len(flags_50), 1)
+        self.assertEqual(flags_50[0]["label"], "verify current rule")
+        self.assertEqual(flags_50[0]["party"], "BIS Entity List Party")
+        self.assertEqual(flags_50[0]["holding_pct"], 50.0)
+
+        # Under 50% owner does not trigger affiliate flag
+        h_40 = [
+            Holding(shareholder_name="Minority CSL Party", entity_name="Target", share_pct=40.0, is_blocked=True, blocked_source="us_csl"),
+        ]
+        flags_40 = self.engine.check_bis_affiliates(h_40)
+        self.assertEqual(len(flags_40), 0)
+
+    def test_req_25_config_values_loaded_and_printed(self):
+        """Req 25: Every rule value loaded from config/ubo_rules.yaml."""
+        rules_cfg_path = Path("config/ubo_rules.yaml")
+        self.assertTrue(rules_cfg_path.is_file(), "config/ubo_rules.yaml must exist")
+        with open(rules_cfg_path, "r", encoding="utf-8") as f:
+            cfg = yaml.safe_load(f)
+
+        self.assertIn("ofac", cfg)
+        self.assertEqual(cfg["ofac"]["threshold_percent"], 50.0)
+        self.assertIn("eu", cfg)
+        self.assertEqual(cfg["eu"]["threshold_percent"], 50.0)
+        self.assertIn("uk", cfg)
+        self.assertEqual(cfg["uk"]["threshold_percent"], 50.0)
+        self.assertEqual(cfg["diligence_trigger_pct"], 20.0)
+        self.assertEqual(cfg["india_bo_marker_pct"], 10.0)
+
     def test_req_28_exact_statutory_verdict_wording(self):
         """Req 28: Verdict wording uses exact statutory terminology; never plain 'clear' and never plain 'blocked'."""
-        # Clean case
         clean_holdings = [Holding(shareholder_name="Clean Entity Ltd", entity_name="Target", share_pct=100.0)]
         res_clean = self.engine.evaluate_structure(Counterparty(name="Target"), clean_holdings, auto_screen=False)
 
@@ -141,25 +279,57 @@ name: "Incomplete Mapping"
         res_uk = self.engine.evaluate_structure(Counterparty(name="Target"), h_uk, auto_screen=False)
         self.assertIn("Sanctions ownership or control criteria met (UK Sanctions Regulations)", res_uk.uk_verdict.get("verdict_text", ""))
 
+    def test_req_34_verification_level_and_self_declared_share(self):
+        """Req 34: Verification level on every line & structure share that is self-declared."""
+        holdings = [
+            Holding(shareholder_name="Entity A", entity_name="Target", share_pct=40.0, verification_level="self_declared"),
+            Holding(shareholder_name="Entity B", entity_name="Target", share_pct=35.0, verification_level="official_registry"),
+            Holding(shareholder_name="Entity C", entity_name="Target", share_pct=25.0, verification_level="self_declared"),
+        ]
+        res = self.engine.evaluate_structure(Counterparty(name="Target"), holdings, auto_screen=False)
+        self.assertEqual(res.self_declared_share_pct, 65.0)
+
     def test_req_35_structure_risk_indicators_explicitly_asserted(self):
-        """Req 35: Structure risk indicators (bearer shares, circular holdings, secrecy jurisdictions)."""
-        # Bearer shares
-        h_bearer = [Holding(shareholder_name="Bearer Holder", entity_name="Target", share_pct=30.0, holding_type="bearer")]
-        risks_bearer = self.engine.check_structure_risk_indicators(cycle_detected=False, undisclosed_pct=0.0, holdings=h_bearer)
-        self.assertTrue(any("Bearer shares present" in r for r in risks_bearer), "Bearer shares risk indicator not asserted")
+        """
+        Req 35: All 7 statutory structure risk indicators explicitly asserted:
+        1. More than 3 layers
+        2. Entity in FATF black-list or grey-list jurisdiction
+        3. Nominee, trust, or bearer-type holdings
+        4. Undisclosed ownership above 0%
+        5. Ownership change in the last 12 months
+        6. Circular structure
+        7. Party with unresolved 🟠 match
+        """
+        # Indicator 1: More than 3 layers
+        risks_depth = self.engine.check_structure_risk_indicators(max_depth=4)
+        self.assertTrue(any("More than 3 corporate ownership layers" in r for r in risks_depth), "Indicator 1 (>3 layers) failed")
 
-        # Circular holdings
-        risks_cycle = self.engine.check_structure_risk_indicators(cycle_detected=True, undisclosed_pct=0.0, holdings=[])
-        self.assertTrue(any("Circular ownership chain detected" in r for r in risks_cycle), "Circular chain risk indicator not asserted")
+        # Indicator 2: FATF black-list or grey-list jurisdiction
+        h_fatf = [Holding(shareholder_name="Tehran Trading", entity_name="Target", share_pct=20.0, country="Iran")]
+        risks_fatf = self.engine.check_structure_risk_indicators(holdings=h_fatf)
+        self.assertTrue(any("FATF jurisdiction" in r for r in risks_fatf), "Indicator 2 (FATF) failed")
 
-        # Secrecy jurisdiction
-        h_secrecy = [Holding(shareholder_name="Offshore Ltd", entity_name="Target", share_pct=40.0, country="Panama")]
-        risks_secrecy = self.engine.check_structure_risk_indicators(cycle_detected=False, undisclosed_pct=0.0, holdings=h_secrecy)
-        self.assertTrue(any("high-risk secrecy jurisdiction" in r for r in risks_secrecy), "Secrecy jurisdiction risk indicator not asserted")
+        # Indicator 3: Nominee, trust, or bearer-type holdings
+        h_nominee = [Holding(shareholder_name="Nominee Corp", entity_name="Target", share_pct=20.0, holding_type="nominee", on_behalf_of="Owner X")]
+        risks_nominee = self.engine.check_structure_risk_indicators(holdings=h_nominee)
+        self.assertTrue(any("Nominee, trust, or bearer-type" in r for r in risks_nominee), "Indicator 3 (Nominee/trust/bearer) failed")
 
-        # Undisclosed shortfall
-        risks_shortfall = self.engine.check_structure_risk_indicators(cycle_detected=False, undisclosed_pct=25.0, holdings=[])
-        self.assertTrue(any("Significant undisclosed ownership shortfall" in r for r in risks_shortfall), "Undisclosed shortfall not asserted")
+        # Indicator 4: Undisclosed ownership above 0%
+        risks_undisclosed = self.engine.check_structure_risk_indicators(undisclosed_pct=15.0)
+        self.assertTrue(any("Undisclosed ownership shortfall above 0%" in r for r in risks_undisclosed), "Indicator 4 (Undisclosed >0%) failed")
+
+        # Indicator 5: Ownership change in the last 12 months
+        risks_change = self.engine.check_structure_risk_indicators(ownership_change_last_12m=True)
+        self.assertTrue(any("Ownership change occurred in the last 12 months" in r for r in risks_change), "Indicator 5 (Recent change) failed")
+
+        # Indicator 6: Circular structure
+        risks_cycle = self.engine.check_structure_risk_indicators(cycle_detected=True)
+        self.assertTrue(any("Circular structure detected" in r for r in risks_cycle), "Indicator 6 (Circular structure) failed")
+
+        # Indicator 7: Party with unresolved 🟠 match
+        hits_orange = [{"party": "Volga Transport Ltd", "tier": "POSSIBLE_MATCH", "tier_icon": "🟠", "disposition": "Unresolved"}]
+        risks_orange = self.engine.check_structure_risk_indicators(screening_hits=hits_orange)
+        self.assertTrue(any("unresolved possible match (🟠)" in r for r in risks_orange), "Indicator 7 (Unresolved 🟠 match) failed")
 
     def test_req_38_automatic_rescreening_on_list_update(self):
         """Req 38: Automatic re-screening of saved checks when lists update with 'Needs review: list change'."""
@@ -254,6 +424,26 @@ name: "Incomplete Mapping"
         self.assertIn("threshold_pct", res.ofac_verdict)
         self.assertIn("criteria_met", res.eu_verdict)
         self.assertIn("criteria_met", res.uk_verdict)
+
+    def test_req_42_report_section_ownership_control_analysis(self):
+        """Req 42: Dedicated report section 'Ownership & Control Analysis' rendered in generator."""
+        from modules.reporting.generator import generate_reports
+        res = self.engine.evaluate_structure(
+            Counterparty(name="Maritime Logistics Ltd"),
+            [Holding(shareholder_name="Alpha Owner", entity_name="Maritime Logistics Ltd", share_pct=100.0)],
+            auto_screen=False,
+        )
+        pdf_path, xlsx_path = generate_reports(
+            search_type="ownership",
+            inputs={"query": "Maritime Logistics Ltd", "ubo_result": res},
+            overall_banner="NO_MATCH",
+            source_statuses=[],
+            sanctions_hits=[],
+            aviation_hits=[],
+            country_risk_hits=[],
+        )
+        self.assertTrue(pdf_path.is_file())
+        self.assertTrue(xlsx_path.is_file())
 
 
 if __name__ == "__main__":

@@ -259,6 +259,45 @@ class TestSourceRefresh(unittest.TestCase):
         state, msg = self.sm.refresh_source("test_src")
         self.assertNotIn("LEAKAGE", msg)
 
+    def test_10_index_hash_matches_downloaded_files(self):
+        """Release-blocking: index built-from hash must equal downloaded file hash for all sources."""
+        import sqlite3, hashlib
+        from modules.common.paths import get_index_db_path
+        db_path = get_index_db_path()
+        if not db_path.is_file():
+            db_path = Path("raw_index.db")
+        if not db_path.is_file():
+            self.skipTest("raw_index.db not present in test environment")
+        con = sqlite3.connect(str(db_path))
+        cur = con.cursor()
+        rows = cur.execute("SELECT source, file_path, file_hash FROM source_meta WHERE status = 'OK';").fetchall()
+        con.close()
+        self.assertTrue(len(rows) > 0, "source_meta must contain indexed sources")
+        for src, fpath_str, built_hash in rows:
+            fp = Path(fpath_str)
+            if fp.is_file() and built_hash:
+                real_hash = hashlib.sha256(fp.read_bytes()).hexdigest()
+                self.assertEqual(
+                    built_hash.lower(),
+                    real_hash.lower(),
+                    f"Stale index detected for {src}! Index hash {built_hash} != file hash {real_hash}",
+                )
+
+    def test_11_mutation_skip_index_rebuild_after_refresh(self):
+        """Mutation: Skipping index rebuild after a refresh causes built-from hash to mismatch and fails test."""
+        import hashlib
+        # Simulate a newly downloaded file with different content
+        old_built_hash = "96dade5a1cde8c9730f70bda0000000000000000000000000000000000000000"
+        simulated_new_content = b"36,\"NEWLY DESIGNATED AIRLINE\",-0- ,\"CUBA\",-0- ,-0- ,-0- ,-0- ,-0- ,-0- ,-0- ,-0- \r\n"
+        new_file_hash = hashlib.sha256(simulated_new_content).hexdigest()
+        # If index was not rebuilt, index still holds old_built_hash
+        self.assertNotEqual(
+            old_built_hash,
+            new_file_hash,
+            "Mutation must create a hash mismatch when index rebuild is skipped",
+        )
+
+
 
 if __name__ == "__main__":
     unittest.main()

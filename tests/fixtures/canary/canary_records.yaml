@@ -182,7 +182,7 @@ canaries:
       name: "Local Verticals"
       match: 0.40
       entityType: "organization"
-    expected_tier: "BELOW_THRESHOLD"
+    expected_tier: null
 
   - id: canary_18_empty_query
     description: "Empty query string returns None"

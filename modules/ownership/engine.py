@@ -309,22 +309,71 @@ class UBOEngine:
 
     def check_structure_risk_indicators(
         self,
-        cycle_detected: bool,
-        undisclosed_pct: float,
-        holdings: List[Holding]
+        cycle_detected: bool = False,
+        undisclosed_pct: float = 0.0,
+        holdings: Optional[List[Holding]] = None,
+        max_depth: int = 0,
+        parties: Optional[List[Any]] = None,
+        screening_hits: Optional[List[Dict[str, Any]]] = None,
+        ownership_change_last_12m: bool = False,
     ) -> List[str]:
-        """Check structure risk indicators: bearer shares, circular holdings, undisclosed shortfall, secrecy jurisdictions."""
+        """
+        Check structure risk indicators per statutory specification:
+        1. More than 3 layers;
+        2. Entity in a FATF black-list or grey-list jurisdiction;
+        3. Nominee, trust, or bearer-type holdings;
+        4. Undisclosed ownership above 0%;
+        5. Ownership change in the last 12 months;
+        6. Circular structure;
+        7. Party with unresolved [orange] match.
+        """
         indicators = []
-        if cycle_detected:
-            indicators.append("Circular ownership chain detected")
-        if undisclosed_pct > 20.0:
-            indicators.append(f"Significant undisclosed ownership shortfall ({undisclosed_pct}%)")
-        if any(h.holding_type == "bearer" for h in holdings):
-            indicators.append("Bearer shares present in corporate hierarchy")
-        high_risk_jurisdictions = ["panama", "vanuatu", "marshall islands", "seychelles", "cayman islands", "bvi", "british virgin islands"]
+        holdings = holdings or []
+        screening_hits = screening_hits or []
+
+        # 1. More than 3 layers
+        if max_depth > 3:
+            indicators.append(f"More than 3 corporate ownership layers detected ({max_depth} layers)")
+
+        # 2. Entity in FATF black-list or grey-list jurisdiction
+        try:
+            from modules.fatf.client import check_country
+            high_risk_secrecy = ["panama", "vanuatu", "marshall islands", "seychelles", "cayman islands", "bvi", "british virgin islands"]
+            for h in holdings:
+                if h.country:
+                    fatf_res = check_country(h.country)
+                    if fatf_res.get("tier") != "NO_MATCH" or h.country.strip().lower() in high_risk_secrecy:
+                        indicators.append(f"Entity registered in high-risk / FATF jurisdiction: {h.shareholder_name} ({h.country})")
+        except Exception:
+            pass
+
+        # 3. Nominee, trust, or bearer-type holdings
         for h in holdings:
-            if h.country and h.country.strip().lower() in high_risk_jurisdictions:
-                indicators.append(f"Entity registered in high-risk secrecy jurisdiction: {h.shareholder_name} ({h.country})")
+            ht = (h.holding_type or "").lower()
+            if ht in ["nominee", "trust", "bearer"] or bool(h.on_behalf_of):
+                indicators.append(f"Nominee, trust, or bearer-type holding present: {h.shareholder_name} ({ht or "nominee"})")
+
+        # 4. Undisclosed ownership above 0%
+        if undisclosed_pct > 0.0:
+            indicators.append(f"Undisclosed ownership shortfall above 0% ({round(undisclosed_pct, 2)}%)")
+
+        # 5. Ownership change in the last 12 months
+        if ownership_change_last_12m or any(getattr(h, "ownership_change_last_12m", False) for h in holdings):
+            indicators.append("Ownership change occurred in the last 12 months")
+
+        # 6. Circular structure
+        if cycle_detected:
+            indicators.append("Circular structure detected in ownership hierarchy")
+
+        # 7. Party with unresolved orange match
+        for hit in screening_hits:
+            party_name = hit.get("party") or hit.get("primary_name") or hit.get("shareholder_name") or "Party"
+            tier = hit.get("tier")
+            tier_icon = hit.get("tier_icon")
+            disp = hit.get("disposition") or hit.get("user_override")
+            if (tier in ["POSSIBLE_MATCH", "🟠"] or tier_icon == "🟠") and disp != "False positive":
+                indicators.append(f"Corporate structure party with unresolved possible match (🟠): {party_name}")
+
         return list(dict.fromkeys(indicators))
 
     def rescreen_saved_ownership_checks(self) -> List[Dict[str, Any]]:
@@ -713,14 +762,16 @@ class UBOEngine:
                 un_mha_flags.append({
                     "party": h.shareholder_name,
                     "holding_pct": h.share_pct,
+                    "source": h.blocked_source,
                     "authority": "UN / MHA",
                     "note": f"Party {h.shareholder_name} is listed on UN or India MHA sanctions register",
                 })
         for kp in key_persons:
-            if kp.is_blocked and ("un_mha" in kp.blocked_source.lower() or "un_csl" in kp.blocked_source.lower() or kp.blocked_source == "user_override"):
+            if kp.is_blocked and ("in_mha" in kp.blocked_source.lower() or "mha" in kp.blocked_source.lower() or "un_csl" in kp.blocked_source.lower() or kp.blocked_source == "user_override"):
                 un_mha_flags.append({
                     "party": kp.name,
                     "role": kp.role,
+                    "source": kp.blocked_source,
                     "authority": "UN / MHA",
                     "note": f"Key person {kp.name} ({kp.role}) is designated on UN or India MHA list",
                 })
@@ -748,7 +799,38 @@ class UBOEngine:
         # ---------------------------------------------------------------------
         # 6. Structure Risk Indicators & Verification Level
         # ---------------------------------------------------------------------
-        risk_indicators = self.check_structure_risk_indicators(cycle_detected, undisclosed_pct, holdings)
+        # Compute structure depth
+        tree_depth = 0
+        children_map = {}
+        for h in holdings:
+            children_map.setdefault(h.entity_name.strip().lower(), []).append(h.shareholder_name.strip().lower())
+        def _calc_depth(node: str, vis: set) -> int:
+            if node in vis: return 0
+            vis.add(node)
+            ch = children_map.get(node, [])
+            if not ch: return 1
+            return 1 + max(_calc_depth(c, vis.copy()) for c in ch)
+        if holdings:
+            tree_depth = max(_calc_depth(target_name.strip().lower(), set()) - 1, 0)
+
+        # Unresolved orange candidates
+        unres_orange = []
+        for h in holdings:
+            hit = h.screening_hit if isinstance(h.screening_hit, dict) else {}
+            is_orange = (hit.get("tier") in ["POSSIBLE_MATCH", "🟠"] or hit.get("tier_icon") == "🟠")
+            if is_orange and h.user_override != "False positive":
+                unres_orange.append({"party": h.shareholder_name, "tier": "POSSIBLE_MATCH"})
+
+        recent_chg = getattr(counterparty, "ownership_change_last_12m", False) or any(getattr(h, "ownership_change_last_12m", False) for h in holdings)
+
+        risk_indicators = self.check_structure_risk_indicators(
+            cycle_detected=cycle_detected,
+            undisclosed_pct=undisclosed_pct,
+            holdings=holdings,
+            max_depth=tree_depth,
+            screening_hits=unres_orange,
+            ownership_change_last_12m=recent_chg,
+        )
 
         self_declared_sum = sum(h.share_pct for h in direct_target_holdings if h.verification_level == "self_declared")
         self_declared_share = round(self_declared_sum, 2)

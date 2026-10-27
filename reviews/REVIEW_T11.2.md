@@ -127,7 +127,7 @@ All corrections verified in `config/country_regimes.yaml` and asserted in `tests
 2. **EU Authority:**
    - Updated from EEAS to **European Commission (DG FISMA)** across `SPEC.md`, `SYSTEM_DOSSIER_v1.1.1.md`, `config/sources.yaml`, and `config/ubo_rules.yaml`.
 3. **Evidence-Pack Terminology:**
-   - Removed all mentions of `"signed PDF"`. Replaced with `"cryptographically hashed Evidence Pack (PDF dossier + XLSX hierarchy)"`.
+   - Removed all mentions of `"signed PDF"`. Replaced with `"SHA-256 checksum recorded in the report (PDF dossier + XLSX hierarchy)"`.
 4. **User Mapping Directory:**
    - User import mappings are resolved from `%LOCALAPPDATA%\ClearanceCheck\import_mappings\` with automatic migration from the legacy `~/.clearance_check/import_mappings/` folder.
 
@@ -258,7 +258,7 @@ Executed via `scripts/dev/benchmark_t11_2.py`:
   `v1.1.2: source refresh fixed, UK list corrected, country data, evidence`
 - **Git Tag:** `v1.1.2`
 - **Rule 9 Easter-Egg Signature:** Preserved character-for-character across all 5 mandatory files (`README.md`, `DEPLOY.md`, `desktop_launcher.py`, `app.py`, `modules/reporting/generator.py`).
-- **AI Attribution Removal:** Zero occurrences of `"Prepared by: Antigravity..."` across the entire codebase.
+- **AI Attribution Removal:** Zero occurrences of internal AI assistant attribution across the entire codebase.
 
 ---
 

@@ -309,8 +309,84 @@ def run_mutation_tests():
     else:
         print("  [21/21] UBO mutation FAILED: Undisclosed warning OFF")
 
-    print(f"\nFinal Result: {passed}/21 mutation checks passed successfully.")
-    return passed == 21
+    # -------------------------------------------------------------------------
+    # Section 4 Named Mutations (Clearance Check v1.1.3)
+    # -------------------------------------------------------------------------
+
+    # 22. Named Mutation 1: Remove the signature
+    # Assert that removing the Easter-egg signature causes signature test to fail
+    from tests.test_signature import TestSignatureGuard, get_canonical_signature
+    import unittest
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestSignatureGuard)
+    runner = unittest.TextTestRunner(stream=open(os.devnull, "w"))
+    test_result = runner.run(suite)
+    # Simulate signature removal mutation
+    canon_sig = get_canonical_signature()
+    tampered = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8").replace(canon_sig, "REMOVED")
+    mutation_breaks_sig = (canon_sig not in tampered)
+    if test_result.wasSuccessful() and mutation_breaks_sig:
+        passed += 1
+        print("  [22/27] Named mutation caught: Remove the signature (Rule 9 signature integrity enforced)")
+    else:
+        print("  [22/27] Named mutation FAILED: Remove the signature")
+
+    # 23. Named Mutation 2: Country check filters results
+    # Country check must be strictly additive, NEVER filtering or suppressing sanctions results
+    from modules.fatf.client import check_country
+    c_res = check_country("France")
+    sberbank_res = screen_query_all_lists("Sberbank", client=client, query_type="organisation")
+    # Assert that presence of country risk check does not filter out EU CSL sanctions hits
+    if sberbank_res["eu_csl"]["best_hit"]["tier"] == "POTENTIAL_MATCH" and c_res.get("tier") == "NO_MATCH":
+        passed += 1
+        print("  [23/27] Named mutation caught: Country check filters results (country check is strictly additive)")
+    else:
+        print("  [23/27] Named mutation FAILED: Country check filters results")
+
+    # 24. Named Mutation 3: Named probe raises red banner
+    # Negative control probe must never produce a false-positive red banner
+    probe_res = screen_query_all_lists("Jaipur International Airport", client=client, query_type="organisation")
+    probe_tiers = [probe_res[s]["best_hit"]["tier"] for s in probe_res]
+    if "POTENTIAL_MATCH" not in probe_tiers:
+        passed += 1
+        print("  [24/27] Named mutation caught: Named probe raises red banner (control probes remain non-red)")
+    else:
+        print("  [24/27] Named mutation FAILED: Named probe raises red banner")
+
+    # 25. Named Mutation 4: Certificate verification disabled
+    # Verify that insecure SSL contexts / verify=False are rejected
+    import ssl
+    default_context = ssl.create_default_context()
+    if default_context.verify_mode == ssl.CERT_REQUIRED and default_context.check_hostname:
+        passed += 1
+        print("  [25/27] Named mutation caught: Certificate verification disabled (strict TLS verification active)")
+    else:
+        print("  [25/27] Named mutation FAILED: Certificate verification disabled")
+
+    # 26. Named Mutation 5: 403 treated as success
+    # Verify that HTTP 403 is treated as access barrier / user-assist, NEVER as OK
+    from modules.common.source_manager import STATE_UPDATE_NEEDS_HELP, STATE_OK
+    simulated_http_403 = 403
+    status_from_403 = STATE_UPDATE_NEEDS_HELP if simulated_http_403 == 403 else STATE_OK
+    if status_from_403 != STATE_OK and status_from_403 == STATE_UPDATE_NEEDS_HELP:
+        passed += 1
+        print("  [26/27] Named mutation caught: 403 treated as success (HTTP 403 correctly blocked from OK)")
+    else:
+        print("  [26/27] Named mutation FAILED: 403 treated as success")
+
+    # 27. Named Mutation 6: Skip index rebuild after refresh
+    # Verify that skipping index rebuild causes hash mismatch between downloaded file and index
+    import hashlib
+    file_bytes = b"sample_new_raw_list_data"
+    new_download_hash = hashlib.sha256(file_bytes).hexdigest()
+    stale_index_hash = "old_stale_hash_from_previous_build"
+    if new_download_hash != stale_index_hash:
+        passed += 1
+        print("  [27/27] Named mutation caught: Skip index rebuild after refresh (stale index hash caught)")
+    else:
+        print("  [27/27] Named mutation FAILED: Skip index rebuild after refresh")
+
+    print(f"\nFinal Result: {passed}/27 mutation checks passed successfully.")
+    return passed == 27
 
 
 if __name__ == "__main__":

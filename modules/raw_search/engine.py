@@ -154,15 +154,31 @@ class RawSearchEngine:
         try:
             con = sqlite3.connect(str(self.db_path))
             cur = con.cursor()
-            rows = cur.execute("SELECT source, status, record_count, list_date FROM source_meta;").fetchall()
-            for src, st, cnt, dt in rows:
-                statuses[src] = {
-                    "source": src,
-                    "authority": self.sources_cfg.get(src, {}).get("authority", src),
-                    "status": "OK" if st == "OK" else "⚪",
-                    "count": cnt,
-                    "list_date": dt or self.sources_cfg.get(src, {}).get("publication_date", ""),
-                }
+            cols = [col[1] for col in cur.execute("PRAGMA table_info(source_meta);").fetchall()]
+            if "file_hash" in cols:
+                rows = cur.execute("SELECT source, status, record_count, list_date, file_hash, last_indexed FROM source_meta;").fetchall()
+                for src, st, cnt, dt, fhash, lidx in rows:
+                    statuses[src] = {
+                        "source": src,
+                        "authority": self.sources_cfg.get(src, {}).get("authority", src),
+                        "status": "OK" if st == "OK" else "⚪",
+                        "count": cnt,
+                        "list_date": dt or self.sources_cfg.get(src, {}).get("publication_date", ""),
+                        "file_hash": fhash or "",
+                        "last_indexed": lidx or "",
+                    }
+            else:
+                rows = cur.execute("SELECT source, status, record_count, list_date FROM source_meta;").fetchall()
+                for src, st, cnt, dt in rows:
+                    statuses[src] = {
+                        "source": src,
+                        "authority": self.sources_cfg.get(src, {}).get("authority", src),
+                        "status": "OK" if st == "OK" else "⚪",
+                        "count": cnt,
+                        "list_date": dt or self.sources_cfg.get(src, {}).get("publication_date", ""),
+                        "file_hash": "",
+                        "last_indexed": "",
+                    }
             con.close()
         except Exception as e:
             logger.warning(f"Error reading source_meta: {e}")

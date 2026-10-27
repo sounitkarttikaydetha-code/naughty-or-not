@@ -626,8 +626,9 @@ def tier_single_entity(
                 reason = "phonetic_name_person" if is_person else "phonetic_match"
             else:
                 tier = TIER_BELOW_THRESHOLD
-                reason = "phonetic_weak"
+                reason = "phonetic_match"
             entity["phonetic_evidence"] = ph_evidence
+            entity["phonetic_matched"] = True
         elif ph_evidence:
             if tier == TIER_BELOW_THRESHOLD:
                 reason = "phonetic_weak"
@@ -643,6 +644,27 @@ def tier_single_entity(
         identifiers=identifiers,
     )
     tier, reason = apply_identifier_and_conflict_rules(tier, reason, corrob)
+
+    # Discard raw name-score candidates below DISPLAY_MIN_MATCH (0.50)
+    # Candidates below 0.50 survive ONLY via explicit bypass paths:
+    # 1. exact identifier (id_match / exact_id)
+    # 2. airline alias expansion (airline_alias_expansion)
+    # 3. phonetic layer (phonetic_* or phonetic_evidence)
+    # 4. transliteration
+    # 5. token pass (distinctive word match)
+    is_bypass = (
+        entity.get("score_source") in ["token_pass", "airline_alias_expansion", "transliteration", "exact_id", "id_match"]
+        or entity.get("id_match") is True
+        or entity.get("airline_alias_expansion") is True
+        or entity.get("expanded_from") is not None
+        or entity.get("is_transliteration") is True
+        or reason in ["phonetic_match", "phonetic_name_person"]
+        or entity.get("phonetic_matched") is True
+        or bool(corrob and corrob.get("exact_id_match"))
+    )
+
+    if score < DISPLAY_MIN_MATCH and not is_bypass:
+        return None
 
     tier_icon = (
         "🔴" if tier == TIER_POTENTIAL_MATCH
@@ -748,8 +770,8 @@ def _screen_direct_all_lists(
     is_person_search = (query_type and query_type.lower() == "person")
 
     for src in SOURCE_LISTS:
-        # Candidate retrieval: DISPLAY_MIN_MATCH (0.50) for persons, 0.45 for organisations/airlines
-        retrieval_min_match = DISPLAY_MIN_MATCH if is_person_search else min(DISPLAY_MIN_MATCH, 0.45)
+        # Candidate retrieval: DISPLAY_MIN_MATCH (0.50)
+        retrieval_min_match = DISPLAY_MIN_MATCH
         retrieval_limit = 50
         resp = client.search(
             name=query, min_match=retrieval_min_match, source=src, limit=retrieval_limit
@@ -771,7 +793,7 @@ def _screen_direct_all_lists(
 
             for token in distinctive_tokens:
                 extra_resp = client.search(
-                    name=token, min_match=0.45, source=src, limit=100
+                    name=token, min_match=DISPLAY_MIN_MATCH, source=src, limit=100
                 )
                 extra_entities = extra_resp.get("results", {}).get("entities") or []
                 for ee in extra_entities:

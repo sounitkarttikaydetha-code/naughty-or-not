@@ -86,8 +86,8 @@ def fetch_publisher_live(source_id: str, spec: Dict[str, Any]) -> Dict[str, Any]
         if source_id == "us_ofac":
             url = "https://www.treasury.gov/ofac/downloads/sdn.csv"
             res["url_tried"] = url
-            req = urllib.request.Request(url, headers=req_headers)
-            with urllib.request.urlopen(req, timeout=10) as resp:
+            req = urllib.request.Request(url, headers=req_headers, method="HEAD")
+            with urllib.request.urlopen(req, timeout=25) as resp:
                 res["http_status"] = resp.status
                 last_mod = resp.headers.get("Last-Modified")
                 if last_mod:
@@ -99,9 +99,11 @@ def fetch_publisher_live(source_id: str, spec: Dict[str, Any]) -> Dict[str, Any]
         elif source_id == "us_csl":
             url = "https://data.trade.gov/downloadable_consolidated_screening_list/v1/consolidated.csv"
             res["url_tried"] = url
-            req = urllib.request.Request(url, headers=req_headers)
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                res["http_status"] = resp.status
+            csl_headers = dict(req_headers)
+            csl_headers["Range"] = "bytes=0-1024"
+            req = urllib.request.Request(url, headers=csl_headers)
+            with urllib.request.urlopen(req, timeout=25) as resp:
+                res["http_status"] = 200 if resp.status in (200, 206) else resp.status
                 last_mod = resp.headers.get("Last-Modified")
                 if last_mod:
                     parsed = datetime.strptime(last_mod, "%a, %d %b %Y %H:%M:%S %Z")
@@ -205,8 +207,8 @@ def fetch_publisher_live(source_id: str, spec: Dict[str, Any]) -> Dict[str, Any]
         elif source_id == "faa_iasa":
             url = "https://www.faa.gov/sites/faa.gov/files/IASAWSR119r.pdf"
             res["url_tried"] = url
-            req = urllib.request.Request(url, headers=req_headers)
-            with urllib.request.urlopen(req, timeout=10) as resp:
+            req = urllib.request.Request(url, headers=req_headers, method="HEAD")
+            with urllib.request.urlopen(req, timeout=25) as resp:
                 res["http_status"] = resp.status
                 last_mod = resp.headers.get("Last-Modified")
                 if last_mod:
@@ -296,7 +298,7 @@ def run_live_audit() -> Tuple[List[Dict[str, Any]], List[str]]:
         "us_csl": "2026-10-27",
         "uk_csl": "2026-10-27",
         "eu_csl": "2026-10-23",
-        "un_csl": "2026-10-26",
+        "un_csl": "2026-10-27",
         "in_mha_first_schedule": "2026-10-21",
         "in_mha_fourth_schedule": "2026-10-27",
         "in_mha_unlawful_assoc": "2026-10-27",
@@ -361,6 +363,29 @@ def run_live_audit() -> Tuple[List[Dict[str, Any]], List[str]]:
         })
         sm.state[s_id] = current_state
 
+        # Compute index built from hash and hash match
+        from modules.raw_search.engine import RawSearchEngine
+        raw_engine = RawSearchEngine()
+        idx_statuses = raw_engine.get_source_statuses()
+        idx_info = idx_statuses.get(s_id, {})
+        idx_hash = idx_info.get("file_hash", "")
+
+        fpath = get_source_file_path(s_id)
+        local_file_hash = compute_sha256(fpath) if (fpath and fpath.is_file()) else ""
+
+        if s_id in ["bis_tdo", "eu_high_risk_third_countries"]:
+            idx_hash_disp = "— (Advisory)"
+            hash_match_disp = "N/A"
+        elif s_id == "os_bulk":
+            idx_hash_disp = "— (API)"
+            hash_match_disp = "N/A"
+        else:
+            idx_hash_disp = f"`{idx_hash[:12]}...`" if idx_hash else "None"
+            hash_match_disp = "Y" if (local_file_hash and local_file_hash == idx_hash) else "N"
+            if hash_match_disp == "N" and "OK" in status_disp:
+                status_disp = "FAIL: Index hash mismatch with downloaded file"
+                anomalies.append(f"{s_id}: Index hash {idx_hash[:12]} != downloaded file hash {local_file_hash[:12]}")
+
         row = {
             "source_id": s_id,
             "source_name": fname,
@@ -373,6 +398,8 @@ def run_live_audit() -> Tuple[List[Dict[str, Any]], List[str]]:
             "http_status": status_code,
             "file_read": meta["file_read"],
             "updated_in_run": updated_in_run,
+            "index_built_hash": idx_hash_disp,
+            "hash_match": hash_match_disp,
             "status": status_disp,
         }
         table_rows.append(row)
@@ -382,24 +409,35 @@ def run_live_audit() -> Tuple[List[Dict[str, Any]], List[str]]:
 
 
 def format_markdown_table(rows: List[Dict[str, Any]]) -> str:
+    downloaded_rows = [r for r in rows if r["source_id"] != "os_bulk"]
+    api_rows = [r for r in rows if r["source_id"] == "os_bulk"]
+
     lines = [
-        "| Source | Publisher Date | App Copy Date | Data Age | Last Checked | Discovered URL / Candidate Link | HTTP | File Read | Updated? | Status |",
-        "|---|---|---|---|---|---|---|---|---|---|",
+        "| Source | Publisher Date | App Copy Date | Data Age | Last Checked | Discovered URL / Candidate Link | HTTP | File Read | Index built from hash | Hash match (Y/N) | Status |",
+        "|---|---|---|---|---|---|---|---|---|---|---|",
     ]
     current_count = 0
-    total_count = len(rows)
+    total_count = len(downloaded_rows)
 
-    for r in rows:
+    for r in downloaded_rows:
         st = r["status"]
         if "OK" in st:
             current_count += 1
         lines.append(
             f"| **{r['source_name']}** | {r['publisher_date']} | {r['app_copy_date']} | "
             f"{r['data_age']} | {r['last_checked']} | `{r['discovered_link']}` | "
-            f"{r['http_status']} | `{r['file_read']}` | {r['updated_in_run']} | **{r['status']}** |"
+            f"{r['http_status']} | `{r['file_read']}` | {r['index_built_hash']} | **{r['hash_match']}** | **{r['status']}** |"
         )
 
-    summary = f"\n**Total:** {current_count} of {total_count} sources verified current (Rule 8 Compliant).\n"
+    summary = f"\n**Total Downloaded Lists:** {current_count} of {total_count} sources verified current with index hash match (Rule 8 Compliant).\n"
+    
+    if api_rows:
+        summary += "\n### API (Opt-In)\n\n"
+        summary += "| API Name | Type | License Guard | Live Probe Status | Notes |\n"
+        summary += "|---|---|---|---|---|\n"
+        for r in api_rows:
+            summary += f"| **{r['source_name']}** | External REST API | Active (Key required) | `HTTP {r['http_status']}` | Opt-in enrichment API; not a locally downloaded list |\n"
+
     return "\n".join(lines) + summary
 
 

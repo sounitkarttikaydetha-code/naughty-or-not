@@ -265,7 +265,7 @@ def parse_first_schedule(pdf_path: Optional[Path] = None) -> Dict[str, Any]:
     }
 
 
-def parse_fourth_schedule(html_path: Optional[Path] = None) -> Dict[str, Any]:
+def parse_fourth_schedule(html_path: Optional[Path] = None, allow_fallback: bool = True) -> Dict[str, Any]:
     """Parse Fourth Schedule (Terrorist Individuals under UAPA Section 35).
     Extracts individual names and aliases separated by '@'.
     Returns:
@@ -299,7 +299,7 @@ def parse_fourth_schedule(html_path: Optional[Path] = None) -> Dict[str, Any]:
             logger.warning(f"Error reading {path}: {e}")
 
     # Fallback if raw_records empty
-    if not raw_records and fallback.is_file():
+    if not raw_records and allow_fallback and fallback.is_file():
         try:
             raw_records = json.load(fallback.open(encoding="utf-8"))
         except Exception as e:
@@ -363,7 +363,7 @@ def parse_fourth_schedule(html_path: Optional[Path] = None) -> Dict[str, Any]:
     }
 
 
-def parse_unlawful_associations(html_path: Optional[Path] = None) -> Dict[str, Any]:
+def parse_unlawful_associations(html_path: Optional[Path] = None, allow_fallback: bool = True) -> Dict[str, Any]:
     """Parse Unlawful Associations under Section 3 of UAPA.
     Applies OpenSanctions MIT splitting for sub-groups, fronts, and wings:
       - Meitei Extremist Organizations of Manipur (PLA, RPF, UNLF, MPA, PREPAK, Red Army, KCP, KYKL, CorCom, ASUK)
@@ -398,7 +398,7 @@ def parse_unlawful_associations(html_path: Optional[Path] = None) -> Dict[str, A
         except Exception as e:
             logger.warning(f"Error reading {path}: {e}")
 
-    if not raw_records and fallback.is_file():
+    if not raw_records and allow_fallback and fallback.is_file():
         try:
             raw_records = json.load(fallback.open(encoding="utf-8"))
         except Exception as e:

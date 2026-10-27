@@ -3,9 +3,11 @@ Indexes official raw lists into SQLite FTS5 for full-text raw searches.
 """
 
 import csv
+import hashlib
 import json
 import logging
 from pathlib import Path
+import re
 import sqlite3
 import sys
 import unicodedata
@@ -58,6 +60,7 @@ def init_db(con: sqlite3.Connection) -> None:
         record_count INTEGER,
         list_date TEXT,
         file_path TEXT,
+        file_hash TEXT,
         last_indexed TEXT
     );
     """)
@@ -98,6 +101,7 @@ def parse_ofac_sdn(path: Path) -> List[Tuple[str, str, str, str, str, str, str]]
     records = []
     if not path.is_file():
         return records
+    list_date = "2026-10-21"
     with open(path, "r", encoding="utf-8", errors="ignore") as f:
         reader = csv.reader(f)
         for row in reader:
@@ -117,7 +121,7 @@ def parse_ofac_sdn(path: Path) -> List[Tuple[str, str, str, str, str, str, str]]
                 name,
                 normalize_text_for_index(all_text),
                 source_url,
-                "2026-10-18"
+                list_date
             ))
     return records
 
@@ -127,8 +131,16 @@ def parse_ofac_cons(path: Path) -> List[Tuple[str, str, str, str, str, str, str]
     records = []
     if not path.is_file():
         return records
+    list_date = "2026-10-19"
     try:
+        from datetime import datetime
         tree = ET.parse(path)
+        pub_date_el = tree.getroot().findtext(".//{*}Publish_Date", "") or tree.getroot().findtext(".//Publish_Date", "")
+        if pub_date_el:
+            try:
+                list_date = datetime.strptime(pub_date_el.strip(), "%m/%d/%Y").strftime("%Y-%m-%d")
+            except Exception:
+                pass
         for entry in tree.getroot().iter():
             tag = entry.tag.split("}")[-1]
             if tag in ["sdnEntry", "consolidatedEntry"]:
@@ -145,7 +157,7 @@ def parse_ofac_cons(path: Path) -> List[Tuple[str, str, str, str, str, str, str]
                     primary_name,
                     normalize_text_for_index(all_text),
                     source_url,
-                    "2026-10-18"
+                    list_date
                 ))
     except Exception as e:
         logger.warning(f"Error parsing OFAC Consolidated XML: {e}")
@@ -157,6 +169,7 @@ def parse_us_csl(path: Path) -> List[Tuple[str, str, str, str, str, str, str]]:
     records = []
     if not path.is_file():
         return records
+    list_date = "2026-10-27"
     with open(path, "r", encoding="utf-8", errors="ignore") as f:
         reader = csv.reader(f)
         try:
@@ -181,7 +194,7 @@ def parse_us_csl(path: Path) -> List[Tuple[str, str, str, str, str, str, str]]:
                 combined_names,
                 normalize_text_for_index(all_text),
                 source_url,
-                "2026-10-18"
+                list_date
             ))
     return records
 
@@ -191,7 +204,18 @@ def parse_uk_csl(path: Path) -> List[Tuple[str, str, str, str, str, str, str]]:
     records = []
     if not path.is_file():
         return records
+    list_date = "2026-10-27"
     with open(path, "r", encoding="utf-8", errors="ignore") as f:
+        line1 = f.readline()
+        m = re.search(r"Report Date:\s*([0-3]?\d)-([A-Za-z]{3})-(202\d)", line1)
+        if m:
+            try:
+                from datetime import datetime
+                dt = datetime.strptime(f"{m.group(1)}-{m.group(2)}-{m.group(3)}", "%d-%b-%Y")
+                list_date = dt.strftime("%Y-%m-%d")
+            except Exception:
+                pass
+        f.seek(0)
         reader = csv.reader(f)
         try:
             next(reader) # metadata row
@@ -216,7 +240,7 @@ def parse_uk_csl(path: Path) -> List[Tuple[str, str, str, str, str, str, str]]:
                 all_names_str,
                 normalize_text_for_index(all_text),
                 source_url,
-                "2026-10-18"
+                list_date
             ))
     return records
 
@@ -226,6 +250,15 @@ def parse_eu_csl(path: Path) -> List[Tuple[str, str, str, str, str, str, str]]:
     records = []
     if not path.is_file():
         return records
+    list_date = "2026-10-23"
+    try:
+        with open(path, "r", encoding="utf-8", errors="ignore") as f:
+            chunk = f.read(4096)
+            m = re.search(r'generationDate="([^"]+)"', chunk)
+            if m:
+                list_date = m.group(1)[:10]
+    except Exception:
+        pass
     try:
         for event, elem in ET.iterparse(str(path), events=("end",)):
             tag = elem.tag.split("}")[-1]
@@ -249,7 +282,7 @@ def parse_eu_csl(path: Path) -> List[Tuple[str, str, str, str, str, str, str]]:
                     all_names_str,
                     normalize_text_for_index(all_text),
                     source_url,
-                    "2026-10-18"
+                    list_date
                 ))
                 elem.clear()
     except Exception as e:
@@ -262,6 +295,15 @@ def parse_un_csl(path: Path) -> List[Tuple[str, str, str, str, str, str, str]]:
     records = []
     if not path.is_file():
         return records
+    list_date = "2026-10-26"
+    try:
+        with open(path, "r", encoding="utf-8", errors="ignore") as f:
+            chunk = f.read(4096)
+            m = re.search(r'dateGenerated="([^"]+)"', chunk)
+            if m:
+                list_date = m.group(1)[:10]
+    except Exception:
+        pass
     try:
         tree = ET.parse(path)
         root = tree.getroot()
@@ -291,7 +333,7 @@ def parse_un_csl(path: Path) -> List[Tuple[str, str, str, str, str, str, str]]:
                     all_names_str,
                     normalize_text_for_index(all_text),
                     source_url,
-                    "2026-10-18"
+                    list_date
                 ))
     except Exception as e:
         logger.warning(f"Error parsing UN CSL XML: {e}")
@@ -364,6 +406,18 @@ def parse_eu_air_safety_records() -> List[Tuple[str, str, str, str, str, str, st
     return records
 
 
+def compute_file_sha256(path: Path) -> str:
+    """Compute SHA-256 hash of a file."""
+    if not path.is_file():
+        return ""
+    import hashlib
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        while chunk := f.read(65536):
+            h.update(chunk)
+    return h.hexdigest()
+
+
 def parse_faa_iasa_records() -> List[Tuple[str, str, str, str, str, str, str]]:
     """Parse FAA IASA Category 2 countries."""
     records = []
@@ -380,7 +434,7 @@ def parse_faa_iasa_records() -> List[Tuple[str, str, str, str, str, str, str]]:
             country,
             normalize_text_for_index(all_text),
             "https://www.faa.gov/about/initiatives/iasa/iasa-program-results",
-            "2025-04-18"
+            "2025-04-23"
         ))
     return records
 
@@ -406,7 +460,7 @@ def parse_india_records() -> List[Tuple[str, str, str, str, str, str, str]]:
             all_names,
             normalize_text_for_index(all_text),
             ent.get("source_url") or "https://www.mha.gov.in/files/documents/List46TerroristOrganisationsWebsite.pdf",
-            "2026-10-01"
+            "2026-10-21"
         ))
         
     # 2. Fourth Schedule
@@ -424,7 +478,7 @@ def parse_india_records() -> List[Tuple[str, str, str, str, str, str, str]]:
             all_names,
             normalize_text_for_index(all_text),
             ent.get("source_url") or "https://www.mha.gov.in/individuals-terrorists-fourth-schedule-unlawful-activities-prevention-act",
-            "2026-07-04"
+            "2026-10-27"
         ))
 
     # 3. Unlawful Associations (all pages: 44 entities)
@@ -443,7 +497,7 @@ def parse_india_records() -> List[Tuple[str, str, str, str, str, str, str]]:
             all_names,
             normalize_text_for_index(all_text),
             ent.get("source_url") or "https://www.mha.gov.in/unlawful-associations-section3-unlawful-activities-prevention-act-1967",
-            "2025-03-17"
+            "2026-10-27"
         ))
     return records
 
@@ -507,8 +561,8 @@ def build_full_raw_index(
         ("faa_iasa", "data/aviation/faa_iasa.pdf", parse_faa_iasa_records),
         ("in_mha_first_schedule", "data/india/first_schedule.pdf", lambda: [r for r in parse_india_records() if r[0] == "in_mha_first_schedule"]),
         ("in_mha_fourth_schedule", "data/india/fourth_schedule_registry.json", lambda: [r for r in parse_india_records() if r[0] == "in_mha_fourth_schedule"]),
-        ("in_mha_unlawful_assoc", "data/india/unlawful_associations.html", lambda: [r for r in parse_india_records() if r[0] == "in_mha_unlawful_assoc"]),
-        ("fatf_jurisdictions", "modules/fatf/client.py", parse_fatf_records),
+        ("in_mha_unlawful_assoc", "data/india/unlawful_associations_all_pages.html", lambda: [r for r in parse_india_records() if r[0] == "in_mha_unlawful_assoc"]),
+        ("fatf_jurisdictions", "config/fatf.json", parse_fatf_records),
     ]
 
     total_records = 0
@@ -519,12 +573,13 @@ def build_full_raw_index(
         if progress_callback:
             progress_callback(idx, len(parsers), src_id)
         p = Path(file_path_str)
+        file_hash = compute_file_sha256(p)
         if not p.is_file() and "data/raw" in file_path_str:
             cur.execute(
-                "INSERT INTO source_meta VALUES (?, ?, ?, ?, ?, ?)",
-                (src_id, "MISSING", 0, "UNKNOWN", file_path_str, now_iso)
+                "INSERT INTO source_meta VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (src_id, "MISSING", 0, "UNKNOWN", file_path_str, "", now_iso)
             )
-            source_stats[src_id] = {"status": "MISSING", "count": 0}
+            source_stats[src_id] = {"status": "MISSING", "count": 0, "hash": ""}
             continue
 
         try:
@@ -537,24 +592,24 @@ def build_full_raw_index(
                     records
                 )
                 cur.execute(
-                    "INSERT INTO source_meta VALUES (?, ?, ?, ?, ?, ?)",
-                    (src_id, "OK", count, list_date, file_path_str, now_iso)
+                    "INSERT INTO source_meta VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    (src_id, "OK", count, list_date, file_path_str, file_hash, now_iso)
                 )
-                source_stats[src_id] = {"status": "OK", "count": count}
+                source_stats[src_id] = {"status": "OK", "count": count, "hash": file_hash, "list_date": list_date}
                 total_records += count
             else:
                 cur.execute(
-                    "INSERT INTO source_meta VALUES (?, ?, ?, ?, ?, ?)",
-                    (src_id, "EMPTY", 0, "", file_path_str, now_iso)
+                    "INSERT INTO source_meta VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    (src_id, "EMPTY", 0, "", file_path_str, file_hash, now_iso)
                 )
-                source_stats[src_id] = {"status": "EMPTY", "count": 0}
+                source_stats[src_id] = {"status": "EMPTY", "count": 0, "hash": file_hash}
         except Exception as e:
             logger.error(f"Error indexing source {src_id}: {e}")
             cur.execute(
-                "INSERT INTO source_meta VALUES (?, ?, ?, ?, ?, ?)",
-                (src_id, "FAILED", 0, "", file_path_str, now_iso)
+                "INSERT INTO source_meta VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (src_id, "FAILED", 0, "", file_path_str, file_hash, now_iso)
             )
-            source_stats[src_id] = {"status": "FAILED", "count": 0}
+            source_stats[src_id] = {"status": "FAILED", "count": 0, "hash": file_hash}
 
     con.commit()
     con.close()
