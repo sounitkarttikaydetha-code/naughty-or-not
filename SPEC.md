@@ -26,7 +26,7 @@ The application operates as a computational compliance screening aid. It flags p
   - US Treasury OFAC (SDN and SSI lists)
   - US Consolidated Screening List (ITA: BIS, DTC, State)
   - UK Sanctions List (FCDO)
-  - European Union Consolidated Sanctions List (EEAS)
+  - European Union Consolidated Sanctions List (European Commission — DG FISMA)
   - United Nations Security Council Consolidated List
   - India Ministry of Home Affairs (UAPA Schedules 1, 4, and Unlawful Associations)
   - Aviation restrictions (US BIS Export Restrict Aircraft, EU Air Safety Banned Carriers, FAA IASA Category 2)
@@ -35,7 +35,7 @@ The application operates as a computational compliance screening aid. It flags p
   - 🔴 **POTENTIAL_MATCH (0.80 — 1.00):** High match requiring core-name equivalence, exact alias match, exact identifier match, or corroboration upgrade.
   - 🟠 **POSSIBLE_MATCH_REVIEW (0.70 — 0.79):** Moderate match recommended for review (including phonetic matches and person subset matches).
   - ℹ️ **BELOW_THRESHOLD (0.50 — 0.69):** Retained above display floor for analyst information (`Shown for information — below match threshold`).
-  - ⚪ **NOT_CHECKED / DISCARDED (< 0.50 / source unavailable):** ⚪ designates an unavailable source or unverified state; it is never used for "no match".
+  - ⚪ **NOT_CHECKED (Source unavailable):** ⚪ means only that the source could not be checked; candidates below 0.50 are not returned and have no symbol. Never used for "no match".
 - **Identifier Elevation & Corroboration:**
   - Exact match on passport, national ID, tax ID, or registration number triggers 🔴 `id_match`.
   - SOLAS 7-digit IMO validation via modulus 10 check digit.
@@ -75,10 +75,10 @@ The application operates as a computational compliance screening aid. It flags p
 - **Workflow, Import/Export & Audit:**
   - Standardized 7-sheet Excel workbook (`ownership_template.xlsx`) with openpyxl data validation dropdowns (`Instructions`, `Counterparty`, `Parties`, `Holdings`, `Control`, `Key_Persons`, `Documents`).
   - Word (`.docx`) table parser.
-  - User mapping discovery (`~/.clearance_check/import_mappings/`) with SHA-256 fingerprinting.
+  - User mapping discovery (`%LOCALAPPDATA%\...\import_mappings\\`) with SHA-256 fingerprinting.
   - Four-eyes lifecycle: Status progression (Draft → Submitted → Reviewed → Closed / Escalated) enforcing user separation (reviewer must differ from preparer).
   - Review due date tracking (12 months standard, 6 months if risk flags present).
-  - Evidence Pack generation: Bundles complete JSON audit trace, XLSX ownership hierarchy with Results/Regime_Verdicts sheets, and signed PDF compliance dossier.
+  - Evidence Pack generation: Bundles complete JSON audit trace, XLSX ownership hierarchy with Results/Regime_Verdicts sheets, and PDF compliance dossier.
 
 ### 2.3 Country Check
 - **Territorial Sanctions Analysis:**
@@ -95,7 +95,7 @@ The application operates as a computational compliance screening aid. It flags p
   1. `us_ofac` (SDN & SSI)
   2. `us_csl` (Consolidated Screening List)
   3. `uk_csl` (UK Sanctions List - FCDO)
-  4. `eu_csl` (EU Consolidated List - EEAS)
+  4. `eu_csl` (EU Consolidated List - European Commission — DG FISMA)
   5. `un_csl` (UNSC Consolidated List)
   6. `bis_aircraft` (US BIS Export Restrict Aircraft)
   7. `eu_air_safety` (EU Air Safety List)

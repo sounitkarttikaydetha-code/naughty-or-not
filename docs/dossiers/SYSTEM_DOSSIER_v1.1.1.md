@@ -54,7 +54,7 @@ Screening operations perform strictly zero outbound network requests. External n
 | `us_ofac` | US Treasury Office of Foreign Assets Control (SDN & SSI) | XML / CSV | Global individuals, banks, corporates, vessels, aircraft |
 | `us_csl` | US International Trade Administration (CSL: BIS, DTC, State) | CSV | Global export violations, Entity List, UVL, MEU |
 | `uk_csl` | UK Foreign, Commonwealth & Development Office (FCDO) | XML / CSV | UK Sanctions List post-28 Jan 2026 designations |
-| `eu_csl` | European External Action Service (EEAS) | XML / CSV | EU Financial Sanctions & Common Foreign Policy |
+| `eu_csl` | European Commission (DG FISMA) | XML / CSV | EU Financial Sanctions & Common Foreign Policy |
 | `un_csl` | United Nations Security Council Consolidated List | XML | UN Sanctions Committees (ISIL/Al-Qaida, 1718, etc.) |
 | `in_mha_first_schedule` | India Ministry of Home Affairs (UAPA 1st Schedule) | PDF | Banned terrorist organizations |
 | `in_mha_fourth_schedule` | India Ministry of Home Affairs (UAPA 4th Schedule) | JSON / HTML | Terrorist individuals |
@@ -73,7 +73,7 @@ Core matching operates deterministically with standardized threshold boundaries:
 - **0.80 — 1.00:** High match / Potential Match (🔴). Requires core-name equivalence, exact alias match, exact identifier match, or corroboration upgrade.
 - **0.70 — 0.79:** Moderate match / Possible Match (🟠). Review recommended. Includes sound-alike phonetic matches and partial person name subsets.
 - **0.50 — 0.69:** Low match / Below Threshold (ℹ️). Retained for analyst information (`Shown for information — below match threshold`).
-- **< 0.50 / Unavailable:** Discarded / Not Checked (⚪). ⚪ designates an unavailable source or unverified state; it is never used for "no match".
+- **< 0.50:** Discarded (candidates below 0.50 are not returned and have no symbol). **⚪ NOT_CHECKED:** ⚪ means only that the source could not be checked (unavailable or unverified). Never used for "no match".
 
 ### Special Matching Capabilities & Conflict Rules (v1.1.1)
 1. **Identifier Elevation:** Matching a tax ID, national ID, passport, or registration number immediately forces Tier 1 (🔴) with reason `id_match`.
@@ -119,10 +119,10 @@ Implements multilateral statutory aggregation rules and SOP guidelines (45/45 Re
   - Standardized 7-sheet Excel template (`ownership_template.xlsx`) with openpyxl data validation dropdowns.
   - Round-trip workbook export (`Results` and `Regime_Verdicts` sheets).
   - Word (`.docx`) table parser.
-  - User mapping discovery (`~/.clearance_check/import_mappings/`) with SHA-256 fingerprinting.
+  - User mapping discovery (`%LOCALAPPDATA%\...\import_mappings\\`) with SHA-256 fingerprinting.
   - Four-eyes review: Status progression (Draft → Submitted → Reviewed → Closed / Escalated) enforcing user separation.
   - Review due date tracking (12 months standard, 6 months if risk flags present).
-  - Combined Evidence Pack: Bundles complete JSON audit trace, XLSX ownership hierarchy with Results/Regime_Verdicts sheets, and signed PDF compliance dossier.
+  - Combined Evidence Pack: Bundles complete JSON audit trace, XLSX ownership hierarchy with Results/Regime_Verdicts sheets, and PDF compliance dossier.
 
 ---
 
@@ -130,7 +130,7 @@ Implements multilateral statutory aggregation rules and SOP guidelines (45/45 Re
 
 Multi-regime country screening verified against official government registries as of 2026-10-27:
 - **Cuba (CU), Iran (IR), North Korea (KP):** Comprehensive multilateral embargoes.
-- **Syria (SY):** US comprehensive trade embargo revoked effective 1 July 2025 (E.O. 14312); targeted authority continues under Providing Assistance and Aid to Regional Security in Syria (PAARSS) and 31 CFR Part 542. UK, EU, and UN sanctions remain active.
+- **Syria (SY):** US comprehensive trade embargo revoked effective 1 July 2025 (E.O. 14312; 31 CFR Part 542 removed from the CFR on 26 Aug 2025); targeted authority continues under Promoting Accountability for Assad and Regional Stabilization Sanctions (PAARSS). Hayat Tahrir al-Sham was removed from SDGT designation on 24 Aug 2026, and Syria's State Sponsor of Terrorism designation was rescinded on 24 Aug 2026 (OFAC FAQ 1220). UK, EU, and UN sanctions remain active.
 - **Russia (RU):** US sanctions are selective (extensive), not a countrywide blanket embargo; comprehensive territorial embargoes apply to Crimea, Donetsk, Luhansk, Kherson, Zaporizhzhia regions of Ukraine. Extensive sectoral, financial, and price-cap sanctions.
 - **Selective Regimes:** Belarus (BY), Myanmar (MM), Venezuela (VE), Zimbabwe (ZW), Sudan (SD).
 - Every regime entry contains official publisher `source_url` and `verification_date: "2026-10-27"` across US, UK, EU, and UN authorities.

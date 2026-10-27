@@ -1,10 +1,10 @@
-# Country Sanctions, Export Control & Regulatory Regimes (T11 Part J / v1.1.1)
-# Comprehensive and selective regimes across US OFAC, UK FCDO, EU CFSP, UN Security Council,
+# Country Sanctions, Export Control & Regulatory Regimes (T11 Part J / v1.1.2)
+# Comprehensive and selective regimes across US OFAC, UK FCDO, European Commission (DG FISMA), UN Security Council,
 # ITAR 22 CFR 126.1, and EAR Country Groups.
-# Verified as of 2026-10-27 with official government sources.
+# Verified with official government sources.
 
 metadata:
-  version: "1.1.1"
+  version: "1.1.2"
   last_updated: "2026-10-27"
   authority: "Multilateral Sanctions & Export-Control Regimes"
 
@@ -109,9 +109,9 @@ regimes:
     source_url: "https://ofac.treasury.gov/sanctions-programs-and-country-information/syria-sanctions"
     us_sanctions:
       type: "Targeted Sanctions (PAARSS) & Selective Authority"
-      authority: "OFAC 31 CFR Part 542 (SySR) & E.O. 14312 (effective 1 July 2025)"
+      authority: "E.O. 14312 (effective 1 July 2025) & Promoting Accountability for Assad and Regional Stabilization Sanctions (PAARSS)"
       source_url: "https://ofac.treasury.gov/sanctions-programs-and-country-information/syria-sanctions"
-      summary: "US Syria comprehensive trade and investment embargo was revoked effective 1 July 2025 pursuant to E.O. 14312; targeted authority continues under Providing Assistance and Aid to Regional Security in Syria (PAARSS) and 31 CFR Part 542."
+      summary: "US Syria comprehensive trade and investment embargo revoked effective 1 July 2025 pursuant to E.O. 14312. Note: 31 CFR Part 542 was removed from the CFR on 26 Aug 2025. Targeted authority continues under Promoting Accountability for Assad and Regional Stabilization Sanctions (PAARSS). Hayat Tahrir al-Sham was removed from the SDGT designation on 24 Aug 2026, and Syria's State Sponsor of Terrorism designation was rescinded on 24 Aug 2026 (OFAC FAQ 1220)."
     uk_sanctions:
       type: "Autonomous Sanctions"
       authority: "FCDO Syria (Sanctions) (EU Exit) Regulations 2019"
@@ -142,7 +142,7 @@ regimes:
       type: "Selective (Extensive) & Territorial Embargoes"
       authority: "OFAC EO 14024, EO 14066, EO 14068, EO 14071 (RuHSR)"
       source_url: "https://ofac.treasury.gov/sanctions-programs-and-country-information/russian-sanctions"
-      summary: "Selective (extensive), not countrywide blanket embargo; comprehensive territorial embargoes on Crimea, Donetsk, Luhansk, Kherson, Zaporizhzhia regions of Ukraine. Broad sectoral prohibitions on finance, sovereign debt, energy, accounting, IT/software services. Maritime crude price cap."
+      summary: "Selective (extensive), not countrywide blanket embargo; comprehensive territorial embargoes on Crimea (E.O. 13685) and so-called DNR (Donetsk) and LNR (Luhansk) regions of Ukraine (E.O. 14065). Note on Ukraine regions: Kherson and Zaporizhzhia are Unverified — not shown as US comprehensive without official Treasury determination. Broad sectoral prohibitions on finance, sovereign debt, energy, accounting, IT/software services. Maritime crude price cap."
     uk_sanctions:
       type: "Autonomous Sanctions"
       authority: "FCDO Russia (Sanctions) (EU Exit) Regulations 2019"
@@ -150,9 +150,9 @@ regimes:
       summary: "Far-reaching asset freezes, financial prohibitions, trade bans on critical goods/technology, energy, transport bans."
     eu_sanctions:
       type: "Restrictive Measures (Packages 1-14+)"
-      authority: "Council Regulation (EU) No 833/2014 & (EU) No 269/2014"
+      authority: "Council Regulation (EU) No 833/2014, (EU) No 269/2014 & Council Regulation (EU) 2022/263"
       source_url: "https://www.sanctionsmap.eu/#/main?regime=RUS"
-      summary: "SWIFT exclusions, import bans on crude/coal/steel/gold, export bans on dual-use tech, flight bans, maritime port bans."
+      summary: "SWIFT exclusions, import bans on crude/coal/steel/gold, export bans on dual-use tech. Council Regulation (EU) 2022/263 covers non-government-controlled areas of Donetsk, Kherson, Luhansk, and Zaporizhzhia oblasts of Ukraine. Crimea and Sevastopol are covered by separate regime (Council Regulation (EU) No 692/2014)."
     un_sanctions:
       type: "None"
       source_url: "https://www.un.org/securitycouncil/sanctions/information"
@@ -161,6 +161,40 @@ regimes:
       source_url: "https://www.bis.doc.gov/index.php/regulations/commerce-control-list-ccl"
       us_ear: "Country Group D:1, D:5; Extensive EAR Part 746 Section 746.5 / 746.8 restrictions (FDPR)"
       us_itar: "22 CFR 126.1 Prohibited Destination (Subject to exceptions)"
+
+  UA_REGIONS:
+    country: "Occupied Regions of Ukraine"
+    aliases: [
+      "crimea", "sevastopol", "donetsk", "dnr", "luhansk", "lnr",
+      "kherson", "zaporizhzhia", "occupied ukraine", "donbas"
+    ]
+    flag: "🇺🇦"
+    risk_level: "HIGH"
+    verification_date: "2026-10-27"
+    source_url: "https://ofac.treasury.gov/sanctions-programs-and-country-information/ukraine-russia-related-sanctions"
+    us_sanctions:
+      type: "Territorial Embargoes"
+      authority: "E.O. 13685 (Crimea), E.O. 14065 (DNR/LNR)"
+      source_url: "https://ofac.treasury.gov/sanctions-programs-and-country-information/ukraine-russia-related-sanctions"
+      summary: "Comprehensive territorial embargo on Crimea region (E.O. 13685) and so-called Donetsk People's Republic (DNR) and Luhansk People's Republic (LNR) regions (E.O. 14065: 'and such other regions as may be determined'). Kherson and Zaporizhzhia: Unverified — not shown as US comprehensive without official Treasury determination."
+    uk_sanctions:
+      type: "Territorial Sanctions"
+      authority: "Russia (Sanctions) (EU Exit) Regulations 2019 (as amended)"
+      source_url: "https://www.gov.uk/government/publications/financial-sanctions-russia"
+      summary: "Comprehensive trade, investment, and financial restrictions targeting Crimea, Donetsk, Luhansk, Kherson, and Zaporizhzhia non-government controlled territories."
+    eu_sanctions:
+      type: "Restrictive Measures"
+      authority: "Council Regulation (EU) 2022/263 & Council Regulation (EU) No 692/2014"
+      source_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32022R0263"
+      summary: "Council Regulation (EU) 2022/263 covers the non-government-controlled areas of the Donetsk, Kherson, Luhansk and Zaporizhzhia oblasts of Ukraine. Crimea and Sevastopol are covered by separate regime (Council Regulation (EU) No 692/2014)."
+    un_sanctions:
+      type: "None"
+      source_url: "https://www.un.org/securitycouncil/sanctions/information"
+      summary: "No UN Security Council sanctions."
+    export_controls:
+      source_url: "https://www.bis.doc.gov/index.php/regulations/commerce-control-list-ccl"
+      us_ear: "EAR 15 CFR Part 746 Section 746.6 (Territorial sanctions on Crimea, DNR, LNR)"
+      us_itar: "22 CFR 126.1 Prohibited Destination"
 
   BY:
     country: "Belarus"

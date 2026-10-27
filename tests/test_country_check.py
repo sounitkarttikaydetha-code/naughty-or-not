@@ -100,6 +100,33 @@ class TestCountryCheck(unittest.TestCase):
                 auth_data = data.get(auth, {})
                 self.assertTrue(auth_data.get("source_url", "").startswith("http"), f"{iso}.{auth} missing source_url")
 
+    def test_09_syria_cf_and_paarss_details(self):
+        """Verify Syria US sanctions specifics: no 31 CFR Part 542 in authority, PAARSS, HTS removal, SST rescission."""
+        res = self.engine.screen_country("Syria")
+        regimes = res.get("regimes_data", {})
+        us = regimes.get("us_sanctions", {})
+        auth = us.get("authority", "")
+        summary = us.get("summary", "")
+        self.assertNotIn("31 CFR Part 542", auth)
+        self.assertIn("Promoting Accountability for Assad and Regional Stabilization Sanctions", auth)
+        self.assertIn("Hayat Tahrir al-Sham was removed from the SDGT", summary)
+        self.assertIn("Syria's State Sponsor of Terrorism designation was rescinded on 24 Aug 2026", summary)
+
+    def test_10_ukraine_regions_citations(self):
+        """Verify Ukraine regions citations across EU and US authorities."""
+        res = self.engine.screen_country("Crimea")
+        self.assertEqual(res["overall_tier"], "POTENTIAL_MATCH")
+        regimes = res.get("regimes_data", {})
+        eu = regimes.get("eu_sanctions", {})
+        us = regimes.get("us_sanctions", {})
+        self.assertIn("2022/263", eu.get("authority", ""))
+        self.assertIn("Donetsk", eu.get("summary", ""))
+        self.assertIn("Kherson", eu.get("summary", ""))
+        self.assertIn("Zaporizhzhia", eu.get("summary", ""))
+        self.assertIn("E.O. 13685", us.get("authority", ""))
+        self.assertIn("E.O. 14065", us.get("authority", ""))
+        self.assertIn("Unverified — not shown as US comprehensive", us.get("summary", ""))
+
 
 if __name__ == "__main__":
     unittest.main()

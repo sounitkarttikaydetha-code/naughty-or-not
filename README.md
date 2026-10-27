@@ -104,7 +104,7 @@ If you wish to run or develop from the Python source code:
 ## Compliance & Governance
 
 - **Scope:** Name matching, aviation safety registers, and open-source intelligence aggregation only.
-- **Legal Advisory:** Not a legal determination and does not perform ownership/control (e.g., 50% rule) calculations.
+- **Legal Advisory:** Not a legal determination. Provides multilateral statutory beneficial ownership and 50% rule calculations alongside screening results for compliance officer review.
 - **Data Protection:** Counterparty names and search logs remain strictly on the local workstation and are never transmitted externally.
 - **Licensing:** OpenSanctions data is licensed under CC BY-NC 4.0 (commercial use requires an independent license). See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and [LICENSE](LICENSE) for full details.
 

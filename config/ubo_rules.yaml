@@ -32,7 +32,7 @@ eu:
     - "decisive_influence"
     - "holding_majority_voting_rights"
     - "power_to_exercise_dominant_influence"
-  authority: "European External Action Service (EEAS) / Council Regulations"
+  authority: "European Commission (DG FISMA) / Council Regulations"
   verdict_met: "Sanctions ownership or control criteria met (EU Council Regulations)"
   verdict_not_met: "No sanctions ownership or control criteria met based on disclosed data (EU)"
 
