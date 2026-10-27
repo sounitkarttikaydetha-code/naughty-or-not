@@ -8,10 +8,13 @@ Checks:
 - Logs anomalies and generates GitHub issue markdown if changes detected
 """
 
+from __future__ import annotations
+
 import json
 from pathlib import Path
 import re
 import sys
+from typing import Any, Dict, List, Optional, Tuple
 import urllib.request
 import urllib.error
 import yaml
@@ -129,7 +132,6 @@ def run_source_watch() -> Tuple[bool, List[str]]:
         return True, []
 
 if __name__ == "__main__":
-    from typing import Tuple, List
     success, anomalies = run_source_watch()
     if not success:
         sys.exit(1)
