@@ -69,6 +69,37 @@ class TestCountryCheck(unittest.TestCase):
         self.assertEqual(row[2], "Cuba")
         self.assertEqual(row[3], "POTENTIAL_MATCH")
 
+    def test_06_syria_us_sanctions_revocation_and_paarss(self):
+        """Verify Syria US sanctions data reflects E.O. 14312 revocation and PAARSS authority."""
+        res = self.engine.screen_country("Syria")
+        regimes = res.get("regimes_data", {})
+        us_sanctions = regimes.get("us_sanctions", {})
+        self.assertIn("14312", us_sanctions.get("authority", ""))
+        self.assertIn("PAARSS", us_sanctions.get("summary", ""))
+        self.assertIn("revoked effective 1 July 2025", us_sanctions.get("summary", ""))
+        self.assertEqual(regimes.get("verification_date"), "2026-10-27")
+
+    def test_07_russia_selective_and_territorial_embargoes(self):
+        """Verify Russia US sanctions data reflects selective (extensive) nature and territorial embargoes."""
+        res = self.engine.screen_country("Russia")
+        regimes = res.get("regimes_data", {})
+        us_sanctions = regimes.get("us_sanctions", {})
+        summary = us_sanctions.get("summary", "")
+        self.assertIn("not countrywide blanket embargo", summary)
+        self.assertIn("Crimea", summary)
+        self.assertIn("Donetsk", summary)
+        self.assertIn("Luhansk", summary)
+        self.assertEqual(regimes.get("verification_date"), "2026-10-27")
+
+    def test_08_all_regimes_have_source_urls_and_verification_date(self):
+        """Verify every regime entry in country_regimes.yaml has verification_date and source_urls."""
+        for iso, data in self.engine.regimes.items():
+            self.assertEqual(data.get("verification_date"), "2026-10-27", f"{iso} missing verification_date 2026-10-27")
+            self.assertTrue(data.get("source_url", "").startswith("http"), f"{iso} missing top-level source_url")
+            for auth in ["us_sanctions", "uk_sanctions", "eu_sanctions", "un_sanctions", "export_controls"]:
+                auth_data = data.get(auth, {})
+                self.assertTrue(auth_data.get("source_url", "").startswith("http"), f"{iso}.{auth} missing source_url")
+
 
 if __name__ == "__main__":
     unittest.main()

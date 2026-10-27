@@ -38,6 +38,16 @@ from modules.common.paths import (
 
 logger = logging.getLogger(__name__)
 
+# Native Windows certificate store injection via truststore
+try:
+    import truststore
+    truststore.inject_into_ssl()
+    logger.info("truststore successfully injected into ssl context.")
+except Exception as _t_ex:
+    logger.debug("truststore not injected: %s", _t_ex)
+
+USER_AGENT = "ClearanceCheck/1.1.1 (+compliance contact)"
+
 # State constants
 STATE_OK = "OK"
 STATE_OFFLINE_NOTE = "OFFLINE_NOTE"
@@ -46,6 +56,8 @@ STATE_ADDRESS_CHANGED = "ADDRESS_CHANGED"
 STATE_STALE = "STALE"
 STATE_CLOSED_SUSPECTED = "CLOSED_SUSPECTED"
 STATE_FAILED_NO_COPY = "FAILED_NO_COPY"
+STATE_UPDATE_NEEDS_HELP = "UPDATE_NEEDS_HELP"
+
 
 # Default closure keywords
 DEFAULT_CLOSURE_KEYWORDS = [
@@ -60,6 +72,40 @@ DEFAULT_CLOSURE_KEYWORDS = [
     "discontinued",
     "moved to",
 ]
+
+
+def check_fatf_plenary_status(last_verified_str: str, current_time: Optional[datetime] = None) -> Tuple[bool, str]:
+    """
+    FATF Plenary calendar rule:
+    Plenaries take place in February, June, and October (typically concluding around the 25th).
+    - If current date is within 30 days following plenary conclusion, and list was not verified since plenary:
+      returns (True, "Update due: FATF Plenary concluded recently; review updated statements.")
+    - Between plenaries:
+      returns (False, "Current (between FATF plenaries)")
+    """
+    now = current_time or datetime.now(timezone.utc)
+    year = now.year
+
+    plenary_dates = [
+        datetime(year, 2, 25, tzinfo=timezone.utc),
+        datetime(year, 6, 25, tzinfo=timezone.utc),
+        datetime(year, 10, 25, tzinfo=timezone.utc),
+    ]
+
+    last_v = None
+    if last_verified_str:
+        try:
+            last_v = datetime.fromisoformat(last_verified_str.replace("Z", "+00:00"))
+        except Exception:
+            pass
+
+    for p_date in plenary_dates:
+        diff_days = (now - p_date).total_seconds() / 86400.0
+        if 0 <= diff_days <= 30:
+            if not last_v or last_v < p_date:
+                return True, "Update due: FATF Plenary concluded recently; review updated statements."
+
+    return False, "Current (between FATF plenaries)"
 
 
 def get_sources_config_path() -> Path:
@@ -490,6 +536,14 @@ class SourceManager:
             except Exception:
                 pass
 
+        # Check FATF plenary calendar rule if configured
+        if spec.get("plenary_rule"):
+            is_due, plenary_msg = check_fatf_plenary_status(entry.get("last_verified_at", ""))
+            if is_due:
+                entry["note"] = plenary_msg
+            elif entry.get("state") == STATE_OK:
+                entry["note"] = plenary_msg
+
         return entry
 
     def get_check_interval_hours(self) -> int:
@@ -531,7 +585,7 @@ class SourceManager:
         discovered_url = None
         if landing_url:
             try:
-                req = urllib.request.Request(landing_url, headers={"User-Agent": "NaughtyOrNot/1.0.3"})
+                req = urllib.request.Request(landing_url, headers={"User-Agent": USER_AGENT})
                 with urllib.request.urlopen(req, timeout=10) as resp:
                     page_html = resp.read().decode("utf-8", errors="replace")
                     closure_match = check_closure_keywords(page_html, closure_kws)
@@ -548,6 +602,8 @@ class SourceManager:
                         m = re.search(disc_pattern, page_html, re.IGNORECASE)
                         if m:
                             discovered_url = m.group(1)
+                            if not discovered_url.startswith("http"):
+                                discovered_url = urllib.parse.urljoin(landing_url, discovered_url)
             except urllib.error.HTTPError as he:
                 if he.code == 410:
                     current_state["state"] = STATE_CLOSED_SUSPECTED
@@ -584,7 +640,7 @@ class SourceManager:
                     continue
 
                 try:
-                    req = urllib.request.Request(url, headers={"User-Agent": "NaughtyOrNot/1.0.3"})
+                    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
                     opener = urllib.request.build_opener(SafeRedirectHandler(allowed_domains))
                     with opener.open(req, timeout=25) as resp:
                         # Check HTTP status
@@ -630,9 +686,35 @@ class SourceManager:
                         log_source_event(source_id, "CLOSED_SUSPECTED", url, "", count_before, count_before, hash_before, hash_before, current_state["note"])
                         save_sources_state(self.state)
                         return STATE_CLOSED_SUSPECTED, current_state["note"]
-                    if "domain rejected" in str(he).lower():
-                        validation_rejected = True
-                    rejection_reason = f"HTTP {he.code}: {he.reason}"
+                    if he.code == 403 and "domain rejected" not in str(he).lower():
+                        current_state["state"] = STATE_UPDATE_NEEDS_HELP
+                        current_state["note"] = f"Update needs help (HTTP 403 Forbidden). Download directly from official site: {spec.get('verify_url') or url}"
+                        log_source_event(source_id, "UPDATE_NEEDS_HELP", url, "", count_before, count_before, hash_before, hash_before, current_state["note"])
+                        save_sources_state(self.state)
+                        return STATE_UPDATE_NEEDS_HELP, current_state["note"]
+                    if he.code == 429:
+                        retry_after = he.headers.get("Retry-After", "60") if hasattr(he, "headers") else "60"
+                        rejection_reason = f"HTTP 429 Rate Limited (Retry-After: {retry_after}s)"
+                        log_source_event(source_id, "RATE_LIMITED_429", url, "", count_before, count_before, hash_before, hash_before, rejection_reason)
+                    elif 500 <= he.code < 600:
+                        # Exponential backoff retry once
+                        time.sleep(1.0)
+                        try:
+                            req_retry = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+                            with opener.open(req_retry, timeout=25) as resp_retry:
+                                with open(tmp_path, "wb") as out_f:
+                                    shutil.copyfileobj(resp_retry, out_f)
+                                is_valid, v_msg, count_after = validate_file(tmp_path, spec, last_good_count=count_before)
+                                if is_valid:
+                                    downloaded_tmp = tmp_path
+                                    successful_url = resp_retry.geturl()
+                                    break
+                        except Exception:
+                            rejection_reason = f"HTTP {he.code}: {he.reason} (server error, backoff exhausted)"
+                    else:
+                        if "domain rejected" in str(he).lower():
+                            validation_rejected = True
+                        rejection_reason = f"HTTP {he.code}: {he.reason}"
                 except Exception as e:
                     if "domain rejected" in str(e).lower():
                         validation_rejected = True
@@ -724,6 +806,86 @@ class SourceManager:
             log_source_event(source_id, "FAILED_NO_COPY", "", "", 0, 0, "", "", current_state["note"])
             return STATE_FAILED_NO_COPY, current_state["note"]
 
+    def import_source_file(
+        self,
+        source_id: str,
+        file_bytes_or_path: Any,
+        filename: str = "",
+        provenance_notes: str = "",
+        rebuild_index: bool = True,
+    ) -> Tuple[bool, str]:
+        """
+        User-assisted import of a downloaded source file.
+        Performs format & schema validation, creates 3-version archive,
+        performs atomic swap, updates sources_state.json, and logs provenance event.
+        """
+        spec = self.registry.get(source_id)
+        if not spec:
+            return False, f"Unknown source ID: '{source_id}'"
+
+        current_file = get_source_file_path(source_id)
+        current_state = self.get_source_state(source_id)
+        count_before = current_state.get("record_count", 0)
+        hash_before = current_state.get("sha256", "")
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_path = Path(tmp_dir) / (filename or f"{source_id}_import.tmp")
+            if isinstance(file_bytes_or_path, (str, Path)):
+                shutil.copy2(file_bytes_or_path, tmp_path)
+            else:
+                with open(tmp_path, "wb") as f:
+                    f.write(file_bytes_or_path)
+
+            is_valid, v_msg, count_after = validate_file(tmp_path, spec, last_good_count=count_before)
+            if not is_valid:
+                return False, f"File validation failed: {v_msg}"
+
+            # Valid! Archive previous version and copy
+            archive_version(source_id, current_file)
+            current_file.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(tmp_path, current_file)
+
+        new_hash = compute_sha256(current_file)
+        now_iso = datetime.now(timezone.utc).isoformat()
+        note = f"User-assisted import on {now_iso[:10]}: {provenance_notes or 'Official publication imported'}"
+
+        current_state.update({
+            "state": STATE_OK,
+            "last_verified_at": now_iso,
+            "record_count": count_after,
+            "sha256": new_hash,
+            "note": note,
+            "last_error": None,
+        })
+        save_sources_state(self.state)
+
+        log_source_event(
+            source=source_id,
+            event="USER_IMPORT_SUCCESS",
+            old_url="",
+            new_url=f"local_import://{filename or 'uploaded_file'}",
+            count_before=count_before,
+            count_after=count_after,
+            hash_before=hash_before,
+            hash_after=new_hash,
+            message=note,
+        )
+
+        if rebuild_index:
+            try:
+                from modules.raw_search.indexer import build_full_raw_index
+                build_full_raw_index()
+            except Exception as e:
+                logger.warning(f"Error rebuilding raw index post-manual-import: {e}")
+
+            try:
+                from modules.watchman.client import reset_python_engine
+                reset_python_engine()
+            except Exception as e:
+                logger.warning(f"Error resetting python engine post-manual-import: {e}")
+
+        return True, f"Successfully imported {source_id}: {count_after} records verified."
+
     def refresh_all(
         self,
         progress_callback: Optional[Callable[[int, int, str], None]] = None,
@@ -811,6 +973,7 @@ _bg_refresh_stop_event: Optional[threading.Event] = None
 
 def start_periodic_source_refresh_worker(
     interval_seconds: int = 3600,
+    warmup_seconds: Optional[int] = None,
     source_manager: Optional[SourceManager] = None,
 ) -> None:
     """
@@ -826,6 +989,20 @@ def start_periodic_source_refresh_worker(
 
     def _worker_loop():
         logger.info(f"Periodic source refresh worker started (check interval={interval_seconds}s)")
+        # Warmup initial check (default 5s, or shorter if test interval is smaller)
+        actual_warmup = warmup_seconds if warmup_seconds is not None else min(interval_seconds, 5)
+        for _ in range(actual_warmup):
+            if _bg_refresh_stop_event and _bg_refresh_stop_event.is_set():
+                return
+            time.sleep(1)
+        try:
+            sm = source_manager if source_manager is not None else SourceManager()
+            refreshed = sm.check_and_refresh_expired()
+            if refreshed:
+                logger.info(f"Startup check refreshed {len(refreshed)} expired sources: {list(refreshed.keys())}")
+        except Exception as ex:
+            logger.warning(f"Startup source refresh check error: {ex}")
+
         while _bg_refresh_stop_event and not _bg_refresh_stop_event.is_set():
             # Wait for interval_seconds, checking stop_event every second
             for _ in range(max(1, interval_seconds)):

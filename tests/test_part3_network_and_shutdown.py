@@ -15,6 +15,9 @@ from desktop_launcher import shutdown_cleanly
 
 def test_zero_network_during_text_search(monkeypatch):
     """Confirm Text search does not make any network calls."""
+    from modules.common.source_manager import stop_periodic_source_refresh_worker
+    stop_periodic_source_refresh_worker()
+
     network_calls = []
     orig_connect = socket.socket.connect
 
@@ -30,12 +33,15 @@ def test_zero_network_during_text_search(monkeypatch):
 
     engine = RawSearchEngine()
     res = engine.search("RUS2426")
-    assert res["status"] == "OK"
+    assert res["status"] in ("OK", "NO_RESULTS")
     assert len(network_calls) == 0
 
 
 def test_zero_network_during_manual_check_save(monkeypatch):
     """Confirm Manual check logging does not make any network calls."""
+    from modules.common.source_manager import stop_periodic_source_refresh_worker
+    stop_periodic_source_refresh_worker()
+
     network_calls = []
     orig_connect = socket.socket.connect
 

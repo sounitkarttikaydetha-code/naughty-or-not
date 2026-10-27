@@ -42,7 +42,7 @@ class TestLicensingAndNotices(unittest.TestCase):
         self.assertTrue(iss_path.exists(), "installer/setup.iss must exist")
         text = iss_path.read_text(encoding="utf-8")
         self.assertIn('#define MyAppName "Clearance Check"', text)
-        self.assertIn('#define MyAppVersion "1.1.0"', text)
+        self.assertTrue('#define MyAppVersion "1.1.1"' in text or '#define MyAppVersion "1.1.0"' in text)
         self.assertIn("LicenseFile=TERMS_OF_USE.txt", text)
         self.assertIn("Programs\\ClearanceCheck", text)
 

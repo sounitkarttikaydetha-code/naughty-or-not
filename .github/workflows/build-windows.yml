@@ -89,7 +89,7 @@ jobs:
         id: checksum
         shell: powershell
         run: |
-          $installer = Get-ChildItem -Path "dist\installer\NaughtyOrNot_Setup_*.exe" | Select-Object -First 1
+          $installer = Get-ChildItem -Path "dist\installer\*Setup*.exe" | Select-Object -First 1
           if (-not $installer) {
             Write-Error "Installer binary not found!"
             exit 1
@@ -98,11 +98,11 @@ jobs:
           "$hash  $($installer.Name)" | Out-File -FilePath "dist\installer\SHA256.txt" -Encoding ascii
           Write-Host "Installer SHA-256: $hash"
 
-          $version = "1.0.3"
+          $version = "1.1.1"
           if ($env:GITHUB_REF -match "refs/tags/v(.*)") {
             $version = $Matches[1]
           }
-          $zipName = "NaughtyOrNot_v${version}_Portable.zip"
+          $zipName = "ClearanceCheck_v${version}_Portable.zip"
           $zipPath = "dist\installer\$zipName"
           Write-Host "Creating portable archive: $zipName"
           Compress-Archive -Path "dist\NaughtyOrNot\*" -DestinationPath $zipPath -Force
@@ -117,7 +117,7 @@ jobs:
       - name: Upload Build Artifacts (Installer & Portable Zip)
         uses: actions/upload-artifact@v4
         with:
-          name: NaughtyOrNot-Windows-Build
+          name: ClearanceCheck-Windows-Build
           path: |
             dist/installer/*.exe
             dist/installer/*.zip

@@ -1,8 +1,12 @@
-# Clearance Check v1.1.0 - KYC Annexure 1 Corporate Ownership Schedule Mapping
+# Clearance Check v1.1.1 - KYC Annexure 1 Corporate Ownership Schedule Mapping
+# Notes: Handles unlinked holdings as 'Chain not specified' and treats self-declared declarations as information only.
 version: "draft_2026-10"
 name: "KYC Annexure 1 Beneficial Ownership Schedule"
 format: "excel_or_csv"
 sheet_name: "Annexure 1 - UBO Schedule"
+chain_fallback: "Chain not specified"
+verification_default: "self_declared"
+notes_status: "info_only"
 
 columns:
   owner_name:

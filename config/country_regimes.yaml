@@ -1,9 +1,10 @@
-# Country Sanctions, Export Control & Regulatory Regimes (T11 Part J)
+# Country Sanctions, Export Control & Regulatory Regimes (T11 Part J / v1.1.1)
 # Comprehensive and selective regimes across US OFAC, UK FCDO, EU CFSP, UN Security Council,
 # ITAR 22 CFR 126.1, and EAR Country Groups.
+# Verified as of 2026-10-27 with official government sources.
 
 metadata:
-  version: "1.1.0"
+  version: "1.1.1"
   last_updated: "2026-10-27"
   authority: "Multilateral Sanctions & Export-Control Regimes"
 
@@ -13,20 +14,27 @@ regimes:
     aliases: ["cuba", "republic of cuba", "cuban"]
     flag: "🇨🇺"
     risk_level: "HIGH"
+    verification_date: "2026-10-27"
+    source_url: "https://ofac.treasury.gov/sanctions-programs-and-country-information/cuba-sanctions"
     us_sanctions:
       type: "Comprehensive Embargo"
       authority: "OFAC 31 CFR Part 515 (CACR)"
+      source_url: "https://ofac.treasury.gov/sanctions-programs-and-country-information/cuba-sanctions"
       summary: "Broad commercial, financial, and trade embargo. All property and interests in property blocked."
     uk_sanctions:
       type: "None"
+      source_url: "https://www.gov.uk/government/collections/uk-sanctions-regimes"
       summary: "No UK autonomous unilateral embargo."
     eu_sanctions:
       type: "None"
+      source_url: "https://www.sanctionsmap.eu/#/main"
       summary: "No EU autonomous embargo; EU Blocking Statute applies."
     un_sanctions:
       type: "None"
+      source_url: "https://www.un.org/securitycouncil/sanctions/information"
       summary: "No UN Security Council sanctions."
     export_controls:
+      source_url: "https://www.bis.doc.gov/index.php/regulations/commerce-control-list-ccl"
       us_ear: "Group E:2 (Unilateral Embargo) & Group E:1 (Terrorist Supporting)"
       us_itar: "22 CFR 126.1 Prohibited Destination"
 
@@ -35,22 +43,29 @@ regimes:
     aliases: ["iran", "islamic republic of iran", "iranian"]
     flag: "🇮🇷"
     risk_level: "HIGH"
+    verification_date: "2026-10-27"
+    source_url: "https://ofac.treasury.gov/sanctions-programs-and-country-information/iran-sanctions"
     us_sanctions:
       type: "Comprehensive Embargo"
       authority: "OFAC 31 CFR Part 560 (ITSR)"
+      source_url: "https://ofac.treasury.gov/sanctions-programs-and-country-information/iran-sanctions"
       summary: "Comprehensive commercial and financial embargo. Secondary sanctions apply to non-US persons."
     uk_sanctions:
       type: "Comprehensive Financial & Strategic Export Sanctions"
       authority: "FCDO Iran (Sanctions) (Nuclear) (EU Exit) Regulations 2019"
+      source_url: "https://www.gov.uk/government/publications/financial-sanctions-iran-nuclear"
       summary: "Asset freezes, targeted export prohibitions, ballistic missile / nuclear proliferation controls."
     eu_sanctions:
       type: "Restrictive Measures"
       authority: "Council Regulation (EU) No 267/2012"
+      source_url: "https://www.sanctionsmap.eu/#/main?regime=IRN"
       summary: "Asset freezes, financial restrictions, and arms / proliferation embargoes."
     un_sanctions:
       type: "UNSC Resolution 2231"
+      source_url: "https://www.un.org/securitycouncil/content/2231/background"
       summary: "Targeted asset freezes, arms transfer restrictions, and proliferation bans."
     export_controls:
+      source_url: "https://www.bis.doc.gov/index.php/regulations/commerce-control-list-ccl"
       us_ear: "Group E:1 & E:2 (Comprehensive Embargo)"
       us_itar: "22 CFR 126.1 Prohibited Destination"
 
@@ -59,22 +74,29 @@ regimes:
     aliases: ["north korea", "dprk", "democratic people's republic of korea", "korea, democratic people's republic of"]
     flag: "🇰🇵"
     risk_level: "HIGH"
+    verification_date: "2026-10-27"
+    source_url: "https://ofac.treasury.gov/sanctions-programs-and-country-information/north-korea-sanctions"
     us_sanctions:
       type: "Comprehensive Embargo"
       authority: "OFAC 31 CFR Part 510 (NKSR)"
+      source_url: "https://ofac.treasury.gov/sanctions-programs-and-country-information/north-korea-sanctions"
       summary: "Strict comprehensive embargo, asset freeze on government and Workers' Party, secondary sanctions."
     uk_sanctions:
       type: "Autonomous & UN Sanctions"
       authority: "FCDO Democratic People's Republic of Korea (Sanctions) (EU Exit) Regulations 2019"
+      source_url: "https://www.gov.uk/government/publications/financial-sanctions-democratic-peoples-republic-of-korea"
       summary: "Comprehensive trade, financial, transportation, and bunkering prohibitions."
     eu_sanctions:
       type: "Restrictive Measures"
       authority: "Council Regulation (EU) 2017/1509"
+      source_url: "https://www.sanctionsmap.eu/#/main?regime=PRK"
       summary: "Far-reaching sectoral sanctions on finance, trade, investment, and transport."
     un_sanctions:
       type: "UNSC Resolutions 1718, 1874, 2087, 2094, 2270, 2321, 2371, 2375, 2397"
+      source_url: "https://www.un.org/securitycouncil/sanctions/1718"
       summary: "Full sectoral embargo on coal, iron, textiles, seafood; caps on refined petroleum; ban on joint ventures."
     export_controls:
+      source_url: "https://www.bis.doc.gov/index.php/regulations/commerce-control-list-ccl"
       us_ear: "Group E:1 & E:2 (Comprehensive Embargo)"
       us_itar: "22 CFR 126.1 Prohibited Destination"
 
@@ -83,23 +105,30 @@ regimes:
     aliases: ["syria", "syrian arab republic", "syrian"]
     flag: "🇸🇾"
     risk_level: "HIGH"
+    verification_date: "2026-10-27"
+    source_url: "https://ofac.treasury.gov/sanctions-programs-and-country-information/syria-sanctions"
     us_sanctions:
-      type: "Comprehensive Embargo & Caesar Act"
-      authority: "OFAC 31 CFR Part 542 (SySR) & Caesar Syria Civilian Protection Act"
-      summary: "Comprehensive embargo on exports, imports, investments, and services. Secondary sanctions."
+      type: "Targeted Sanctions (PAARSS) & Selective Authority"
+      authority: "OFAC 31 CFR Part 542 (SySR) & E.O. 14312 (effective 1 July 2025)"
+      source_url: "https://ofac.treasury.gov/sanctions-programs-and-country-information/syria-sanctions"
+      summary: "US Syria comprehensive trade and investment embargo was revoked effective 1 July 2025 pursuant to E.O. 14312; targeted authority continues under Providing Assistance and Aid to Regional Security in Syria (PAARSS) and 31 CFR Part 542."
     uk_sanctions:
       type: "Autonomous Sanctions"
       authority: "FCDO Syria (Sanctions) (EU Exit) Regulations 2019"
+      source_url: "https://www.gov.uk/government/publications/financial-sanctions-syria"
       summary: "Targeted asset freezes, trade embargo on crude oil/petroleum, luxury goods, dual-use items."
     eu_sanctions:
       type: "Restrictive Measures"
       authority: "Council Regulation (EU) No 36/2012"
+      source_url: "https://www.sanctionsmap.eu/#/main?regime=SYR"
       summary: "Oil embargo, export restrictions on dual-use items, asset freezes on central bank and officials."
     un_sanctions:
       type: "Targeted (Selected Entities)"
+      source_url: "https://www.un.org/securitycouncil/sanctions/information"
       summary: "Targeted counter-terrorism measures."
     export_controls:
-      us_ear: "Group E:1 & E:2 (Comprehensive Embargo)"
+      source_url: "https://www.bis.doc.gov/index.php/regulations/commerce-control-list-ccl"
+      us_ear: "Group E:1 & E:2 (ITAR and EAR specific restrictions apply)"
       us_itar: "22 CFR 126.1 Prohibited Destination"
 
   RU:
@@ -107,22 +136,29 @@ regimes:
     aliases: ["russia", "russian federation", "russian"]
     flag: "🇷🇺"
     risk_level: "HIGH"
+    verification_date: "2026-10-27"
+    source_url: "https://ofac.treasury.gov/sanctions-programs-and-country-information/russian-sanctions"
     us_sanctions:
-      type: "Broad Sectoral & Territorial Sanctions"
+      type: "Selective (Extensive) & Territorial Embargoes"
       authority: "OFAC EO 14024, EO 14066, EO 14068, EO 14071 (RuHSR)"
-      summary: "Comprehensive territorial bans on Crimea, Donetsk, Luhansk, Kherson, Zaporizhzhia. Broad sectoral prohibitions on finance, sovereign debt, energy, accounting, IT/software services. Price cap on maritime Russian oil."
+      source_url: "https://ofac.treasury.gov/sanctions-programs-and-country-information/russian-sanctions"
+      summary: "Selective (extensive), not countrywide blanket embargo; comprehensive territorial embargoes on Crimea, Donetsk, Luhansk, Kherson, Zaporizhzhia regions of Ukraine. Broad sectoral prohibitions on finance, sovereign debt, energy, accounting, IT/software services. Maritime crude price cap."
     uk_sanctions:
       type: "Autonomous Sanctions"
       authority: "FCDO Russia (Sanctions) (EU Exit) Regulations 2019"
+      source_url: "https://www.gov.uk/government/publications/financial-sanctions-russia"
       summary: "Far-reaching asset freezes, financial prohibitions, trade bans on critical goods/technology, energy, transport bans."
     eu_sanctions:
       type: "Restrictive Measures (Packages 1-14+)"
       authority: "Council Regulation (EU) No 833/2014 & (EU) No 269/2014"
+      source_url: "https://www.sanctionsmap.eu/#/main?regime=RUS"
       summary: "SWIFT exclusions, import bans on crude/coal/steel/gold, export bans on dual-use tech, flight bans, maritime port bans."
     un_sanctions:
       type: "None"
+      source_url: "https://www.un.org/securitycouncil/sanctions/information"
       summary: "No UN Security Council sanctions (veto member)."
     export_controls:
+      source_url: "https://www.bis.doc.gov/index.php/regulations/commerce-control-list-ccl"
       us_ear: "Country Group D:1, D:5; Extensive EAR Part 746 Section 746.5 / 746.8 restrictions (FDPR)"
       us_itar: "22 CFR 126.1 Prohibited Destination (Subject to exceptions)"
 
@@ -131,22 +167,29 @@ regimes:
     aliases: ["belarus", "republic of belarus", "belarusian", "byelorussia"]
     flag: "🇧🇾"
     risk_level: "ELEVATED"
+    verification_date: "2026-10-27"
+    source_url: "https://ofac.treasury.gov/sanctions-programs-and-country-information/belarus-sanctions"
     us_sanctions:
       type: "Targeted & Sectoral Government Sanctions"
       authority: "OFAC EO 13405, EO 14038 (BSR)"
+      source_url: "https://ofac.treasury.gov/sanctions-programs-and-country-information/belarus-sanctions"
       summary: "Targeted asset freezes, prohibitions on potash, petroleum, tobacco, and government officials."
     uk_sanctions:
       type: "Autonomous Sanctions"
       authority: "FCDO Republic of Belarus (Sanctions) (EU Exit) Regulations 2019"
+      source_url: "https://www.gov.uk/government/publications/financial-sanctions-belarus"
       summary: "Financial and trade restrictions, bans on potash, petroleum products, dual-use items."
     eu_sanctions:
       type: "Restrictive Measures"
       authority: "Council Regulation (EC) No 765/2006"
+      source_url: "https://www.sanctionsmap.eu/#/main?regime=BLR"
       summary: "Targeted financial bans, SWIFT restrictions on major banks, trade restrictions mirroring Russia measures."
     un_sanctions:
       type: "None"
+      source_url: "https://www.un.org/securitycouncil/sanctions/information"
       summary: "No UN Security Council sanctions."
     export_controls:
+      source_url: "https://www.bis.doc.gov/index.php/regulations/commerce-control-list-ccl"
       us_ear: "Country Group D:1, D:5; EAR Part 746 Section 746.8 controls"
       us_itar: "22 CFR 126.1 Prohibited Destination"
 
@@ -155,22 +198,29 @@ regimes:
     aliases: ["myanmar", "burma", "burmese"]
     flag: "🇲🇲"
     risk_level: "ELEVATED"
+    verification_date: "2026-10-27"
+    source_url: "https://ofac.treasury.gov/sanctions-programs-and-country-information/burma-sanctions"
     us_sanctions:
       type: "Targeted & Sectoral Sanctions"
       authority: "OFAC EO 14014 (BurmaSR)"
+      source_url: "https://ofac.treasury.gov/sanctions-programs-and-country-information/burma-sanctions"
       summary: "Asset freezes on military regime leaders, state-owned enterprises in gems, timber, and oil & gas (MOGE)."
     uk_sanctions:
       type: "Autonomous Sanctions"
       authority: "FCDO Myanmar (Sanctions) Regulations 2021"
+      source_url: "https://www.gov.uk/government/publications/financial-sanctions-myanmar"
       summary: "Asset freezes on military leaders, military-linked conglomerates, aviation fuel bans."
     eu_sanctions:
       type: "Restrictive Measures"
       authority: "Council Regulation (EU) No 401/2013"
+      source_url: "https://www.sanctionsmap.eu/#/main?regime=MMR"
       summary: "Arms embargo, asset freezes on military entities, MOGE restrictions."
     un_sanctions:
       type: "Targeted Resolutions"
+      source_url: "https://www.un.org/securitycouncil/sanctions/information"
       summary: "Arms transfer monitoring and humanitarian resolutions."
     export_controls:
+      source_url: "https://www.bis.doc.gov/index.php/regulations/commerce-control-list-ccl"
       us_ear: "Country Group D:1, D:3, D:5; Military End-User (MEU) restrictions"
       us_itar: "22 CFR 126.1 Prohibited Destination"
 
@@ -179,22 +229,29 @@ regimes:
     aliases: ["venezuela", "bolivarian republic of venezuela", "venezuelan"]
     flag: "🇻🇪"
     risk_level: "ELEVATED"
+    verification_date: "2026-10-27"
+    source_url: "https://ofac.treasury.gov/sanctions-programs-and-country-information/venezuela-sanctions"
     us_sanctions:
       type: "Government & Sectoral Sanctions"
       authority: "OFAC EO 13808, EO 13850, EO 13884 (VSR)"
+      source_url: "https://ofac.treasury.gov/sanctions-programs-and-country-information/venezuela-sanctions"
       summary: "Blocking of Government of Venezuela, PdVSA, central bank, and gold sector. Specific General Licenses apply."
     uk_sanctions:
       type: "Targeted Sanctions"
       authority: "FCDO Venezuela (Sanctions) (EU Exit) Regulations 2019"
+      source_url: "https://www.gov.uk/government/publications/financial-sanctions-venezuela"
       summary: "Arms embargo, asset freezes on regime officials."
     eu_sanctions:
       type: "Restrictive Measures"
       authority: "Council Regulation (EU) 2017/2063"
+      source_url: "https://www.sanctionsmap.eu/#/main?regime=VEN"
       summary: "Arms embargo, equipment for internal repression, asset freezes on designated officials."
     un_sanctions:
       type: "None"
+      source_url: "https://www.un.org/securitycouncil/sanctions/information"
       summary: "No UN Security Council sanctions."
     export_controls:
+      source_url: "https://www.bis.doc.gov/index.php/regulations/commerce-control-list-ccl"
       us_ear: "Country Group D:1; Military End-User controls"
       us_itar: "22 CFR 126.1 Prohibited Destination"
 
@@ -203,22 +260,29 @@ regimes:
     aliases: ["zimbabwe", "republic of zimbabwe", "zimbabwean"]
     flag: "🇿🇼"
     risk_level: "ELEVATED"
+    verification_date: "2026-10-27"
+    source_url: "https://ofac.treasury.gov/sanctions-programs-and-country-information/zimbabwe-sanctions"
     us_sanctions:
       type: "Targeted Global Magnitsky Sanctions"
       authority: "OFAC EO 13818 (GloMag)"
+      source_url: "https://ofac.treasury.gov/sanctions-programs-and-country-information/zimbabwe-sanctions"
       summary: "Previous national emergency terminated; key individuals and entities designated under Global Magnitsky."
     uk_sanctions:
       type: "Autonomous Sanctions"
       authority: "FCDO Zimbabwe (Sanctions) (EU Exit) Regulations 2019"
+      source_url: "https://www.gov.uk/government/publications/financial-sanctions-zimbabwe"
       summary: "Targeted asset freezes and arms embargo."
     eu_sanctions:
       type: "Restrictive Measures"
       authority: "Council Regulation (EC) No 314/2004"
+      source_url: "https://www.sanctionsmap.eu/#/main?regime=ZWE"
       summary: "Arms embargo and asset freeze on Zimbabwe Defence Industries."
     un_sanctions:
       type: "None"
+      source_url: "https://www.un.org/securitycouncil/sanctions/information"
       summary: "No UN Security Council sanctions."
     export_controls:
+      source_url: "https://www.bis.doc.gov/index.php/regulations/commerce-control-list-ccl"
       us_ear: "Standard EAR licensing requirements"
       us_itar: "22 CFR 126.1 Prohibited Destination (Arms embargo)"
 
@@ -227,21 +291,28 @@ regimes:
     aliases: ["sudan", "republic of the sudan", "sudanese"]
     flag: "🇸🇩"
     risk_level: "ELEVATED"
+    verification_date: "2026-10-27"
+    source_url: "https://ofac.treasury.gov/sanctions-programs-and-country-information/sudan-sanctions"
     us_sanctions:
       type: "Targeted Sanctions"
       authority: "OFAC EO 14098"
+      source_url: "https://ofac.treasury.gov/sanctions-programs-and-country-information/sudan-sanctions"
       summary: "Targeted sanctions against leaders of SAF and RSF contributing to conflict and human rights abuses."
     uk_sanctions:
       type: "Autonomous & UN Sanctions"
       authority: "FCDO Sudan (Sanctions) (EU Exit) Regulations 2020"
+      source_url: "https://www.gov.uk/government/publications/financial-sanctions-sudan"
       summary: "Asset freezes and arms embargo in relation to Darfur and the ongoing conflict."
     eu_sanctions:
       type: "Restrictive Measures"
       authority: "Council Regulation (EU) 2023/2147"
+      source_url: "https://www.sanctionsmap.eu/#/main?regime=SDN"
       summary: "Targeted asset freezes on entities supporting conflict, arms embargo on Darfur."
     un_sanctions:
       type: "UNSC Resolution 1591 (Darfur)"
+      source_url: "https://www.un.org/securitycouncil/sanctions/1591"
       summary: "Arms embargo on Darfur and targeted asset freezes."
     export_controls:
+      source_url: "https://www.bis.doc.gov/index.php/regulations/commerce-control-list-ccl"
       us_ear: "Country Group D:1"
       us_itar: "22 CFR 126.1 Prohibited Destination"

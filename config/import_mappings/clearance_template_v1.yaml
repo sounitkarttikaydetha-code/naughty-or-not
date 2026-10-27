@@ -1,52 +1,52 @@
-# Clearance Check v1.1.0 - Default Ownership Template Mapping
+# Clearance Check v1.1.1 - Default Ownership Template Mapping
 version: "1.0"
 name: "Clearance Check Standard Ownership Template"
 format: "excel_or_csv"
-sheet_name: "Ownership & Control"
+sheet_name: "Holdings"
 
 columns:
   owner_name:
-    headers: ["Owner Name", "Party Name", "Shareholder Name", "Entity Name"]
+    headers: ["Owner Name", "Party Name", "Shareholder Name", "Entity Name", "Immediate Shareholder", "Full Legal Name of Shareholder / UBO"]
     required: true
     type: "string"
 
   entity_type:
-    headers: ["Entity Type", "Type", "Party Type"]
+    headers: ["Entity Type", "Type", "Party Type", "Constitution", "Category"]
     required: false
     default: "company"
     type: "string"
 
   ownership_pct:
-    headers: ["Direct Ownership %", "Ownership %", "Share %", "Equity %", "Percentage"]
+    headers: ["Direct Ownership %", "Ownership %", "Share %", "Equity %", "Percentage", "Shareholding %", "Percentage Holding (%)"]
     required: true
     type: "float"
 
   parent_name:
-    headers: ["Parent Entity Name", "Immediate Parent", "Direct Subsidiary Of", "Owned In"]
+    headers: ["Parent Entity Name", "Immediate Parent", "Direct Subsidiary Of", "Owned In", "Held In Entity"]
     required: false
     default: ""
     type: "string"
 
   country:
-    headers: ["Country", "Jurisdiction", "Nationality", "Country (ISO-2)"]
+    headers: ["Country", "Jurisdiction", "Nationality", "Country (ISO-2)", "Country / Jurisdiction"]
     required: false
     default: ""
     type: "string"
 
   is_board_member:
-    headers: ["Board Member", "Director", "Is Board Member (Yes/No)"]
+    headers: ["Board Member", "Director", "Is Board Member (Yes/No)", "Board Representation"]
     required: false
     default: false
     type: "boolean"
 
   has_appointment_power:
-    headers: ["Appointment Power", "Right to Appoint Board", "Appointment Power (Yes/No)"]
+    headers: ["Appointment Power", "Right to Appoint Board", "Appointment Power (Yes/No)", "Board Appointment Authority"]
     required: false
     default: false
     type: "boolean"
 
   notes:
-    headers: ["Notes", "Comments", "Disclosures"]
+    headers: ["Notes", "Comments", "Disclosures", "Remarks"]
     required: false
     default: ""
     type: "string"

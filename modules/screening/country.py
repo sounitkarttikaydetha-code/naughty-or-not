@@ -151,11 +151,9 @@ def log_country_search(
     db_path: Optional[Path] = None,
 ) -> None:
     """Log country regulatory search to SQLite screening_logs with mode='country'."""
-    path = db_path or DB_PATH
-    path.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(str(path))
+    from modules.reporting.logger import get_db_connection
+    conn = get_db_connection(db_path)
     try:
-        conn.execute("PRAGMA journal_mode = WAL")
         now = datetime.now(timezone.utc).isoformat()
         user = getpass.getuser()
         machine = platform.node()

@@ -10,7 +10,7 @@ sources:
   - treasury.gov
   - ofac.treasury.gov
   - sanctionssearch.ofac.treas.gov
-  discovery: href=[\"\'](https?://[^\"\']*/sdn\.csv)[\"\']
+  discovery: href=[\"'](/?(?:https?://[^\"']*/|ofac/downloads/|Files/)sdn\.csv)[\"']
   expected:
     format: csv
     min_bytes: 8000000
@@ -41,8 +41,8 @@ sources:
   authority: US International Trade Administration (ITA)
   landing_page: https://www.trade.gov/consolidated-screening-list
   candidate_urls:
-  - https://api.trade.gov/static/consolidated_screening_list/consolidated.csv
   - https://data.trade.gov/consolidated_screening_list/consolidated.csv
+  - https://api.trade.gov/static/consolidated_screening_list/consolidated.csv
   allowed_domains:
   - trade.gov
   - api.trade.gov
@@ -406,11 +406,12 @@ sources:
   - moved to
   verify_url: https://www.fatf-gafi.org/en/topics/high-risk-and-other-monitored-jurisdictions.html
   record_url_template: https://www.fatf-gafi.org/en/topics/high-risk-and-other-monitored-jurisdictions.html
+  plenary_rule: true
 - id: bis_tdo
   authority: US BIS, Export Violations (Temporary Denial Orders)
   landing_page: https://media.bis.gov/enforcement/export-violations
   file_url_resolved: https://media.bis.gov/enforcement/export-violations
-  publication_date: '2026-10-15'
+  publication_date: '2025-01-17'
   last_checked: '2026-10-20'
   sha256: none
   parser: reference_cross_check

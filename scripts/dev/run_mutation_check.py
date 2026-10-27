@@ -48,7 +48,7 @@ from modules.screening.identifiers import (
 def run_mutation_tests():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
-    print("Running 17 Mutation Checks against screening engine and security barriers...")
+    print("Running 21 Mutation Checks (including 4 UBO mutations) against screening engine and security barriers...")
     client = WatchmanClient(engine="python")
     passed = 0
 
@@ -247,8 +247,70 @@ def run_mutation_tests():
         if tmp_p.exists():
             tmp_p.unlink()
 
-    print(f"\nFinal Result: {passed}/17 mutation checks passed successfully.")
-    return passed == 17
+    # -------------------------------------------------------------------------
+    # UBO Mutations (T11.1 Req 45)
+    # -------------------------------------------------------------------------
+    from modules.ownership.engine import UBOEngine
+    from modules.ownership.models import Counterparty, Holding, ControlRelation
+    ubo_eng = UBOEngine()
+
+    # 18. UBO Mutation 1: Aggregation OFF
+    # Two blocked persons holding 25% each must aggregate to 50% under OFAC/EU
+    cp_agg = Counterparty(name="Joint Target LLC")
+    h_agg = [
+        Holding(shareholder_name="Designated A", entity_name="Joint Target LLC", share_pct=25.0, is_blocked=True, blocked_source="us_ofac"),
+        Holding(shareholder_name="Designated B", entity_name="Joint Target LLC", share_pct=25.0, is_blocked=True, blocked_source="us_ofac"),
+    ]
+    res_agg = ubo_eng.evaluate_structure(cp_agg, h_agg, auto_screen=False)
+    if res_agg.ofac_blocked and res_agg.ofac_aggregate_pct == 50.0:
+        passed += 1
+        print("  [18/21] UBO mutation caught: Aggregation OFF (25% + 25% properly aggregated to >=50%)")
+    else:
+        print("  [18/21] UBO mutation FAILED: Aggregation OFF")
+
+    # 19. UBO Mutation 2: Indirect ownership pass-through OFF
+    # P (50% in Beta) -> Beta (60% in Alpha) -> Alpha is blocked under OFAC
+    cp_ind = Counterparty(name="Alpha Corp")
+    h_ind = [
+        Holding(shareholder_name="Beta Holdings", entity_name="Alpha Corp", share_pct=60.0),
+        Holding(shareholder_name="Person P", entity_name="Beta Holdings", share_pct=50.0, is_blocked=True, blocked_source="us_ofac"),
+    ]
+    res_ind = ubo_eng.evaluate_structure(cp_ind, h_ind, auto_screen=False)
+    if res_ind.ofac_blocked and res_ind.ofac_aggregate_pct == 60.0:
+        passed += 1
+        print("  [19/21] UBO mutation caught: Indirect ownership OFF (intermediate blocked entity properly passes through)")
+    else:
+        print("  [19/21] UBO mutation FAILED: Indirect ownership OFF")
+
+    # 20. UBO Mutation 3: UK operator flipped (>= instead of strictly >)
+    # Exactly 50.0% holding must NOT meet UK Condition 1 (>50% required)
+    cp_uk = Counterparty(name="London Gateway Ltd")
+    h_uk = [
+        Holding(shareholder_name="UK Designated Person", entity_name="London Gateway Ltd", share_pct=50.0, is_blocked=True, blocked_source="uk_csl"),
+    ]
+    res_uk = ubo_eng.evaluate_structure(cp_uk, h_uk, auto_screen=False)
+    if not res_uk.uk_condition_1_shares and any("Boundary notice" in n for n in res_uk.uk_verdict.get("notes", [])):
+        passed += 1
+        print("  [20/21] UBO mutation caught: UK operator flipped (strictly >50% enforced for UK Condition 1)")
+    else:
+        print("  [20/21] UBO mutation FAILED: UK operator flipped")
+
+    # 21. UBO Mutation 4: Undisclosed shortfall warning OFF
+    # 40% disclosed blocked + 15% undisclosed shortfall -> shortfall could flip threshold to >=50%
+    cp_und = Counterparty(name="Opaque Ventures Ltd")
+    h_und = [
+        Holding(shareholder_name="Designated X", entity_name="Opaque Ventures Ltd", share_pct=40.0, is_blocked=True, blocked_source="us_ofac"),
+        Holding(shareholder_name="Disclosed Clean Y", entity_name="Opaque Ventures Ltd", share_pct=45.0),
+    ]
+    res_und = ubo_eng.evaluate_structure(cp_und, h_und, auto_screen=False)
+    if res_und.undisclosed_ownership_pct == 15.0 and res_und.depends_on_undisclosed:
+        passed += 1
+        print("  [21/21] UBO mutation caught: Undisclosed warning OFF ('Result depends on undisclosed 15%' flag triggered)")
+    else:
+        print("  [21/21] UBO mutation FAILED: Undisclosed warning OFF")
+
+    print(f"\nFinal Result: {passed}/21 mutation checks passed successfully.")
+    return passed == 21
 
 
 if __name__ == "__main__":

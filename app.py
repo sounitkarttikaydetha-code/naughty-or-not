@@ -84,6 +84,13 @@ from modules.opensanctions.key_manager import (
 is_app_test = ("streamlit.testing" in sys.modules) or (os.environ.get("PYTEST_CURRENT_TEST") is not None)
 
 # Session state initialization
+try:
+    if not is_app_test and not os.environ.get("PYTEST_CURRENT_TEST") and "pytest" not in sys.modules and not os.environ.get("TESTING"):
+        from modules.common.source_manager import start_periodic_source_refresh_worker
+        start_periodic_source_refresh_worker()
+except Exception:
+    pass
+
 if "acknowledged" not in st.session_state:
     st.session_state.acknowledged = True if is_app_test else has_user_acknowledged(app_version=APP_VERSION)
 if "session_os_credits" not in st.session_state:
@@ -491,6 +498,29 @@ with st.sidebar:
                 if note:
                     caption_lines.append(f"**Note:** {note}")
                 st.caption("\n\n".join(caption_lines))
+
+                # User-assisted update & manual import UI
+                v_url = s.get("verify_url") or s.get("landing_page") or ""
+                if v_url:
+                    st.link_button("🌐 Open official page", v_url, use_container_width=True)
+
+                up_file = st.file_uploader(
+                    f"📥 Import downloaded file ({fname})",
+                    key=f"up_src_{sid}",
+                    help=f"Import official download for {fname}",
+                )
+                if up_file is not None:
+                    ok_imp, msg_imp = sm.import_source_file(
+                        sid,
+                        up_file.getvalue(),
+                        filename=up_file.name,
+                        provenance_notes="Manual user import",
+                    )
+                    if ok_imp:
+                        st.success(msg_imp)
+                        st.rerun()
+                    else:
+                        st.error(msg_imp)
     except Exception as ex:
         st.caption(f"Error loading source states: {ex}")
 
