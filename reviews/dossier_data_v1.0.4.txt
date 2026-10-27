@@ -1,0 +1,137 @@
+============================================================
+NAUGHTY OR NOT v1.0.2 DOSSIER DATA GENERATOR
+============================================================
+
+--- 1. ENVIRONMENT & PLATFORM ---
+OS: Windows 11 (10.0.26300)
+Python: 3.12.10 (CPython)
+Architecture: AMD64
+Initial Process RSS: 23.69 MB
+
+--- 2. CONFIGURATION & SCORING THRESHOLDS ---
+Candidate Min Match: 0.6
+Display Min Match: 0.5
+Display Limit: 25
+Possible Match Threshold (Orange): 0.7
+Potential Match Threshold (Red): 0.8
+Min Distinctive Word Length: 4
+Fuzzy Word Min Length: 5
+Fuzzy Word Min Similarity: 0.9
+Name Only Penalty Multiplier: 0.81225
+Length Difference Cutoff Factor: 0.9
+Length Difference Penalty Weight: 0.3
+Different Letter Penalty Weight: 0.9
+Unmatched Index Token Weight: 0.15
+Count of Weak Words: 19 (e.g., ['airlines', 'airline', 'airways', 'air', 'aviation'])
+Count of Company Type Words: 33 (e.g., ['Joint Stock Company', 'Limited Liability Company', 'Public Joint Stock Company', 'Public Joint-Stock Company', 'PJSC'])
+Count of Country Words: 97 (e.g., ['india', 'indian', 'indians', 'russia', 'russian'])
+Count of Known Cities: 32 (e.g., ['dubai', 'abu dhabi', 'sharjah', 'london', 'moscow'])
+Count of Name Variants: 3 (e.g., [('mohammed', 'mohammad'), ('muhammad', 'mohammad'), ('mohamed', 'mohammad')])
+Alias Split Delimiters: ['d/b/a', 'dba', 'a.k.a.', 'aka', 'f.k.a.', 'fka', 'formerly', 'also known as']
+Count of Airline Alias Expansion Rows: 11
+
+--- 3. DATA SOURCES & RECORD COUNTS ---
+Python Engine Load Time: 0.621 s
+Post-Engine Load RSS: 250.14 MB
+  - us_ofac: 19,457 records (hash: 0dee0d2de5e5...)
+  - us_csl: 6,702 records (hash: 1e60a6f79f34...)
+  - uk_csl: 6,408 records (hash: 0d87329971a7...)
+  - eu_csl: 6,234 records (hash: 7d21a5c7574e...)
+  - un_csl: 1,010 records (hash: d7df15ecfbf0...)
+  - bis_aircraft: 305 active aircraft, 9 removals
+  - eu_air_safety_list: 154 Annex A carriers, 2 Annex B carriers, 16 banned states
+  - faa_iasa: 9 Category 2 jurisdictions
+  - in_mha_first_schedule: 48 organisations
+  - in_mha_fourth_schedule: 80 individuals
+  - in_mha_unlawful_assoc: 44 associations
+  - fatf_jurisdictions: 7 high-risk (black), 36 monitored (grey)
+
+--- 4. RAW TEXT SEARCH INDEX (SQLITE FTS5) ---
+Raw Index Database: D:\Naughty or not\data\raw_index.db
+Database Size: 407.34 MB
+Total FTS5 Indexed Records: 112,629
+    * us_ofac: 19,944 records (OK, date: 2026-10-18)
+    * us_csl: 26,159 records (OK, date: 2026-10-18)
+    * uk_csl: 58,609 records (OK, date: 2026-10-18)
+    * eu_csl: 6,234 records (OK, date: 2026-10-18)
+    * un_csl: 1,010 records (OK, date: 2026-10-18)
+    * bis_aircraft: 305 records (OK, date: 2025-10-10)
+    * eu_air_safety: 156 records (OK, date: 2026-06-09)
+    * faa_iasa: 9 records (OK, date: 2025-04-18)
+    * in_mha_first_schedule: 48 records (OK, date: 2026-10-01)
+    * in_mha_fourth_schedule: 80 records (OK, date: 2026-07-04)
+    * in_mha_unlawful_assoc: 44 records (OK, date: 2025-03-17)
+    * fatf_jurisdictions: 31 records (OK, date: 2026-06-28)
+
+--- 5. PERFORMANCE BENCHMARKS (TIMINGS) ---
+Screening 'Aeroflot' (Airline, with airline alias expansion): 3313.75 ms
+    * us_ofac: [Γ£à] NO_MATCH (score: 0.0000, reason: none)
+    * us_csl: [≡ƒö┤] POTENTIAL_MATCH (score: 0.7716, reason: core_name)
+    * uk_csl: [≡ƒö┤] POTENTIAL_MATCH (score: 0.7716, reason: core_name)
+    * eu_csl: [Γ£à] NO_MATCH (score: 0.0000, reason: none)
+    * un_csl: [Γ£à] NO_MATCH (score: 0.0000, reason: none)
+Screening 'Jaipur International Airport Limited' (Clean Organisation): 1385.53 ms
+    * us_ofac: [Γ£à] NO_MATCH (score: 0.0000, info_hits: 25)
+    * us_csl: [Γ£à] NO_MATCH (score: 0.0000, info_hits: 25)
+    * uk_csl: [Γ£à] NO_MATCH (score: 0.0000, info_hits: 25)
+    * eu_csl: [Γ£à] NO_MATCH (score: 0.0000, info_hits: 25)
+    * un_csl: [Γ£à] NO_MATCH (score: 0.0000, info_hits: 21)
+Raw Search 'RUS2426' (FTS5 trigram): 4.86 ms (3 results)
+Report Generation (PDF + Excel): 42.64 ms
+  PDF Size: 3.7 KB (Screening_Report_airline_Aeroflot_20261027_150224.pdf)
+  Excel Size: 7.1 KB (Screening_Report_airline_Aeroflot_20261027_150224.xlsx)
+Manual Check SQLite Save: 7.81 ms
+
+--- 6. AUDIT DATABASE (SCREENING.DB) ---
+Database Location: D:\Naughty or not\logs\screening.db
+Columns in screening_logs:
+    - id (INTEGER)
+    - timestamp (TEXT)
+    - windows_user (TEXT)
+    - machine_name (TEXT)
+    - search_type (TEXT)
+    - inputs (TEXT)
+    - threshold (TEXT)
+    - source (TEXT)
+    - result (TEXT)
+    - top_match (TEXT)
+    - score (REAL)
+    - list_version (TEXT)
+    - opensanctions_used (TEXT)
+    - report_file_name (TEXT)
+    - app_version (TEXT)
+    - acknowledged (INTEGER)
+    - mode (TEXT)
+    - comment (TEXT)
+    - query_type (TEXT)
+    - sources_checked (TEXT)
+    - duration_ms (INTEGER)
+    - result_hash (TEXT)
+    - candidate_count (INTEGER)
+    - red_count (INTEGER)
+    - orange_count (INTEGER)
+    - info_count (INTEGER)
+    - phonetic_enabled (INTEGER)
+    - publication_date (TEXT)
+    - last_verified_at (TEXT)
+Total Logged Screening Rows: 1667 (Breakdown by mode: {'manual': 126, 'raw': 2, 'screened': 1539})
+Total Acknowledgement Rows: 3
+Sample Log Row (ID 1667): timestamp=2026-10-27T15:02:24.448960+00:00, mode=manual_check, type={"name": "Aeroflot", "source": "eu_air_safety_list"}, result=Aeroflot, score=current
+
+--- 7. TEST INVENTORY & GOLDEN REGRESSION SET ---
+Total Golden Set Queries: 21
+  - Total List Expectations: 105
+  - Verified Locks (verified: true): 51
+Expected Tier Distribution across all query-lists: {'POTENTIAL_MATCH': 28, 'NO_MATCH': 60, 'POSSIBLE_MATCH_REVIEW': 17}
+Total Pytest Test Cases Collected: 175
+
+--- 8. DISTRIBUTION ARTIFACT SIZES ---
+  - NaughtyOrNot_Setup_v1.0.0.exe: 63.49 MB
+  - NaughtyOrNot_v1.0.2_Portable.zip: 95.78 MB
+  - SHA256.txt: 0.00 MB
+  - Seed Sanctions Directory (data/raw): 98.05 MB (7 files)
+Peak Process RSS: 503.94 MB
+
+============================================================
+DOSSIER DATA GENERATION COMPLETE
+============================================================

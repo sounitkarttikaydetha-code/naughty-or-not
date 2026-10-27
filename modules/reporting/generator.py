@@ -15,6 +15,23 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 
 from modules.common.paths import get_app_data_dir
+import shutil
+import tempfile
+
+def _ensure_safe_tempdir():
+    try:
+        cur_temp = tempfile.gettempdir()
+        if shutil.disk_usage(cur_temp).free < 50 * 1024 * 1024:
+            alt_tmp = get_app_data_dir() / ".tmp"
+            alt_tmp.mkdir(parents=True, exist_ok=True)
+            if shutil.disk_usage(str(alt_tmp)).free > 50 * 1024 * 1024:
+                tempfile.tempdir = str(alt_tmp)
+                os.environ["TEMP"] = str(alt_tmp)
+                os.environ["TMP"] = str(alt_tmp)
+    except Exception:
+        pass
+
+_ensure_safe_tempdir()
 
 def _get_base_reports_dir() -> Path:
     if getattr(sys, "frozen", False):

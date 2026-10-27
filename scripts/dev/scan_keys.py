@@ -25,7 +25,7 @@ def main():
     print(f"Scanning for secret fragment (length {len(secret_part)}, ending in ...{key[-4:]})...")
 
     # 1. Scan git history
-    p = subprocess.run(["git", "log", "-p", "--all"], capture_output=True, text=True, errors="ignore")
+    p = subprocess.run(["git", "--no-pager", "log", "-p", "--all"], capture_output=True, text=True, errors="ignore")
     if secret_part in p.stdout:
         print("WARNING: Key found in git log!")
     else:
