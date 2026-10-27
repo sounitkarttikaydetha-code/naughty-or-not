@@ -55,7 +55,13 @@ def get_db_connection(db_path: Optional[Path] = None) -> sqlite3.Connection:
     """Get connection to SQLite audit database, initializing tables if needed."""
     target_path = db_path or DB_PATH
     target_path.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(str(target_path))
+    conn = sqlite3.connect(str(target_path), timeout=10.0)
+    try:
+        conn.execute("PRAGMA journal_mode=WAL;")
+        conn.execute("PRAGMA synchronous=NORMAL;")
+        conn.execute("PRAGMA busy_timeout = 10000;")
+    except Exception:
+        pass
     conn.execute("""
         CREATE TABLE IF NOT EXISTS screening_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,

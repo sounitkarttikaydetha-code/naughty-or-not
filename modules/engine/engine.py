@@ -57,6 +57,11 @@ def select_candidates_for_query(
             hitting.append(hits)
 
     if not hitting:
+        # Runaway-token guard: no real entity token exceeds ~36 chars.
+        # If every query token is >50 chars and none hit the index, skip the
+        # full partition scan -- it would be O(N) Jaro-Winkler for no benefit.
+        if all(len(tok) > 50 for tok in tokens):
+            return []
         # Pure typo / unknown tokens: scan partition to preserve fuzzy recall
         return list(range(partition_size))
 

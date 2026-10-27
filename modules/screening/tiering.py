@@ -935,6 +935,13 @@ def screen_query_all_lists(
             }
         return results_by_source
 
+    # Query length cap: no real entity name exceeds ~200 chars.
+    # Truncate to avoid O(N) scans on adversarial/garbage input.
+    MAX_QUERY_LEN = 200
+    if len(query) > MAX_QUERY_LEN:
+        logger.debug("Query truncated from %d to %d chars", len(query), MAX_QUERY_LEN)
+        query = query[:MAX_QUERY_LEN]
+
     direct_results = _screen_direct_all_lists(
         query=query,
         client=client,
