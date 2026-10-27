@@ -153,14 +153,22 @@ def credits_used() -> Dict[str, int]:
     return {"total_credits": total_credits, "total_calls": total_calls}
 
 
-MAX_CREDIT_BUDGET = 15
+try:
+    from modules.screening.config import OPENSANCTIONS_TEST_CREDIT_CAP
+    MAX_CREDIT_BUDGET = OPENSANCTIONS_TEST_CREDIT_CAP
+except Exception:
+    MAX_CREDIT_BUDGET = 15
 
 
-def check_credit_budget(current_usage: Optional[int] = None, max_budget: int = MAX_CREDIT_BUDGET) -> bool:
-    """Check whether current usage is strictly below the hard-capped credit budget."""
+def check_credit_budget(
+    current_usage: Optional[int] = None,
+    max_budget: int = MAX_CREDIT_BUDGET,
+    additional_credits: int = 1,
+) -> bool:
+    """Check whether (current_usage + additional_credits) is within the hard-capped credit budget."""
     if current_usage is None:
         current_usage = credits_used().get("total_credits", 0)
-    return current_usage < max_budget
+    return (current_usage + additional_credits) <= max_budget
 
 
 class OpenSanctionsClient:
@@ -426,4 +434,106 @@ class OpenSanctionsClient:
                 "credits_consumed": 0,
                 "best_hit": None,
                 "hits": [],
+            }
+    def match_batch(
+        self,
+        queries: List[Dict[str, Any]],
+        use_opensanctions: bool = False,
+    ) -> Dict[str, Any]:
+        """
+        Screen a batch of entities against OpenSanctions via a single /match/<dataset> request.
+        Each query in the batch counts as 1 credit against the credit budget.
+        """
+        num_queries = len(queries)
+        if not use_opensanctions:
+            return {
+                "status": STATUS_NOT_RUN,
+                "reason": "credit_guard_off",
+                "message": "OpenSanctions screening was not requested (use_opensanctions=False)",
+                "credits_consumed": 0,
+                "responses": {},
+            }
+
+        current_spent = credits_used().get("total_credits", 0)
+        if not check_credit_budget(current_usage=current_spent, max_budget=MAX_CREDIT_BUDGET, additional_credits=num_queries):
+            return {
+                "status": STATUS_ERROR,
+                "reason": "credit_cap_reached",
+                "message": f"OpenSanctions credit budget exhausted or insufficient ({current_spent}+{num_queries} > {MAX_CREDIT_BUDGET} credits). Live batch call refused.",
+                "credits_consumed": 0,
+                "responses": {},
+            }
+
+        if not self.is_configured():
+            return {
+                "status": STATUS_DISABLED,
+                "reason": "missing_api_key",
+                "message": "OPENSANCTIONS_API_KEY is missing or empty in .env",
+                "credits_consumed": 0,
+                "responses": {},
+            }
+
+        queries_dict = {}
+        for idx, q in enumerate(queries):
+            name = q.get("name", "").strip()
+            st = q.get("search_type") or q.get("type") or "Company"
+            schema = map_schema(st)
+            props = {"name": [name]}
+            queries_dict[f"q{idx}"] = {
+                "schema": schema,
+                "properties": props,
+            }
+
+        endpoint_url = f"{self.base_url}/match/{self.dataset}"
+        headers = {
+            "Authorization": f"ApiKey {self.api_key}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "NaughtyOrNot-SanctionChecK/1.0",
+        }
+
+        req = urllib.request.Request(
+            endpoint_url,
+            data=json.dumps({"queries": queries_dict}).encode("utf-8"),
+            headers=headers,
+            method="POST",
+        )
+
+        try:
+            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+                http_status = resp.getcode()
+                raw_body = resp.read().decode("utf-8")
+                data = json.loads(raw_body)
+
+            for idx, q in enumerate(queries):
+                log_usage(
+                    query=q.get("name", ""),
+                    schema=map_schema(q.get("search_type") or q.get("type")),
+                    credits_consumed=1,
+                    http_status=http_status,
+                )
+
+            return {
+                "status": STATUS_OK,
+                "credits_consumed": num_queries,
+                "data": data,
+            }
+        except urllib.error.HTTPError as e:
+            for q in queries:
+                log_usage(
+                    query=q.get("name", ""),
+                    schema=map_schema(q.get("search_type") or q.get("type")),
+                    credits_consumed=0,
+                    http_status=e.code,
+                )
+            return {
+                "status": STATUS_ERROR,
+                "reason": f"http_{e.code}",
+                "credits_consumed": 0,
+            }
+        except Exception as e:
+            return {
+                "status": STATUS_ERROR,
+                "reason": str(e),
+                "credits_consumed": 0,
             }
