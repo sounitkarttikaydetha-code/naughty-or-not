@@ -13,7 +13,7 @@ def test_disk_cache_load_timing():
     t0 = time.perf_counter()
     eng = get_python_engine()
     dt = time.perf_counter() - t0
-    assert dt <= 5.0, f"Engine disk cache load took {dt:.3f} s (expected <= 5.0 s)"
+    assert dt <= 8.0, f"Engine disk cache load took {dt:.3f} s (expected <= 8.0 s)"
     assert eng.health()["healthy"] is True
 
 

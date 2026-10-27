@@ -138,7 +138,7 @@ def test_uninstaller_script_preserves_logs_and_reports():
     assert iss_path.exists()
     content = iss_path.read_text(encoding="utf-8")
     assert "PrivilegesRequired=lowest" in content
-    assert "{localappdata}\\Programs\\NaughtyOrNot" in content
+    assert ("{localappdata}\\Programs\\ClearanceCheck" in content or "{localappdata}\\Programs\\NaughtyOrNot" in content)
     # Ensure uninstaller asks to keep logs and reports
     assert "Would you like to keep your screening logs and compliance reports" in content
     assert "DelTree" in content

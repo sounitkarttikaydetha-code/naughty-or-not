@@ -86,3 +86,17 @@ def test_report_chip_text():
     assert format_chip_text("NOT_CHECKED") == "⚪ NOT CHECKED"
     assert format_chip_text("SAFETY") == "✈️ SAFETY"
     assert format_chip_text("EXPORT_CONTROL") == "📦 EXPORT CONTROL"
+
+
+def test_viewport_overflow_rules():
+    """T11 Part B6: Viewport & overflow rules at 1024px, 1366px, 1920px."""
+    app_py = (Path(__file__).resolve().parent.parent / "app.py").read_text(encoding="utf-8")
+    assert "overflow-x: hidden !important" in app_py
+    assert "max-width: 100vw !important" in app_py
+    assert "grid-template-columns: repeat(auto-fit, minmax(" in app_py
+
+    # Viewport calculations
+    for width in [1024, 1366, 1920]:
+        target_w = max(1000, min(1500, int(width * 0.90)))
+        assert target_w <= width, f"Clamped width {target_w} must fit within viewport {width}"
+        assert target_w >= 1000, f"Clamped width {target_w} must meet 1000px minimum"

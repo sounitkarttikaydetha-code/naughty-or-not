@@ -153,22 +153,9 @@ def credits_used() -> Dict[str, int]:
     return {"total_credits": total_credits, "total_calls": total_calls}
 
 
-try:
-    from modules.screening.config import OPENSANCTIONS_TEST_CREDIT_CAP
-    MAX_CREDIT_BUDGET = OPENSANCTIONS_TEST_CREDIT_CAP
-except Exception:
-    MAX_CREDIT_BUDGET = 15
-
-
-def check_credit_budget(
-    current_usage: Optional[int] = None,
-    max_budget: int = MAX_CREDIT_BUDGET,
-    additional_credits: int = 1,
-) -> bool:
-    """Check whether (current_usage + additional_credits) is within the hard-capped credit budget."""
-    if current_usage is None:
-        current_usage = credits_used().get("total_credits", 0)
-    return (current_usage + additional_credits) <= max_budget
+# Credit cap removed in v1.1.0 (information-only usage tracking retained)
+def check_credit_budget(*args, **kwargs) -> bool:
+    return True
 
 
 class OpenSanctionsClient:
@@ -234,18 +221,7 @@ class OpenSanctionsClient:
                 "hits": [],
             }
 
-        # 2. Credit Budget Cap Guard: Strictly refuse if total credits >= 15
-        current_spent = credits_used().get("total_credits", 0)
-        if not check_credit_budget(current_usage=current_spent, max_budget=MAX_CREDIT_BUDGET):
-            return {
-                "status": STATUS_ERROR,
-                "tier": TIER_NOT_CHECKED,
-                "reason": "credit_cap_reached",
-                "message": f"OpenSanctions credit budget exhausted ({current_spent}/{MAX_CREDIT_BUDGET} credits consumed). Live call refused.",
-                "credits_consumed": 0,
-                "best_hit": None,
-                "hits": [],
-            }
+        # Credit cap removed: all calls permitted when use_opensanctions is True
 
         # 3. Check if API Key is configured
         if not self.is_configured():
@@ -454,15 +430,7 @@ class OpenSanctionsClient:
                 "responses": {},
             }
 
-        current_spent = credits_used().get("total_credits", 0)
-        if not check_credit_budget(current_usage=current_spent, max_budget=MAX_CREDIT_BUDGET, additional_credits=num_queries):
-            return {
-                "status": STATUS_ERROR,
-                "reason": "credit_cap_reached",
-                "message": f"OpenSanctions credit budget exhausted or insufficient ({current_spent}+{num_queries} > {MAX_CREDIT_BUDGET} credits). Live batch call refused.",
-                "credits_consumed": 0,
-                "responses": {},
-            }
+        # Credit cap removed: all batch calls permitted when use_opensanctions is True
 
         if not self.is_configured():
             return {

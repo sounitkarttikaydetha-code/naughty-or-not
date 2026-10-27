@@ -415,6 +415,7 @@ def tier_single_entity(
     dob: Optional[str] = None,
     yob: Optional[str] = None,
     nationality: Optional[str] = None,
+    identifiers: Optional[List[str]] = None,
 ) -> Optional[Dict[str, Any]]:
     """
     Tier a single candidate entity against the query.
@@ -512,11 +513,8 @@ def tier_single_entity(
             tier = TIER_BELOW_THRESHOLD
             reason = "below_threshold"
 
-        # Secondary identifier conflict check
-        if tier == TIER_POTENTIAL_MATCH:
-            if check_secondary_identifier_conflict(entity, dob=dob, yob=yob, nationality=nationality):
-                tier = TIER_POSSIBLE_MATCH
-                reason = "secondary_identifier_conflict"
+        # Handled uniformly via corroboration assessment below
+        pass
 
     else:
         # Organisation / Entity Rule
@@ -636,6 +634,16 @@ def tier_single_entity(
             entity["phonetic_evidence"] = ph_evidence
 
 
+    from modules.screening.identifiers import assess_corroboration, apply_identifier_and_conflict_rules
+    corrob = assess_corroboration(
+        entity,
+        dob=dob,
+        yob=yob,
+        nationality=nationality,
+        identifiers=identifiers,
+    )
+    tier, reason = apply_identifier_and_conflict_rules(tier, reason, corrob)
+
     tier_icon = (
         "🔴" if tier == TIER_POTENTIAL_MATCH
         else ("🟠" if tier == TIER_POSSIBLE_MATCH
@@ -665,6 +673,7 @@ def tier_single_entity(
         "source_list": entity.get("sourceList", ""),
         "source_id": entity.get("sourceID", ""),
         "core_pass": core_pass or (best_match_type == "partial_name_person"),
+        "corroboration": corrob,
         "entity": entity,
     }
 
@@ -724,6 +733,7 @@ def _screen_direct_all_lists(
     dob: Optional[str] = None,
     yob: Optional[str] = None,
     nationality: Optional[str] = None,
+    identifiers: Optional[List[str]] = None,
 ) -> Dict[str, Dict[str, Any]]:
     """Screen a query directly against all 5 lists."""
     results_by_source: Dict[str, Dict[str, Any]] = {}
@@ -889,6 +899,7 @@ def screen_query_all_lists(
     yob: Optional[str] = None,
     nationality: Optional[str] = None,
     enable_transliteration: bool = False,
+    identifiers: Optional[List[str]] = None,
 ) -> Dict[str, Dict[str, Any]]:
     """
     Screen a query across all 5 lists, applying all rules.

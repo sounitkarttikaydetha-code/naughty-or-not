@@ -1,3 +1,11 @@
+from modules.common.records_store import (
+    get_record,
+    format_record_for_display,
+    format_record_as_text,
+    format_programs,
+    populate_records_cache,
+)
+from modules.common.branding import APP_NAME, APP_SUBTITLE, MAIN_TITLE, VERSION_LABEL, CODENAME
 """
 Naughty or not — Sanction checK
 Streamlit User Interface (T5, T5.1, T5.2).
@@ -92,13 +100,21 @@ if "os_key_dialog_done" not in st.session_state:
     st.session_state.os_key_dialog_done = True if is_app_test else False
 if "first_run_init_done" not in st.session_state:
     st.session_state.first_run_init_done = False
+if "self_test_results" not in st.session_state:
+    from modules.common.self_test import run_full_self_test
+    st.session_state.self_test_results = run_full_self_test()
 
 st.set_page_config(
-    page_title="Naughty or not",
+    page_title=f"{APP_NAME} — {MAIN_TITLE}",
     page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+# Modern UI Theme (T11 Part G)
+_theme_css = PROJECT_ROOT / "app" / "static" / "theme.css"
+if _theme_css.is_file():
+    st.markdown(f"<style>{_theme_css.read_text(encoding='utf-8')}</style>", unsafe_allow_html=True)
 
 # Responsive Layout, Display Size Scaling & Status Chip Styling (T9-1)
 display_scale = get_display_scale()
@@ -248,6 +264,10 @@ st.markdown(
         gap: 0.5rem;
         flex-wrap: wrap;
     }}
+    #MainMenu, header[data-testid="stHeader"], footer, .stDeployButton, [data-testid="stToolbar"] {{
+        visibility: hidden !important;
+        display: none !important;
+    }}
     </style>
     """,
     unsafe_allow_html=True,
@@ -359,6 +379,43 @@ def load_sources_registry() -> Dict[str, Any]:
 source_reg = load_sources_registry()
 source_dict = {s["id"]: s for s in source_reg.get("sources", [])}
 
+
+ENTITY_TYPE_NAMES = {
+    "business": "Organisation",
+    "organization": "Organisation",
+    "organisation": "Organisation",
+    "enterprise": "Organisation",
+    "company": "Organisation",
+    "entity": "Organisation",
+    "individual": "Individual",
+    "person": "Individual",
+    "ind": "Individual",
+    "airline": "Airline",
+    "aircraft": "Aircraft",
+    "vessel": "Vessel",
+    "ship": "Vessel",
+}
+
+FRIENDLY_AUTHORITIES = {
+    "us_ofac": "US Treasury (OFAC)",
+    "us_csl": "US Commerce & State (CSL)",
+    "uk_csl": "UK Sanctions (FCDO)",
+    "eu_csl": "EU External Action Service",
+    "eu_fsf": "EU External Action Service",
+    "un_csl": "UN Security Council",
+    "un_sc": "UN Security Council",
+    "in_mha": "Ministry of Home Affairs (India)",
+    "in_mha_first_schedule": "Ministry of Home Affairs (India)",
+    "in_mha_fourth_schedule": "Ministry of Home Affairs (India)",
+    "in_mha_unlawful_assoc": "Ministry of Home Affairs (India)",
+    "bis_aircraft": "US BIS Export Administration",
+    "bis_tdo": "US BIS Export Administration",
+    "eu_air_safety": "European Commission",
+    "faa_iasa": "Federal Aviation Administration",
+    "fatf_jurisdictions": "FATF",
+    "os_bulk": "OpenSanctions",
+}
+
 FRIENDLY_SOURCE_NAMES = {
     "us_ofac": "US Treasury (OFAC)",
     "us_csl": "US Consolidated Screening List",
@@ -379,17 +436,24 @@ FRIENDLY_SOURCE_NAMES = {
 # Sidebar: Status, OpenSanctions, List Freshness & Support
 with st.sidebar:
     st.title("Source Status")
-    st.caption(f"Naughty or not v{APP_VERSION}")
+    st.caption(f"{APP_NAME} {VERSION_LABEL}")
+
+    # Engine Self-Test Status
+    st_res = st.session_state.get("self_test_results") or {}
+    if st_res.get("has_canary_failure"):
+        st.error("🚨 **Engine Self-Test FAILED** (Canary failure)")
+    else:
+        st.caption(f"🛡️ Self-test: Passed ({st_res.get('duration_ms', 0):.0f}ms)")
+    if st_res.get("soft_notes"):
+        with st.expander("ℹ️ Self-test notes", expanded=False):
+            for sn in st_res["soft_notes"]:
+                st.caption(f"• {sn}")
 
     # OpenSanctions Status
     active_key = get_session_key()
     masked = mask_key(active_key)
     total_os_credits = get_total_opensanctions_credits()
-    st.metric(
-        label="OpenSanctions Credits",
-        value=f"{st.session_state.session_os_credits} session",
-        delta=f"{total_os_credits} total logged",
-    )
+    st.caption(f"OpenSanctions credits used: {st.session_state.session_os_credits} this session · {total_os_credits} in total")
     if active_key:
         st.caption(f"Active Key: `{masked}`")
     else:
@@ -402,24 +466,42 @@ with st.sidebar:
     st.divider()
 
     st.subheader("Source Freshness")
-    for s in source_reg.get("sources", []):
-        sid = s.get("id")
-        fname = FRIENDLY_SOURCE_NAMES.get(sid, sid)
-        auth = s.get("authority")
-        pdate = s.get("publication_date", "—")
-        status = s.get("status", "OK")
-        badge = "🟢" if status == "OK" else ("🟠" if status == "STALE" else ("⚪" if status in ["UNAVAILABLE", "NOT_CHECKED", "MISSING"] else "🔴"))
-        with st.expander(f"{badge} {fname}", expanded=False):
-            st.caption(f"**ID:** `{sid}`\n\n**Authority:** {auth}\n\n**Publication:** {pdate}\n\n**Status:** {status}")
+    try:
+        from modules.common.source_manager import SourceManager
+        sm = SourceManager()
+        all_states = sm.get_all_source_states()
+        for sid, s in sm.registry.items():
+            st_entry = all_states.get(sid, {})
+            fname = FRIENDLY_SOURCE_NAMES.get(sid, sid)
+            auth = s.get("authority", "")
+            pdate = st_entry.get("publication_date", s.get("publication_date", "—"))
+            status = st_entry.get("state", "OK")
+            last_v = st_entry.get("last_verified_at", "")
+            note = st_entry.get("note", "")
+            badge = "🟢" if status == "OK" else ("🟠" if status == "STALE" else ("⚪" if status in ["UNAVAILABLE", "NOT_CHECKED", "MISSING"] else "🔴"))
+            with st.expander(f"{badge} {fname}", expanded=False):
+                caption_lines = [
+                    f"**ID:** `{sid}`",
+                    f"**Authority:** {auth}",
+                    f"**Publication:** {pdate}",
+                    f"**Status:** {status}",
+                ]
+                if last_v:
+                    caption_lines.append(f"**Last Verified:** {last_v[:19]}")
+                if note:
+                    caption_lines.append(f"**Note:** {note}")
+                st.caption("\n\n".join(caption_lines))
+    except Exception as ex:
+        st.caption(f"Error loading source states: {ex}")
 
     if st.button("🔄 Update lists"):
-        with st.spinner("Updating sources..."):
+        with st.spinner("Checking and updating all regulatory source lists..."):
             try:
-                from modules.aviation.parser import check_and_refresh_sources
-                check_and_refresh_sources(force=True)
-                from modules.raw_search.indexer import build_full_raw_index
-                build_full_raw_index()
-                st.success("Successfully updated all source lists!")
+                from modules.common.source_manager import SourceManager
+                sm = SourceManager()
+                res = sm.refresh_all()
+                st.success(f"Successfully checked and updated all {len(res)} sources!")
+                st.rerun()
             except Exception as e:
                 list_date = get_lists_date()
                 st.warning(f"Lists could not be updated ({e}). Using copies dated {list_date}.")
@@ -456,31 +538,42 @@ with st.sidebar:
             set_setting("display_size", new_size)
             st.rerun()
 
-    with st.expander("About Naughty or not"):
+    with st.expander(f"About {APP_NAME}"):
         st.markdown(
-            f"**Naughty or not** v{APP_VERSION}\n\n"
+            f"**{APP_NAME}** {VERSION_LABEL}\n\n"
+            f"**Internal codename:** Naughty or not\n\n"
             "Self-contained desktop sanctions and compliance screening engine.\n\n"
             "• Zero background services\n"
             "• Local in-process evaluation\n"
             "• 10-year immutable audit logging\n"
             "• No query leakage to external servers"
         )
+        with st.popover("…"):
+            # Easter egg
+            st.caption("You actually scrolled all the way down here? Gotcha. Now smile for the camera. 📸. The developer got bored, you got curious and now we're even. Now go screen something. 🕵️ — Naughty or not, a brainchild of Sounit Karttikay (and the blood, sweat and tokens of Antigravity and Opus, no AIs were sanctioned in the making of this tool)")
 
 
 # Main Screen Header
-st.title("Sanction checK")
-st.caption("Naughty or not — Desktop Sanctions & Aviation Compliance Screening | Version 1.0.0")
+st.title(MAIN_TITLE)
+st.caption(f"{APP_NAME} — {APP_SUBTITLE} | Version {VERSION_LABEL}")
 
-# Mode Tabs: Name check | Text search | Manual check
+self_test = st.session_state.get("self_test_results") or {}
+if self_test.get("has_canary_failure"):
+    st.error("🚨 **ENGINE_CANARY_FAILURE: Matching engine internal inconsistency detected.** One or more core invariant tests failed. Screening calculations may be compromised.")
+
+# Mode Tabs: Name check | Ownership check | Text search | Manual check
 is_raw_tab = (st.query_params.get("tab") == "raw")
 is_manual_tab = (st.query_params.get("tab") == "manual")
+is_ownership_tab = (st.query_params.get("tab") == "ownership")
 
 if is_raw_tab:
-    tab_raw, tab_screened, tab_manual = st.tabs(["📄 Text search", "🔍 Name check", "📋 Manual check"])
+    tab_raw, tab_screened, tab_ownership, tab_manual = st.tabs(["📄 Text search", "🔍 Name check", "🏢 Ownership check", "📋 Manual check"])
 elif is_manual_tab:
-    tab_manual, tab_screened, tab_raw = st.tabs(["📋 Manual check", "🔍 Name check", "📄 Text search"])
+    tab_manual, tab_screened, tab_ownership, tab_raw = st.tabs(["📋 Manual check", "🔍 Name check", "🏢 Ownership check", "📄 Text search"])
+elif is_ownership_tab:
+    tab_ownership, tab_screened, tab_raw, tab_manual = st.tabs(["🏢 Ownership check", "🔍 Name check", "📄 Text search", "📋 Manual check"])
 else:
-    tab_screened, tab_raw, tab_manual = st.tabs(["🔍 Name check", "📄 Text search", "📋 Manual check"])
+    tab_screened, tab_ownership, tab_raw, tab_manual = st.tabs(["🔍 Name check", "🏢 Ownership check", "📄 Text search", "📋 Manual check"])
 
 
 # =========================================================================
@@ -488,7 +581,7 @@ else:
 # =========================================================================
 with tab_screened:
     qp_type = st.query_params.get("search_type")
-    type_options = ["Person", "Organisation", "Airline", "Aircraft", "Vessel"]
+    type_options = ["Person", "Organisation", "Airline", "Aircraft", "Vessel", "Country"]
     default_idx = type_options.index(qp_type) if qp_type in type_options else 1
     col_top1, col_top2 = st.columns([1, 2])
     with col_top1:
@@ -561,6 +654,9 @@ with tab_screened:
                 imo_input = st.text_input("IMO Number (optional)", placeholder="e.g. 9239458")
                 flag_input = st.text_input("Flag State (optional)", placeholder="e.g. Russia")
 
+        elif search_type == "Country":
+            country_input = st.text_input("Country Name or ISO Code*", value=qp_q if search_type == "Country" else "", placeholder="e.g. Russia, Cuba, or IR")
+
         st.markdown("##### Screening Sources & Thresholds")
         st.caption("Red = likely match · Amber = possible match · Grey list = shown for information")
         st.markdown(
@@ -604,13 +700,68 @@ with tab_screened:
 
     # Screening Execution
     if submitted:
-        primary_query = (tail_input or name_input).strip()
+        primary_query = (country_input or tail_input or name_input).strip()
         if not primary_query:
             st.error("Please enter a Name or Registration number to screen.")
             st.stop()
 
         # Update manual check name box as well
         st.session_state.manual_check_name = primary_query
+
+        if search_type == "Country":
+            from modules.screening.country import CountryEngine, log_country_search
+            c_eng = CountryEngine()
+            c_res = c_eng.screen_country((country_input or primary_query).strip())
+            log_country_search(
+                country_query=(country_input or primary_query).strip(),
+                finding=c_res["overall_tier"],
+                banner_text=c_res["banner_text"],
+                execution_time_ms=c_res["execution_time_ms"],
+            )
+            st.markdown(f"## {c_res['flag']} {c_res['country']} ({c_res['iso2']})")
+            if c_res["overall_tier"] == "POTENTIAL_MATCH":
+                st.error(c_res["banner_text"])
+            elif c_res["overall_tier"] == "POSSIBLE_MATCH_REVIEW":
+                st.warning(c_res["banner_text"])
+            else:
+                st.success(c_res["banner_text"])
+
+            reg_data = c_res.get("regimes_data", {})
+            c_col1, c_col2 = st.columns(2)
+            with c_col1:
+                st.markdown("#### Sanctions Regimes")
+                us_s = reg_data.get("us_sanctions", {})
+                st.markdown(f"**US OFAC:** {us_s.get('type', 'None')}")
+                if us_s.get("summary"):
+                    st.caption(f"{us_s.get('authority', '')}: {us_s.get('summary')}")
+
+                uk_s = reg_data.get("uk_sanctions", {})
+                st.markdown(f"**UK FCDO:** {uk_s.get('type', 'None')}")
+                if uk_s.get("summary"):
+                    st.caption(uk_s.get("summary"))
+
+                eu_s = reg_data.get("eu_sanctions", {})
+                st.markdown(f"**EU Restrictive Measures:** {eu_s.get('type', 'None')}")
+                if eu_s.get("summary"):
+                    st.caption(eu_s.get("summary"))
+
+                un_s = reg_data.get("un_sanctions", {})
+                st.markdown(f"**UN Security Council:** {un_s.get('type', 'None')}")
+                if un_s.get("summary"):
+                    st.caption(un_s.get("summary"))
+
+            with c_col2:
+                st.markdown("#### Export Controls & Regulatory Status")
+                exp = reg_data.get("export_controls", {})
+                st.markdown(f"**US EAR:** {exp.get('us_ear', 'Standard')}")
+                st.markdown(f"**US ITAR 126.1:** {exp.get('us_itar', 'Standard')}")
+                st.markdown(f"**FATF Status:** {c_res['fatf_finding']}")
+                if c_res["fatf_note"]:
+                    st.caption(c_res["fatf_note"])
+                st.markdown(f"**EU Air Safety Banned Airlines:** {c_res['eu_banned_airlines_count']}")
+                if c_res["eu_banned_airlines"]:
+                    st.caption(", ".join(c_res["eu_banned_airlines"][:10]))
+            st.stop()
 
         inputs_dict = {
             "search_type": search_type,
@@ -642,6 +793,14 @@ with tab_screened:
         # 1. Sanctions Screening (Watchman 5 lists)
         search_t0 = time.time()
         w_query_type = "person" if search_type == "Person" else ("airline" if search_type == "Airline" else "organisation")
+        active_identifiers = []
+        if id_input and id_input.strip():
+            active_identifiers.append(id_input.strip())
+        if msn_input and msn_input.strip():
+            active_identifiers.append(msn_input.strip())
+        if imo_input and imo_input.strip():
+            active_identifiers.append(imo_input.strip())
+
         w_results = screen_query_all_lists(
             query=primary_query,
             client=watchman,
@@ -649,6 +808,7 @@ with tab_screened:
             dob=dob_input or None,
             nationality=nat_input or None,
             enable_transliteration=True,
+            identifiers=active_identifiers or None,
         )
 
         for src_id in ["us_ofac", "us_csl", "uk_csl", "eu_csl", "un_csl"]:
@@ -1111,15 +1271,21 @@ with tab_screened:
             primary_name = h.get("primary_name") or "—"
             matched_name = h.get("matched_name") or primary_name
             exp_text = f" (via alias: {h.get('expanded_from')})" if h.get("expanded_from") else ""
-            prog = h.get("program") or "—"
+            prog = format_programs(h.get("program"))
             score_val = float(h.get("score") or 0.0)
             reason_code = h.get("tier_reason") or h.get("reason")
             plain_reason = translate_reason(reason_code)
             countries = h.get("country") or h.get("nationality") or ""
             country_str = f" | Country: {countries}" if countries else ""
+            etype = ENTITY_TYPE_NAMES.get(str(h.get("entity_type") or "").lower(), h.get("entity_type") or "Organisation")
+            friendly_src = FRIENDLY_SOURCE_NAMES.get(src_id, src_id.upper().replace("_", " "))
+            auth_name = FRIENDLY_AUTHORITIES.get(src_id, src_info.get("authority", "Official Portal"))
 
             card_box = st.container(border=True)
             with card_box:
+                # Header: Source Authority / Friendly Name
+                st.caption(f"**Source:** {friendly_src}")
+
                 # Line 1: Status chip + listed name (wraps)
                 l1_col1, l1_col2 = st.columns([2 if is_soundalike else 1, 5])
                 with l1_col1:
@@ -1127,18 +1293,42 @@ with tab_screened:
                 with l1_col2:
                     st.markdown(f"**{primary_name}**")
 
-                # Line 2: Matched name/alias, Record ID, Programme, Score, Reason (wraps)
+                # Line 2: Matched name/alias, Entity Type, Record ID, Programme, Score, Reason (wraps)
                 st.markdown(
                     f"**Matched:** <mark style='background-color: #FFEB3B; padding: 2px 6px; font-weight: bold;'>{matched_name}</mark>{exp_text} &nbsp;|&nbsp; "
-                    f"**ID:** `{rec_id}` &nbsp;|&nbsp; **Prog:** {prog}{country_str} &nbsp;|&nbsp; "
+                    f"**Type:** {etype} &nbsp;|&nbsp; **ID:** `{rec_id}` &nbsp;|&nbsp; "
+                    f"**Prog:** {prog}{country_str} &nbsp;|&nbsp; "
                     f"**Score:** `{score_val:.4f}` &nbsp;|&nbsp; **Reason:** {plain_reason}",
                     unsafe_allow_html=True,
                 )
 
+                # Corroboration Panel (T11 Part H1)
+                corrob = h.get("corroboration") or {}
+                if corrob and any(v != "UNKNOWN" for v in [corrob.get("dob_status"), corrob.get("nat_status"), corrob.get("id_status")]):
+                    dob_st = corrob.get("dob_status", "UNKNOWN")
+                    nat_st = corrob.get("nat_status", "UNKNOWN")
+                    id_st = corrob.get("id_status", "UNKNOWN")
+
+                    def c_tag(s):
+                        if s == "MATCH":
+                            return "<span style='color:#065F46; font-weight:700;'>MATCH ✅</span>"
+                        elif s == "CONFLICT":
+                            return "<span style='color:#DC2626; font-weight:700;'>CONFLICT ⚠️</span>"
+                        return "<span style='color:#6B7280;'>Not provided</span>"
+
+                    st.markdown(
+                        f"<div style='font-size:0.8rem; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:4px; padding:4px 8px; margin:4px 0;'>"
+                        f"<b>Corroboration:</b> DOB: {c_tag(dob_st)} &nbsp;|&nbsp; "
+                        f"Nationality: {c_tag(nat_st)} &nbsp;|&nbsp; "
+                        f"ID / Passport / IMO: {c_tag(id_st)}"
+                        f"</div>",
+                        unsafe_allow_html=True,
+                    )
+
                 # Line 3: Verify and copy buttons (wrap)
-                btn_c1, btn_c2, btn_c3, _ = st.columns([2, 1.5, 1.5, 3])
+                btn_c1, btn_c2, btn_c3, _ = st.columns([2.5, 1.5, 1.5, 2.5])
                 with btn_c1:
-                    st.link_button(f"🔗 Verify on official {src_id}", direct_verify_url)
+                    st.link_button(f"🔗 Verify on {auth_name}", direct_verify_url)
                 with btn_c2:
                     st.code(matched_name, language="")
                     st.caption("Copy matched name")
@@ -1146,8 +1336,28 @@ with tab_screened:
                     st.code(str(rec_id), language="")
                     st.caption("Copy record ID")
 
+                # B4: Full record expander
+                with st.expander("📋 Show full record", expanded=False):
+                    rec = get_record(src_id, rec_id)
+                    if rec:
+                        fields = format_record_for_display(rec)
+                        c_left, c_right = st.columns(2)
+                        mid = (len(fields) + 1) // 2
+                        with c_left:
+                            for lbl, val in fields[:mid]:
+                                st.markdown(f"**{lbl}:** {val}")
+                        with c_right:
+                            for lbl, val in fields[mid:]:
+                                st.markdown(f"**{lbl}:** {val}")
+                        st.divider()
+                        txt_record = format_record_as_text(src_id, rec_id, rec)
+                        st.code(txt_record, language="")
+                        st.caption("Copy structured record")
+                    else:
+                        st.info("Full record details not available locally; verify on official portal.")
+
                 with st.expander("Technical details & raw fields", expanded=False):
-                    st.markdown(f"**Entity Type:** {h.get('entity_type')}")
+                    st.markdown(f"**Entity Type:** {etype}")
                     st.markdown(f"**Score Source:** `{h.get('score_source')}`")
                     st.markdown(f"**Internal Reason Code:** `{reason_code}`")
                     if h.get("phonetic_evidence"):
@@ -1263,6 +1473,14 @@ with tab_screened:
                     if chk.get("comment"):
                         st.caption(f"Remarks: _{chk.get('comment')}_")
 
+
+
+# =========================================================================
+# TAB: OWNERSHIP & CONTROL CHECK (T11 Part E)
+# =========================================================================
+with tab_ownership:
+    from modules.ownership.ui import render_ownership_tab
+    render_ownership_tab()
 
 
 # =========================================================================
@@ -1406,6 +1624,22 @@ with tab_raw:
                         st.link_button("🔗 Verify on official source", item["verify_url"])
                         if not item["has_record_link"]:
                             st.code(item["primary_name"], language="")
+                    with st.expander("📋 Show full record", expanded=False):
+                        rec = get_record(item["source"], item["record_id"])
+                        if rec:
+                            fields = format_record_for_display(rec)
+                            col1, col2 = st.columns(2)
+                            mid = (len(fields) + 1) // 2
+                            with col1:
+                                for lbl, val in fields[:mid]:
+                                    st.markdown(f"**{lbl}:** {val}")
+                            with col2:
+                                for lbl, val in fields[mid:]:
+                                    st.markdown(f"**{lbl}:** {val}")
+                            st.divider()
+                            st.code(format_record_as_text(item["source"], item["record_id"], rec), language="")
+                        else:
+                            st.info("Full record details not available locally; verify on official portal.")
                     st.divider()
         else:
             st.info("No records matched the raw search query.")

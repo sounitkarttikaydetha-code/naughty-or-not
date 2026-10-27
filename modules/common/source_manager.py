@@ -21,6 +21,8 @@ import shutil
 import sqlite3
 import sys
 import tempfile
+import threading
+import time
 from typing import Any, Callable, Dict, List, Optional, Tuple
 import urllib.parse
 import urllib.request
@@ -81,6 +83,19 @@ def load_sources_registry() -> Dict[str, Any]:
     if isinstance(raw, list):
         return {s["id"]: s for s in raw if isinstance(s, dict) and "id" in s}
     return raw
+
+
+def get_source_check_interval_hours() -> int:
+    """Get configured refresh check interval in hours from config/sources.yaml (default 24)."""
+    cfg_path = get_sources_config_path()
+    if cfg_path.is_file():
+        try:
+            with open(cfg_path, "r", encoding="utf-8") as f:
+                data = yaml.safe_load(f) or {}
+            return int(data.get("check_interval_hours", 24))
+        except Exception:
+            pass
+    return 24
 
 
 def get_sources_state_file() -> Path:
@@ -363,6 +378,21 @@ def validate_file(path: Path, spec: Dict[str, Any], last_good_count: int = 0) ->
     return True, "OK", count
 
 
+class SafeRedirectHandler(urllib.request.HTTPRedirectHandler):
+    """Prevents HTTP redirects to domains outside allowed_domains."""
+
+    def __init__(self, allowed_domains: List[str]):
+        super().__init__()
+        self.allowed_domains = allowed_domains
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        if not check_domain_allowed(newurl, self.allowed_domains):
+            raise urllib.error.HTTPError(
+                newurl, 403, f"Redirect domain rejected: '{newurl}' not in allowed_domains", headers, fp
+            )
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
 def check_domain_allowed(url: str, allowed_domains: List[str]) -> bool:
     """Verify URL domain is in allowed_domains list."""
     if not url:
@@ -450,7 +480,7 @@ class SourceManager:
         # Check staleness based on last_verified_at vs max_age_days
         max_age = spec.get("max_age_days", 7)
         last_v_str = entry.get("last_verified_at", "")
-        if last_v_str and entry.get("state") in [STATE_OK, STATE_OFFLINE_NOTE]:
+        if last_v_str:
             try:
                 lv_dt = datetime.fromisoformat(last_v_str.replace("Z", "+00:00"))
                 age_days = (datetime.now(timezone.utc) - lv_dt).total_seconds() / 86400.0
@@ -461,6 +491,10 @@ class SourceManager:
                 pass
 
         return entry
+
+    def get_check_interval_hours(self) -> int:
+        """Configured 24-hour refresh check interval."""
+        return get_source_check_interval_hours()
 
     def get_all_source_states(self) -> Dict[str, Dict[str, Any]]:
         """Return state model for all registered sources."""
@@ -546,11 +580,13 @@ class SourceManager:
                     logger.warning(msg)
                     log_source_event(source_id, "DOMAIN_REJECTED", url, "", count_before, count_before, hash_before, hash_before, msg)
                     rejection_reason = msg
+                    validation_rejected = True
                     continue
 
                 try:
                     req = urllib.request.Request(url, headers={"User-Agent": "NaughtyOrNot/1.0.3"})
-                    with urllib.request.urlopen(req, timeout=25) as resp:
+                    opener = urllib.request.build_opener(SafeRedirectHandler(allowed_domains))
+                    with opener.open(req, timeout=25) as resp:
                         # Check HTTP status
                         if resp.status == 410:
                             current_state["state"] = STATE_CLOSED_SUSPECTED
@@ -565,6 +601,7 @@ class SourceManager:
                             msg = f"Redirect domain rejected: '{final_url}' not in allowed_domains"
                             log_source_event(source_id, "DOMAIN_REJECTED", url, final_url, count_before, count_before, hash_before, hash_before, msg)
                             rejection_reason = msg
+                            validation_rejected = True
                             continue
 
                         # Save content to temp
@@ -593,8 +630,12 @@ class SourceManager:
                         log_source_event(source_id, "CLOSED_SUSPECTED", url, "", count_before, count_before, hash_before, hash_before, current_state["note"])
                         save_sources_state(self.state)
                         return STATE_CLOSED_SUSPECTED, current_state["note"]
+                    if "domain rejected" in str(he).lower():
+                        validation_rejected = True
                     rejection_reason = f"HTTP {he.code}: {he.reason}"
                 except Exception as e:
+                    if "domain rejected" in str(e).lower():
+                        validation_rejected = True
                     rejection_reason = str(e)
 
             # 4. Handle Outcome
@@ -647,7 +688,7 @@ class SourceManager:
                     except Exception:
                         pass
 
-                if validation_rejected or (rejection_reason and ("validation" in rejection_reason.lower() or "outside allowed range" in str(rejection_reason).lower() or "missing required" in str(rejection_reason).lower())):
+                if validation_rejected or (rejection_reason and ("validation" in rejection_reason.lower() or "outside allowed range" in str(rejection_reason).lower() or "missing required" in str(rejection_reason).lower() or "rejected" in str(rejection_reason).lower())):
                     new_state = STATE_UPDATE_REJECTED
                     note = f"Update rejected ({rejection_reason}); using copy dated {current_state.get('publication_date', '2026-10-18')}"
                 elif age_days > max_age:
@@ -703,4 +744,114 @@ class SourceManager:
         except Exception as e:
             logger.warning(f"Error rebuilding raw index post-refresh: {e}")
 
+        # Trigger reload of Python screening engine
+        try:
+            from modules.watchman.client import reset_python_engine
+            reset_python_engine()
+        except Exception as e:
+            logger.warning(f"Error resetting python engine post-refresh: {e}")
+
         return results
+
+    def check_and_refresh_expired(
+        self,
+        current_time: Optional[datetime] = None,
+        progress_callback: Optional[Callable[[int, int, str], None]] = None,
+    ) -> Dict[str, Tuple[str, str]]:
+        """
+        Check all sources; if last_verified_at is >= check_interval_hours ago,
+        trigger a refresh for that source. If < check_interval_hours, no refresh.
+        """
+        now = current_time or datetime.now(timezone.utc)
+        interval_hours = get_source_check_interval_hours()
+        results = {}
+        any_refreshed = False
+
+        for s_id in self.registry:
+            entry = self.get_source_state(s_id)
+            last_v_str = entry.get("last_verified_at", "")
+            needs_refresh = False
+            if not last_v_str:
+                needs_refresh = True
+            else:
+                try:
+                    lv_dt = datetime.fromisoformat(last_v_str.replace("Z", "+00:00"))
+                    age_hours = (now - lv_dt).total_seconds() / 3600.0
+                    if age_hours >= interval_hours:
+                        needs_refresh = True
+                except Exception:
+                    needs_refresh = True
+
+            if needs_refresh:
+                if progress_callback:
+                    progress_callback(len(results) + 1, len(self.registry), f"Auto-refreshing {s_id}...")
+                st, msg = self.refresh_source(s_id)
+                results[s_id] = (st, msg)
+                any_refreshed = True
+
+        if any_refreshed:
+            try:
+                from modules.raw_search.indexer import build_full_raw_index
+                build_full_raw_index()
+            except Exception as e:
+                logger.warning(f"Error rebuilding raw index post-auto-refresh: {e}")
+            try:
+                from modules.watchman.client import reset_python_engine
+                reset_python_engine()
+            except Exception as e:
+                logger.warning(f"Error resetting python engine post-auto-refresh: {e}")
+
+        return results
+
+
+# Background worker for long sessions
+_bg_refresh_thread: Optional[threading.Thread] = None
+_bg_refresh_stop_event: Optional[threading.Event] = None
+
+
+def start_periodic_source_refresh_worker(
+    interval_seconds: int = 3600,
+    source_manager: Optional[SourceManager] = None,
+) -> None:
+    """
+    Start background thread for long-running sessions.
+    Checks once an hour (or custom interval) whether any source is past 24 hours,
+    and refreshes it safely without interrupting active searches.
+    """
+    global _bg_refresh_thread, _bg_refresh_stop_event
+    if _bg_refresh_thread and _bg_refresh_thread.is_alive():
+        return
+
+    _bg_refresh_stop_event = threading.Event()
+
+    def _worker_loop():
+        logger.info(f"Periodic source refresh worker started (check interval={interval_seconds}s)")
+        while _bg_refresh_stop_event and not _bg_refresh_stop_event.is_set():
+            # Wait for interval_seconds, checking stop_event every second
+            for _ in range(max(1, interval_seconds)):
+                if _bg_refresh_stop_event and _bg_refresh_stop_event.is_set():
+                    return
+                time.sleep(1)
+            try:
+                sm = source_manager if source_manager is not None else SourceManager()
+                refreshed = sm.check_and_refresh_expired()
+                if refreshed:
+                    logger.info(f"Periodic worker refreshed {len(refreshed)} expired sources: {list(refreshed.keys())}")
+            except Exception as ex:
+                logger.warning(f"Periodic source refresh check error: {ex}")
+
+    _bg_refresh_thread = threading.Thread(
+        target=_worker_loop, daemon=True, name="PeriodicSourceRefreshWorker"
+    )
+    _bg_refresh_thread.start()
+
+
+def stop_periodic_source_refresh_worker() -> None:
+    """Stop the background source refresh worker thread cleanly."""
+    global _bg_refresh_stop_event, _bg_refresh_thread
+    if _bg_refresh_stop_event:
+        _bg_refresh_stop_event.set()
+    if _bg_refresh_thread and _bg_refresh_thread.is_alive():
+        _bg_refresh_thread.join(timeout=2.0)
+    _bg_refresh_thread = None
+    _bg_refresh_stop_event = None

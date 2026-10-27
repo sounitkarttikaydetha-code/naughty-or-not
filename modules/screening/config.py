@@ -70,5 +70,3 @@ COUNTRY_WORDS: List[str] = _config.get("country_words", [])
 KNOWN_CITIES: List[str] = _config.get("known_cities", [])
 FUZZY_WORD_MIN_LEN: int = int(_config.get("fuzzy_word_min_len", 5))
 FUZZY_WORD_MIN_SIMILARITY: float = float(_config.get("fuzzy_word_min_similarity", 0.90))
-# OpenSanctions Hard-Capped Test Credit Cap
-OPENSANCTIONS_TEST_CREDIT_CAP: int = int(_config.get('opensanctions_test_credit_cap', 15))

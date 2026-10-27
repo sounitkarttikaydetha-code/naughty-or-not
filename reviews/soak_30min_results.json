@@ -1,0 +1,19 @@
+{
+  "status": "PASSED",
+  "iterations": 360,
+  "total_duration_seconds": 1795.41,
+  "start_memory_mb": 219.67,
+  "end_memory_mb": 233.2,
+  "memory_growth_mb": 13.53,
+  "peak_memory_mb": 325.61,
+  "start_handles": 146,
+  "end_handles": 146,
+  "handle_difference": 0,
+  "error_count": 0,
+  "errors": [],
+  "latency_stats_ms": {
+    "min": 10.94,
+    "median": 186.52,
+    "max": 1878.34
+  }
+}

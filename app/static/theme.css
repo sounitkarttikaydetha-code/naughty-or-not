@@ -1,0 +1,137 @@
+/*
+  Clearance Check — Modern UI Theme (T11 Part G)
+  Palette, spacing, typography, focus states, and card styling.
+  Zero external CDN requests. WCAG AA contrast compliant (>= 4.5:1).
+*/
+
+:root {
+  /* Brand Palette */
+  --cc-primary: #0F52BA;
+  --cc-primary-hover: #0A3C85;
+  --cc-primary-light: #EBF3FE;
+  --cc-bg-app: #F8FAFC;
+  --cc-bg-surface: #FFFFFF;
+  --cc-bg-card: #FFFFFF;
+
+  /* Typography Colors (WCAG AA Compliant on #FFFFFF / #F8FAFC) */
+  --cc-text-primary: #0F172A;   /* 15.5:1 contrast */
+  --cc-text-secondary: #334155; /* 8.2:1 contrast */
+  --cc-text-muted: #475569;     /* 5.6:1 contrast */
+
+  /* Borders & Focus */
+  --cc-border-subtle: #E2E8F0;
+  --cc-border-default: #CBD5E1;
+  --cc-border-focus: #2563EB;
+
+  /* Status Colors */
+  --cc-likely-bg: #FEE2E2;
+  --cc-likely-text: #991B1B;
+  --cc-likely-border: #DC2626;
+
+  --cc-possible-bg: #FEF3C7;
+  --cc-possible-text: #92400E;
+  --cc-possible-border: #F59E0B;
+
+  --cc-clear-bg: #D1FAE5;
+  --cc-clear-text: #065F46;
+  --cc-clear-border: #10B981;
+
+  --cc-info-bg: #DBEAFE;
+  --cc-info-text: #1E40AF;
+  --cc-info-border: #3B82F6;
+
+  --cc-unchecked-bg: #F1F5F9;
+  --cc-unchecked-text: #334155;
+  --cc-unchecked-border: #94A3B8;
+
+  /* Dimensions & Spacing */
+  --cc-radius-sm: 4px;
+  --cc-radius-md: 8px;
+  --cc-radius-lg: 12px;
+  --cc-font-sans: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+}
+
+/* Global Font & Viewport */
+html, body {
+  font-family: var(--cc-font-sans) !important;
+  color: var(--cc-text-primary) !important;
+  background-color: var(--cc-bg-app) !important;
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+}
+
+/* Accessible Keyboard Focus States */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--cc-border-focus) !important;
+  outline-offset: 2px !important;
+}
+
+/* Cards & Containers */
+div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] > div[data-testid="stBlock"] {
+  border-radius: var(--cc-radius-md);
+}
+
+.source-card {
+  background: var(--cc-bg-surface);
+  border: 1px solid var(--cc-border-subtle);
+  border-radius: var(--cc-radius-md);
+  padding: 0.75rem 0.85rem;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+}
+
+.result-card {
+  background: var(--cc-bg-surface);
+  border: 1px solid var(--cc-border-subtle);
+  border-radius: var(--cc-radius-md);
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05);
+}
+
+/* Status Chips */
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-width: 6.8rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--cc-radius-sm);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.chip-likely {
+  background-color: var(--cc-likely-bg);
+  color: var(--cc-likely-text);
+  border: 1px solid var(--cc-likely-border);
+}
+
+.chip-possible {
+  background-color: var(--cc-possible-bg);
+  color: var(--cc-possible-text);
+  border: 1px solid var(--cc-possible-border);
+}
+
+.chip-clear {
+  background-color: var(--cc-clear-bg);
+  color: var(--cc-clear-text);
+  border: 1px solid var(--cc-clear-border);
+}
+
+.chip-info {
+  background-color: var(--cc-info-bg);
+  color: var(--cc-info-text);
+  border: 1px solid var(--cc-info-border);
+}
+
+.chip-not-checked {
+  background-color: var(--cc-unchecked-bg);
+  color: var(--cc-unchecked-text);
+  border: 1px solid var(--cc-unchecked-border);
+}

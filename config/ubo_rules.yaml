@@ -1,0 +1,48 @@
+# Clearance Check v1.1.0 - Ownership & UBO Rules Configuration (T11 Part E)
+# Encodes multilateral sanctions 50% rules and control criteria:
+# - US OFAC 50% Rule (FAQs 399, 401 Examples 1-3)
+# - EU 50% Rule (>50% ownership or control criteria)
+# - UK Ownership & Control Regulations (50% shares/votes or board majority/control)
+
+ofac:
+  threshold_percent: 50.0
+  operator: ">="
+  rule_description: "An entity is blocked if owned 50% or more in the aggregate, directly or indirectly, by one or more blocked persons."
+  aggregate_blocked_persons: true
+  indirect_multi_tier: "blocked_subsidiary_pass_through" # If parent is >=50% blocked, its ownership downstream is treated as 100% blocked
+  non_blocked_intermediate_pass_through: false           # If intermediate is <50% blocked, its downstream ownership is NOT blocked (FAQ 401 Ex 2)
+  authority: "US Department of the Treasury (OFAC)"
+  faqs_reference: "OFAC FAQs 399, 401"
+
+eu:
+  threshold_percent: 50.0
+  operator: ">"
+  rule_description: "An entity is subject to asset freeze if owned >50% by a designated person or controlled by a designated person."
+  control_criteria:
+    - "right_to_appoint_majority_board"
+    - "decisive_influence"
+    - "holding_majority_voting_rights"
+    - "power_to_exercise_dominant_influence"
+  authority: "European Union (Council Regulations)"
+
+uk:
+  threshold_percent: 50.0
+  operator: ">"
+  rule_description: "An entity is owned or controlled if a designated person holds >50% shares/voting rights or has the right to appoint/remove majority of the board or conducts affairs in accordance with their wishes."
+  conditions:
+    condition_1: "holds_more_than_50_pct_shares_or_votes"
+    condition_2: "right_to_appoint_or_remove_majority_of_directors"
+    condition_3: "significant_control_or_conducts_affairs_per_wishes"
+  authority: "UK Office of Financial Sanctions Implementation (OFSI)"
+
+sectoral:
+  directive_threshold_percent: 33.33
+  debt_equity_restrictions: true
+
+workflow:
+  four_eyes_required: true
+  valid_statuses:
+    - "PENDING"
+    - "APPROVED"
+    - "ESCALATED"
+    - "REJECTED"

@@ -199,25 +199,31 @@ class TestOpenSanctionsMocked:
         assert result.get("credits_consumed", 0) == 0
         assert result["status"] in ("ERROR", "PARSE_ERROR")
 
-    def test_m8_credit_cap_refuses_call(self, monkeypatch, tmp_path):
-        """When credits are already at MAX_CREDIT_BUDGET, every subsequent call is refused."""
+    def test_m8_twenty_calls_in_a_row_all_succeed_without_cap(self, monkeypatch, tmp_path):
+        """Part D: With cap code removed, 20 mocked calls in a row all succeed,
+        no message mentions a cap or limit, and usage log records every call."""
         fake_usage_csv = tmp_path / "opensanctions_usage.csv"
         monkeypatch.setattr(
             "modules.opensanctions.client.USAGE_LOG_PATH", fake_usage_csv
         )
-        from modules.opensanctions.client import OpenSanctionsClient, MAX_CREDIT_BUDGET, log_usage
+        from modules.opensanctions.client import OpenSanctionsClient, credits_used
 
-        # Exhaust the budget
-        for i in range(MAX_CREDIT_BUDGET):
-            log_usage(f"query_{i}", "Company", 1, 200)
+        client = OpenSanctionsClient(api_key="good-key-999")
+        mock_response = MagicMock()
+        mock_response.status = 200
+        mock_response.read.return_value = json.dumps({"responses": {"q0": {"results": [_hit()]}}}).encode("utf-8")
+        mock_response.__enter__.return_value = mock_response
 
-        with patch("urllib.request.urlopen") as mock_open:
-            client = OpenSanctionsClient(api_key="good-key-999")
-            result = client.match("Over Budget Query", search_type="Organisation", use_opensanctions=True)
+        with patch("urllib.request.urlopen", return_value=mock_response):
+            for i in range(20):
+                res = client.match(f"Entity {i}", search_type="Organisation", use_opensanctions=True)
+                assert res["status"] in ("OK", "POTENTIAL_MATCH", "POSSIBLE_MATCH")
+                assert "cap" not in str(res).lower()
+                assert "limit" not in str(res).lower()
 
-        mock_open.assert_not_called()
-        assert result["reason"] == "credit_cap_reached"
-        assert result.get("credits_consumed", 0) == 0
+        total_data = credits_used()
+        assert total_data["total_calls"] == 20
+        assert total_data["total_credits"] == 20
 
     def test_m9_successful_hit_logs_one_credit(self, monkeypatch, tmp_path):
         """A successful API call must log exactly 1 credit and return correct tier."""
@@ -526,13 +532,11 @@ class TestOpenSanctionsLive:
         assert result.get("credits_consumed", 0) <= 2
         assert after <= before + 2
 
-    def test_l15_credit_cap_enforced_after_live(self, live_enabled):
-        """After all live calls are done, verify remaining budget vs cap."""
-        from modules.opensanctions.client import credits_used, MAX_CREDIT_BUDGET
+    def test_l15_credit_usage_tracked_without_cap(self, live_enabled):
+        """After all live calls are done, verify usage is recorded information-only without cap."""
+        from modules.opensanctions.client import credits_used
         total = credits_used()["total_credits"]
-        assert total <= MAX_CREDIT_BUDGET, (
-            f"Credit budget exceeded: {total} > {MAX_CREDIT_BUDGET}"
-        )
+        assert total >= 0
 
     def test_l16_usage_csv_readable_and_non_zero(self, live_enabled):
         """After live tests, usage log must exist and be non-empty."""

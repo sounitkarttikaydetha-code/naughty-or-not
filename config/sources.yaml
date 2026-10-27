@@ -1,3 +1,4 @@
+check_interval_hours: 24
 sources:
 - id: us_ofac
   authority: US Department of the Treasury (OFAC)

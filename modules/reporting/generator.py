@@ -1,3 +1,4 @@
+from modules.common.branding import APP_NAME, MAIN_TITLE
 import os
 import re
 import sys
@@ -9,9 +10,25 @@ import platform
 
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
-from reportlab.lib.pagesizes import letter
+from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+
+def soft_wrap_text(text: Any) -> str:
+    """Insert zero-width space after punctuation delimiters (/ ; , - _) to enable wrapping in ReportLab Paragraph."""
+    if text is None:
+        return "—"
+    s = str(text)
+    # Don't break inside HTML tags or entities
+    parts = re.split(r'(<[^>]+>|&[a-zA-Z0-9#]+;)', s)
+    out = []
+    for p in parts:
+        if p.startswith('<') or p.startswith('&'):
+            out.append(p)
+        else:
+            out.append(re.sub(r'([/;,_\-])', r'\1&#8203;', p))
+    return "".join(out)
+
 from reportlab.lib import colors
 
 from modules.common.paths import get_app_data_dir
@@ -179,7 +196,7 @@ def _build_pdf(
 ) -> None:
     doc = SimpleDocTemplate(
         str(pdf_path),
-        pagesize=letter,
+        pagesize=A4,
         leftMargin=36,
         rightMargin=36,
         topMargin=36,
@@ -220,8 +237,8 @@ def _build_pdf(
     cell_style = ParagraphStyle(
         'TableCell',
         parent=styles['Normal'],
-        fontSize=7,
-        leading=9,
+        fontSize=8,
+        leading=10,
         wordWrap='CJK',
     )
     cell_style_bold = ParagraphStyle(
@@ -233,7 +250,7 @@ def _build_pdf(
     story = []
 
     # Title
-    story.append(Paragraph("<b>Naughty or not — Sanction checK Screening Report</b>", title_style))
+    story.append(Paragraph(f"<b>{APP_NAME} — {MAIN_TITLE} Screening Report</b>", title_style))
     story.append(Spacer(1, 4))
 
     # Compliance Notice
@@ -252,7 +269,7 @@ def _build_pdf(
         [Paragraph(f"<b>Inputs:</b> {inputs}", meta_style), Paragraph(f"<b>Total Candidates:</b> {total_candidates_count}", meta_style)],
         [Paragraph(f"<b>Thresholds:</b> {threshold}", meta_style), Paragraph(f"<b>Sound-alike Matching:</b> {ph_note}", meta_style)],
     ]
-    t_meta = Table(meta_data, colWidths=[270, 270])
+    t_meta = Table(meta_data, colWidths=[260, 263])
     t_meta.setStyle(TableStyle([
         ('VALIGN', (0,0), (-1,-1), 'TOP'),
         ('BOTTOMPADDING', (0,0), (-1,-1), 4),
@@ -270,7 +287,7 @@ def _build_pdf(
             colors.HexColor("#388E3C") if "NO MATCH" in overall_banner or "✅" in overall_banner else colors.HexColor("#616161")
         )
     )
-    t_banner = Table([[Paragraph(f"<b>OVERALL FINDING: {overall_banner}</b>", banner_style)]], colWidths=[540])
+    t_banner = Table([[Paragraph(f"<b>OVERALL FINDING: {overall_banner}</b>", banner_style)]], colWidths=[523])
     t_banner.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,-1), banner_bg),
         ('ALIGN', (0,0), (-1,-1), 'CENTER'),
@@ -297,7 +314,7 @@ def _build_pdf(
             Paragraph(str(s.get("status", "OK")), cell_style),
             Paragraph(format_chip_text(s.get("tier", "NO_MATCH")), cell_style_bold),
         ])
-    t_src = Table(src_table_data, colWidths=[90, 160, 95, 75, 120])
+    t_src = Table(src_table_data, colWidths=[80, 155, 95, 75, 118], repeatRows=1)
     t_src.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#ECEFF1")),
         ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
@@ -340,7 +357,7 @@ def _build_pdf(
                 Paragraph(f"{float(h.get('score') or 0.0):.4f}", cell_style),
                 Paragraph(str(h.get("reason") or h.get("reason_code", "—")), cell_style),
             ])
-        t_sanc = Table(sanc_data, colWidths=[65, 95, 200, 55, 45, 80])
+        t_sanc = Table(sanc_data, colWidths=[60, 85, 195, 50, 45, 88], repeatRows=1)
         t_sanc.setStyle(TableStyle([
             ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#ECEFF1")),
             ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
@@ -372,7 +389,7 @@ def _build_pdf(
                 Paragraph(str(a.get("detail", a.get("details", "—"))), cell_style),
                 Paragraph(str(a.get("note", "—")), cell_style),
             ])
-        t_av = Table(av_data, colWidths=[90, 105, 215, 130])
+        t_av = Table(av_data, colWidths=[85, 105, 205, 128], repeatRows=1)
         t_av.setStyle(TableStyle([
             ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#ECEFF1")),
             ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
@@ -401,7 +418,7 @@ def _build_pdf(
                 Paragraph(str(c.get("summary", c.get("call_to_action", "—"))), cell_style),
                 Paragraph(str(c.get("advisory", c.get("risk_label", "—"))), cell_style),
             ])
-        t_cr = Table(cr_data, colWidths=[85, 95, 220, 140])
+        t_cr = Table(cr_data, colWidths=[85, 95, 205, 138], repeatRows=1)
         t_cr.setStyle(TableStyle([
             ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#ECEFF1")),
             ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
@@ -432,7 +449,7 @@ def _build_pdf(
                 Paragraph(str(mc.get("comment", "—")), cell_style),
                 Paragraph(str(mc.get("verify_url", "—")), cell_style),
             ])
-        t_man = Table(man_data, colWidths=[85, 110, 85, 130, 130])
+        t_man = Table(man_data, colWidths=[80, 105, 80, 130, 128], repeatRows=1)
         t_man.setStyle(TableStyle([
             ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#ECEFF1")),
             ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
@@ -476,7 +493,7 @@ def _build_excel(
     ws_meta = wb.active
     ws_meta.title = "Screening Summary"
 
-    ws_meta["A1"] = "Naughty or not — Sanction checK Screening Report"
+    ws_meta["A1"] = f"{APP_NAME} — {MAIN_TITLE} Screening Report"
     ws_meta["A1"].font = Font(size=14, bold=True, color="0D47A1")
 
     ws_meta["A2"] = NOTICE_TEXT
@@ -595,12 +612,21 @@ def _build_excel(
     # Column autofit and wrapping on all sheets
     for ws in wb.worksheets:
         for row in ws.iter_rows(min_row=2):
+            max_lines = 1
             for cell in row:
                 cell.alignment = Alignment(wrap_text=True, vertical="top")
+                val = str(cell.value or "")
+                lines = val.count("\n") + 1
+                col_letter = openpyxl.utils.get_column_letter(cell.column)
+                col_w = ws.column_dimensions[col_letter].width or 20
+                est = max(lines, int(len(val) / max(col_w, 10)) + 1)
+                if est > max_lines:
+                    max_lines = min(est, 8)
+            ws.row_dimensions[row[0].row].height = max(18, max_lines * 14)
         for col in ws.columns:
             max_len = max([len(str(cell.value or '')) for cell in col], default=0)
             col_letter = openpyxl.utils.get_column_letter(col[0].column)
-            ws.column_dimensions[col_letter].width = min(max(max_len + 2, 12), 50)
+            ws.column_dimensions[col_letter].width = min(max(max_len + 2, 12), 45)
 
     wb.save(str(excel_path))
 
@@ -619,10 +645,10 @@ def generate_raw_reports(
     excel_path = REPORTS_DIR / f"{base_name}.xlsx"
 
     # PDF
-    doc = SimpleDocTemplate(str(pdf_path), pagesize=letter, leftMargin=36, rightMargin=36, topMargin=36, bottomMargin=36)
+    doc = SimpleDocTemplate(str(pdf_path), pagesize=A4, leftMargin=36, rightMargin=36, topMargin=36, bottomMargin=36)
     styles = getSampleStyleSheet()
     story = [
-        Paragraph("<b>Naughty or not — Raw Search Audit Report</b>", styles['Heading1']),
+        Paragraph(f"<b>{APP_NAME} — {MAIN_TITLE} Raw Search Audit Report</b>", styles['Heading1']),
         Spacer(1, 4),
         Paragraph(NOTICE_TEXT, ParagraphStyle('N', parent=styles['Normal'], fontSize=7, textColor=colors.HexColor("#B71C1C"))),
         Spacer(1, 10),
@@ -638,7 +664,7 @@ def generate_raw_reports(
             r.get("term", "—"),
             Paragraph(r.get("snippet", "—")[:200], styles['Normal']),
         ])
-    t = Table(t_data, colWidths=[80, 80, 70, 90, 220])
+    t = Table(t_data, colWidths=[80, 80, 70, 90, 203], repeatRows=1)
     t.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#ECEFF1")),
         ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),

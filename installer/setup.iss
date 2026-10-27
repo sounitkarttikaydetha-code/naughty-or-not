@@ -1,11 +1,11 @@
-; Naughty or not — Inno Setup Script
-; Installs per-user to %LOCALAPPDATA%\Programs\NaughtyOrNot with NO ADMIN RIGHTS required.
+; Clearance Check — Inno Setup Script
+; Installs per-user to %LOCALAPPDATA%\Programs\ClearanceCheck with NO ADMIN RIGHTS required.
 
-#define MyAppName "Naughty or not"
-#define MyAppVersion "1.0.3"
+#define MyAppName "Clearance Check"
+#define MyAppVersion "1.1.0"
 #define MyAppPublisher "Compliance Engineering"
-#define MyAppURL "https://github.com/organization/naughty-or-not"
-#define MyAppExeName "Naughty or not.exe"
+#define MyAppURL "https://github.com/organization/clearance-check"
+#define MyAppExeName "Clearance Check.exe"
 
 [Setup]
 AppId={{8B264E24-F429-411B-A719-756D8D5A1102}
@@ -16,12 +16,12 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-DefaultDirName={localappdata}\Programs\NaughtyOrNot
+DefaultDirName={localappdata}\Programs\ClearanceCheck
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
-LicenseFile=..\LICENSE
+LicenseFile=TERMS_OF_USE.txt
 OutputDir=..\dist\installer
-OutputBaseFilename=NaughtyOrNot_Setup_v{#MyAppVersion}
+OutputBaseFilename=ClearanceCheck_Setup_v{#MyAppVersion}
 SetupIconFile=..\assets\icon.ico
 Compression=lzma2/ultra64
 SolidCompression=yes
@@ -38,14 +38,17 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 ; Main PyInstaller one-folder output
-Source: "..\dist\NaughtyOrNot\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\dist\ClearanceCheck\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
+Source: "..\dist\NaughtyOrNot\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
 ; Bundled Seed Sanctions Lists
 Source: "..\data\raw\*"; DestDir: "{app}\data\raw"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\data\aviation\*"; DestDir: "{app}\data\aviation"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\data\india\*"; DestDir: "{app}\data\india"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; User Guide and Documentation
-Source: "..\USER_GUIDE.pdf"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\USER_GUIDE.pdf"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 Source: "..\THIRD_PARTY_NOTICES.md"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\LICENSE.md"; DestDir: "{app}"; Flags: ignoreversion
+Source: "TERMS_OF_USE.txt"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\assets\icon.ico"
@@ -65,7 +68,7 @@ var
 begin
   if CurUninstallStep = usPostUninstall then
   begin
-    DataDir := ExpandConstant('{localappdata}\NaughtyOrNot');
+    DataDir := ExpandConstant('{localappdata}\ClearanceCheck');
     if DirExists(DataDir) then
     begin
       KeepData := MsgBox('Would you like to keep your screening logs and compliance reports for audit retention?' + #13#10 +

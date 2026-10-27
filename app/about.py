@@ -1,6 +1,6 @@
-"""About box metadata and credits for Naughty or not."""
-APP_NAME = "Naughty or not"
-APP_VERSION = "1.0.1"
+"""About box metadata and credits for Clearance Check."""
+from modules.common.branding import APP_NAME, VERSION_LABEL, CODENAME
+APP_VERSION = VERSION_LABEL
 AUTHOR = "Sounit Karttikay"
 CREDITS = "Internal sanctions screening aid prepared under the Sanctions Compliance Policy."
 

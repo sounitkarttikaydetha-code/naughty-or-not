@@ -16,12 +16,17 @@ logger = logging.getLogger(__name__)
 _singleton_python_engine = None
 
 
-def get_python_engine():
+def get_python_engine(reload: bool = False):
     global _singleton_python_engine
-    if _singleton_python_engine is None:
+    if _singleton_python_engine is None or reload:
         from modules.engine.engine import PythonEngine
         _singleton_python_engine = PythonEngine()
     return _singleton_python_engine
+
+
+def reset_python_engine() -> None:
+    global _singleton_python_engine
+    _singleton_python_engine = None
 
 
 class WatchmanClient:

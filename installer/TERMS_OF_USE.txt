@@ -1,0 +1,45 @@
+CLEARANCE CHECK — END USER TERMS OF USE
+Version 1.1.0 (Release October 2026)
+
+IMPORTANT: PLEASE READ THESE TERMS OF USE CAREFULLY BEFORE INSTALLING OR
+USING THE CLEARANCE CHECK APPLICATION ("SOFTWARE"). BY INSTALLING OR USING
+THIS SOFTWARE, YOU AGREE TO BE BOUND BY THESE TERMS.
+
+1. GRANT OF LICENSE
+Subject to these Terms, the developer grants you a non-exclusive, non-transferable,
+revocable license to install and use Clearance Check on your personal or corporate
+workstation solely for internal sanctions, compliance, and regulatory screening.
+
+2. COMPLIANCE SCREENING AID — NOT LEGAL ADVICE
+Clearance Check is an automated screening and regulatory data exploration tool
+designed to assist compliance professionals. The Software and its output (including
+scores, matching tiers, country indicators, and ownership aggregations) DO NOT
+CONSTITUTE LEGAL ADVICE, REGULATORY DETERMINATIONS, OR STATUTORY CLEARANCE.
+A result in this tool does not establish that an entity is officially sanctioned,
+nor does a lack of a hit guarantee that a counterparty is unlisted. Users must
+independently verify all findings with relevant competent authorities (OFAC, OFSI,
+European Commission, UN Security Council, Ministry of Home Affairs, etc.).
+
+3. ZERO DATA TRANSMISSION & OFFLINE PRIVACY
+Clearance Check operates entirely offline on your local workstation for standard
+screening operations. No search queries, entity names, counterparty lists, or
+audit trail records are transmitted to external cloud servers or third parties
+by the core software.
+
+4. INTELLECTUAL PROPERTY & ATTRIBUTIONS
+The Software structure, user interface, matching tiering logic, and proprietary
+components are copyright (c) 2026 Sounit Karttikay / Compliance Engineering.
+Third-party open-source components (including Moov Watchman logic, Inter font,
+and bundled Python libraries) are governed by their respective licenses as detailed
+in the accompanying THIRD_PARTY_NOTICES.md document.
+
+5. DISCLAIMER OF WARRANTIES
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. IN NO EVENT SHALL
+THE AUTHOR OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
+LIABILITY ARISING FROM THE USE OF OR INABILITY TO USE THE SOFTWARE.
+
+6. ACCEPTANCE
+By clicking "Next" or "Install", you acknowledge that you have read, understood,
+and agree to be bound by these Terms of Use.

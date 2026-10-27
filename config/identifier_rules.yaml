@@ -1,0 +1,36 @@
+# Identifier Screening & Corroboration Rules (T11 Part H)
+# Defines exact ID matching, corroboration upgrades, conflict downgrades, and IMO check-digit validation.
+
+rules:
+  exact_id_match:
+    tier: "POTENTIAL_MATCH"
+    reason: "id_match"
+    supported_identifiers:
+      - passport
+      - national_id
+      - tax_id
+      - registration
+      - imo
+      - msn
+      - source_id
+
+  corroboration_upgrade:
+    trigger_tier: "POSSIBLE_MATCH_REVIEW"
+    target_tier: "POTENTIAL_MATCH"
+    reason: "name_dob_nat_match"
+    requires:
+      - dob_match
+      - nationality_match
+
+  conflict_downgrades:
+    single_conflict:
+      potential_downgrade_to: "POSSIBLE_MATCH_REVIEW"
+      reason: "conflict_downgrade_1"
+    double_conflict:
+      potential_downgrade_to: "POSSIBLE_MATCH_REVIEW"
+      possible_downgrade_to: "BELOW_THRESHOLD"
+      reason: "conflict_downgrade_2"
+
+imo_validation:
+  format_regex: "^(?:IMO)?\\s*(\\d{7})$"
+  check_digit_weights: [7, 6, 5, 4, 3, 2]

@@ -1,0 +1,55 @@
+# Clearance Check v1.1.0 - Named Self-Test Probes (T11 Part I Layer 3)
+# Known high-profile designated entities across OFAC, UK, EU, and UN lists.
+# Used at startup to check for list drift or delistings.
+# Soft informational notes only; never hard-blocks application startup.
+
+probes:
+  - id: probe_sberbank
+    name: "Sberbank"
+    description: "Major Russian state-owned bank"
+    expected_tier: "POTENTIAL_MATCH"
+
+  - id: probe_aeroflot
+    name: "Aeroflot"
+    description: "Russian flag carrier airline"
+    expected_tier: "POTENTIAL_MATCH"
+
+  - id: probe_wagner
+    name: "Wagner Group"
+    description: "Russian private military company"
+    expected_tier: "POTENTIAL_MATCH"
+
+  - id: probe_bank_sepah
+    name: "Bank Sepah"
+    description: "Iranian state-owned bank"
+    expected_tier: "POTENTIAL_MATCH"
+
+  - id: probe_al_qaida
+    name: "Al-Qaida"
+    description: "Global terrorist organization"
+    expected_tier: "POTENTIAL_MATCH"
+
+  - id: probe_gazprom_neft
+    name: "Gazprom Neft"
+    description: "Russian oil & gas entity"
+    expected_tier: "POTENTIAL_MATCH"
+
+  - id: probe_rosoboronexport
+    name: "Rosoboronexport"
+    description: "Russian state defence export agency"
+    expected_tier: "POTENTIAL_MATCH"
+
+  - id: probe_vtb
+    name: "VTB Bank"
+    description: "Major Russian financial institution"
+    expected_tier: "POTENTIAL_MATCH"
+
+  - id: probe_bank_markazi
+    name: "Bank Markazi"
+    description: "Central Bank of Iran"
+    expected_tier: "POTENTIAL_MATCH"
+
+  - id: probe_irgc
+    name: "Islamic Revolutionary Guard Corps"
+    description: "Iranian military and political organization"
+    expected_tier: "POTENTIAL_MATCH"

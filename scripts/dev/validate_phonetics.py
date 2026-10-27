@@ -92,7 +92,48 @@ def run_leave_one_out_test(engine, n_pairs: int = 500, seed: int = 42) -> Dict[s
     for p in sampled_pairs:
         src = p["source"]
         per_list_off[src]["total"] += 1
-        res = screen_query_all_lists(p["test_alias"], client=client, query_type=p["query_type"])
+        
+        # True leave-one-out: temporarily exclude test_alias from target record
+        target_rec = None
+        for r in engine.records_by_source.get(src, []):
+            if str(r.source_id) == str(p["target_id"]):
+                target_rec = r
+                break
+        
+        orig_raw = None
+        orig_alt_tokens = None
+        if target_rec:
+            orig_raw = dict(target_rec.raw_entity)
+            orig_alt_tokens = list(target_rec.alt_tokens_list)
+            test_lower = p["test_alias"].lower().strip()
+            
+            from modules.engine.name_prep import prepare_name
+            test_toks = prepare_name(p["test_alias"])
+            target_rec.alt_tokens_list = [toks for toks in orig_alt_tokens if toks != test_toks]
+
+            filtered_raw = dict(target_rec.raw_entity)
+            for subkey in ["business", "person", "aircraft", "vessel"]:
+                if isinstance(filtered_raw.get(subkey), dict) and "altNames" in filtered_raw[subkey]:
+                    filtered_raw[subkey] = dict(filtered_raw[subkey])
+                    filtered_raw[subkey]["altNames"] = [
+                        a for a in filtered_raw[subkey].get("altNames", [])
+                        if a and a.lower().strip() != test_lower
+                    ]
+            if "altNames" in filtered_raw:
+                filtered_raw["altNames"] = [
+                    a for a in filtered_raw.get("altNames", [])
+                    if a and ((isinstance(a, str) and a.lower().strip() != test_lower) or
+                             (isinstance(a, dict) and a.get("altName", "").lower().strip() != test_lower))
+                ]
+            target_rec.raw_entity = filtered_raw
+
+        try:
+            res = screen_query_all_lists(p["test_alias"], client=client, query_type=p["query_type"])
+        finally:
+            if target_rec:
+                target_rec.raw_entity = orig_raw
+                target_rec.alt_tokens_list = orig_alt_tokens
+
         l_res = res.get(src, {})
         all_cands = l_res.get("all_candidates", [])
         
@@ -125,7 +166,47 @@ def run_leave_one_out_test(engine, n_pairs: int = 500, seed: int = 42) -> Dict[s
     for p in sampled_pairs:
         src = p["source"]
         per_list_on[src]["total"] += 1
-        res = screen_query_all_lists(p["test_alias"], client=client, query_type=p["query_type"])
+
+        target_rec = None
+        for r in engine.records_by_source.get(src, []):
+            if str(r.source_id) == str(p["target_id"]):
+                target_rec = r
+                break
+
+        orig_raw = None
+        orig_alt_tokens = None
+        if target_rec:
+            orig_raw = dict(target_rec.raw_entity)
+            orig_alt_tokens = list(target_rec.alt_tokens_list)
+            test_lower = p["test_alias"].lower().strip()
+
+            from modules.engine.name_prep import prepare_name
+            test_toks = prepare_name(p["test_alias"])
+            target_rec.alt_tokens_list = [toks for toks in orig_alt_tokens if toks != test_toks]
+
+            filtered_raw = dict(target_rec.raw_entity)
+            for subkey in ["business", "person", "aircraft", "vessel"]:
+                if isinstance(filtered_raw.get(subkey), dict) and "altNames" in filtered_raw[subkey]:
+                    filtered_raw[subkey] = dict(filtered_raw[subkey])
+                    filtered_raw[subkey]["altNames"] = [
+                        a for a in filtered_raw[subkey].get("altNames", [])
+                        if a and a.lower().strip() != test_lower
+                    ]
+            if "altNames" in filtered_raw:
+                filtered_raw["altNames"] = [
+                    a for a in filtered_raw.get("altNames", [])
+                    if a and ((isinstance(a, str) and a.lower().strip() != test_lower) or
+                             (isinstance(a, dict) and a.get("altName", "").lower().strip() != test_lower))
+                ]
+            target_rec.raw_entity = filtered_raw
+
+        try:
+            res = screen_query_all_lists(p["test_alias"], client=client, query_type=p["query_type"])
+        finally:
+            if target_rec:
+                target_rec.raw_entity = orig_raw
+                target_rec.alt_tokens_list = orig_alt_tokens
+
         l_res = res.get(src, {})
         all_cands = l_res.get("all_candidates", [])
         
@@ -270,6 +351,52 @@ def generate_clean_noise_dataset() -> List[Tuple[str, str]]:
     ]
     for a in aviation_orgs[:50]:
         dataset.append((a, "airline"))
+
+    # 5. 40 Global Logistics, Maritime & Trading Entities (completes 300 clean names)
+    additional_clean = [
+        ("Maersk Line Limited", "organisation"),
+        ("Mediterranean Shipping Company SA", "organisation"),
+        ("CMA CGM Group", "organisation"),
+        ("Hapag-Lloyd AG", "organisation"),
+        ("Ocean Network Express Pte Ltd", "organisation"),
+        ("Evergreen Marine Corporation", "organisation"),
+        ("Hyundai Merchant Marine Co", "organisation"),
+        ("Yang Ming Marine Transport Corp", "organisation"),
+        ("Zim Integrated Shipping Services", "organisation"),
+        ("Wan Hai Lines Ltd", "organisation"),
+        ("Pacific International Lines Pte Ltd", "organisation"),
+        ("Kuehne + Nagel International AG", "organisation"),
+        ("DHL Global Forwarding", "organisation"),
+        ("DSV Panalpina AS", "organisation"),
+        ("DB Schenker Logistics", "organisation"),
+        ("C.H. Robinson Worldwide", "organisation"),
+        ("Expeditors International of Washington", "organisation"),
+        ("Nippon Express Co Ltd", "organisation"),
+        ("CEVA Logistics SA", "organisation"),
+        ("Bollore Logistics", "organisation"),
+        ("Geodis SA", "organisation"),
+        ("Agility Public Warehousing Company", "organisation"),
+        ("Sinotrans Limited", "organisation"),
+        ("Hitachi Transport System", "organisation"),
+        ("Toll Group Pty Ltd", "organisation"),
+        ("Kerry Logistics Network Limited", "organisation"),
+        ("Yusen Logistics Co Ltd", "organisation"),
+        ("Rhenus Logistics SE", "organisation"),
+        ("Hellmann Worldwide Logistics", "organisation"),
+        ("Mainfreight Limited", "organisation"),
+        ("Schneider National Inc", "organisation"),
+        ("Landstar System Inc", "organisation"),
+        ("J.B. Hunt Transport Services", "organisation"),
+        ("Knight-Swift Transportation Holdings", "organisation"),
+        ("Old Dominion Freight Line", "organisation"),
+        ("XPO Logistics Inc", "organisation"),
+        ("ArcBest Corporation", "organisation"),
+        ("Ryder System Inc", "organisation"),
+        ("Werner Enterprises Inc", "organisation"),
+        ("Saia Inc", "organisation"),
+    ]
+    for m in additional_clean:
+        dataset.append((m[0], m[1]))
 
     # Total check
     print(f"Constructed clean noise dataset: {len(dataset)} items.")

@@ -229,7 +229,7 @@ class TestMatchTieringLayerV2(unittest.TestCase):
             "Mohammed Khan", dummy_mohammed_sdn, query_type="person", yob="1985"
         )
         self.assertEqual(res_conflict["tier"], TIER_POSSIBLE_MATCH)
-        self.assertEqual(res_conflict["reason"], "secondary_identifier_conflict")
+        self.assertIn(res_conflict["reason"], ["secondary_identifier_conflict", "conflict_downgrade_1"])
 
         # With matching YOB (1955) -> remains 🔴
         res_matching = tier_single_entity(

@@ -65,3 +65,39 @@ def test_shutdown_flush_and_integrity():
         with sqlite3.connect(str(DB_PATH)) as con:
             res = con.execute("PRAGMA integrity_check;").fetchall()
             assert res == [("ok",)], f"Integrity check failed: {res}"
+
+
+def test_shutdown_after_search_and_reopen_integrity():
+    """Run search, immediate shutdown, reopen DB and verify PRAGMA integrity_check."""
+    from modules.screening.tiering import screen_query_all_lists
+    from modules.watchman.client import WatchmanClient
+    from modules.reporting.logger import log_search
+
+    client = WatchmanClient(engine="python")
+    w_res = screen_query_all_lists("Aeroflot", client=client, query_type="airline")
+    log_search(
+        search_type="airline",
+        inputs={"name": "Aeroflot"},
+        source_results=[],
+        overall_tier="LIKELY",
+        duration_ms=45,
+    )
+    shutdown_cleanly()
+
+    with sqlite3.connect(str(DB_PATH)) as con:
+        res = con.execute("PRAGMA integrity_check;").fetchall()
+        assert res == [("ok",)], f"Integrity check failed after search shutdown: {res}"
+
+
+def test_deploy_and_toolbar_hidden():
+    """Verify Deploy button and Streamlit developer menus are hidden in config and CSS."""
+    cfg_path = Path(__file__).resolve().parent.parent / ".streamlit" / "config.toml"
+    assert cfg_path.is_file()
+    cfg_text = cfg_path.read_text(encoding="utf-8")
+    assert 'toolbarMode = "viewer"' in cfg_text
+    assert "showDeployButton = false" in cfg_text
+
+    app_path = Path(__file__).resolve().parent.parent / "app.py"
+    app_text = app_path.read_text(encoding="utf-8")
+    assert ".stDeployButton" in app_text
+    assert "#MainMenu" in app_text

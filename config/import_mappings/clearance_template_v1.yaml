@@ -1,0 +1,52 @@
+# Clearance Check v1.1.0 - Default Ownership Template Mapping
+version: "1.0"
+name: "Clearance Check Standard Ownership Template"
+format: "excel_or_csv"
+sheet_name: "Ownership & Control"
+
+columns:
+  owner_name:
+    headers: ["Owner Name", "Party Name", "Shareholder Name", "Entity Name"]
+    required: true
+    type: "string"
+
+  entity_type:
+    headers: ["Entity Type", "Type", "Party Type"]
+    required: false
+    default: "company"
+    type: "string"
+
+  ownership_pct:
+    headers: ["Direct Ownership %", "Ownership %", "Share %", "Equity %", "Percentage"]
+    required: true
+    type: "float"
+
+  parent_name:
+    headers: ["Parent Entity Name", "Immediate Parent", "Direct Subsidiary Of", "Owned In"]
+    required: false
+    default: ""
+    type: "string"
+
+  country:
+    headers: ["Country", "Jurisdiction", "Nationality", "Country (ISO-2)"]
+    required: false
+    default: ""
+    type: "string"
+
+  is_board_member:
+    headers: ["Board Member", "Director", "Is Board Member (Yes/No)"]
+    required: false
+    default: false
+    type: "boolean"
+
+  has_appointment_power:
+    headers: ["Appointment Power", "Right to Appoint Board", "Appointment Power (Yes/No)"]
+    required: false
+    default: false
+    type: "boolean"
+
+  notes:
+    headers: ["Notes", "Comments", "Disclosures"]
+    required: false
+    default: ""
+    type: "string"

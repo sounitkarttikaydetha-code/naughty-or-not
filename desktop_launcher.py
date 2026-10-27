@@ -1,3 +1,4 @@
+from modules.common.branding import APP_NAME, VERSION_LABEL, MAIN_TITLE
 """
 Naughty or not — Single Desktop Launcher
 Runs local Python screening engine in-process and opens native WebView2 window.
@@ -22,7 +23,7 @@ except Exception:
     pass
 
 MUTEX_NAME = "NaughtyOrNot_SingleInstance_Mutex"
-APP_TITLE = "Naughty or not v1.0.3"
+APP_TITLE = f"{APP_NAME} {VERSION_LABEL} — {MAIN_TITLE}"
 
 
 class RECT(ctypes.Structure):
@@ -64,7 +65,7 @@ def check_single_instance() -> bool:
             if length > 0:
                 buf = ctypes.create_unicode_buffer(length + 1)
                 user32.GetWindowTextW(hwnd, buf, length + 1)
-                if "Naughty or not" in buf.value:
+                if APP_TITLE in buf.value or "Clearance Check" in buf.value or "Naughty or not" in buf.value:
                     user32.ShowWindowAsync(hwnd, 9)  # SW_RESTORE
                     user32.SetForegroundWindow(hwnd)
                     return False
@@ -114,13 +115,13 @@ def check_webview2_installed() -> bool:
 def show_webview2_missing_dialog() -> None:
     """Display plain error message with WebView2 download link."""
     msg = (
-        "Microsoft Edge WebView2 Runtime is required to run Naughty or not.\n\n"
+        f"Microsoft Edge WebView2 Runtime is required to run {APP_NAME}.\n\n"
         "Please download and install Evergreen WebView2 Runtime from:\n"
         "https://developer.microsoft.com/en-us/microsoft-edge/webview2/\n\n"
         "Contact IT support if you do not have permission to install it."
     )
     if sys.platform == "win32":
-        ctypes.windll.user32.MessageBoxW(0, msg, "Naughty or not — WebView2 Required", 0x10)
+        ctypes.windll.user32.MessageBoxW(0, msg, f"{APP_NAME} — WebView2 Required", 0x10)
     else:
         print(msg)
 
@@ -239,6 +240,11 @@ def main():
     st_config.set_option("browser.gatherUsageStats", False)
     st_config.set_option("server.enableCORS", False)
     st_config.set_option("server.enableXsrfProtection", False)
+    st_config.set_option("client.toolbarMode", "viewer")
+    try:
+        st_config.set_option("client.showDeployButton", False)
+    except Exception:
+        pass
 
     app_py_path = str(root / "app.py")
     server_thread = threading.Thread(
@@ -308,8 +314,15 @@ def main():
         # Clean process shutdown — flush databases and stop server
         shutdown_cleanly()
 
-        # Stop gracefully first; wait up to 5s before force-killing if process remains
-        def delayed_force_kill():
+        # Stop periodic source refresh worker
+        try:
+            from modules.common.source_manager import stop_periodic_source_refresh_worker
+            stop_periodic_source_refresh_worker()
+        except Exception:
+            pass
+
+        # Watchdog: wait up to 5s before force-killing if process remains hung
+        def watchdog_force_kill():
             time.sleep(5.0)
             if sys.platform == "win32":
                 try:
@@ -324,8 +337,8 @@ def main():
                     pass
             os._exit(0)
 
-        threading.Thread(target=delayed_force_kill, daemon=True).start()
-        os._exit(0)
+        threading.Thread(target=watchdog_force_kill, daemon=True, name="ShutdownWatchdog").start()
+        sys.exit(0)
 
     window.events.closed += on_closed
     webview.start(gui="edgechromium", icon=icon_str)

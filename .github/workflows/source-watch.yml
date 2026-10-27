@@ -1,8 +1,8 @@
-name: Weekly Regulatory Source Watch
+name: Daily Regulatory Source Watch
 
 on:
   schedule:
-    - cron: '0 6 * * 1' # Every Monday at 06:00 UTC
+    - cron: '0 6 * * *' # Daily at 06:00 UTC
   workflow_dispatch:
 
 permissions:
@@ -28,10 +28,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyyaml pypdf
 
-      - name: Run Source Watch Verification
+      - name: Run Source Update & Watch Verification
         id: source_watch
         run: |
-          python scripts/source_watch.py
+          python scripts/source_update_check.py --ci
         continue-on-error: true
 
       - name: Create or Update GitHub Issue on Anomaly

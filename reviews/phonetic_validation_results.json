@@ -9,66 +9,66 @@
     "rescued_info": 0,
     "per_list_off": {
       "us_ofac": {
-        "orange": 205,
-        "info": 205,
-        "total": 205
+        "orange": 194,
+        "info": 194,
+        "total": 194
       },
       "us_csl": {
-        "orange": 51,
-        "info": 51,
-        "total": 51
+        "orange": 56,
+        "info": 56,
+        "total": 56
       },
       "uk_csl": {
-        "orange": 65,
-        "info": 65,
-        "total": 65
+        "orange": 67,
+        "info": 67,
+        "total": 67
       },
       "eu_csl": {
-        "orange": 165,
-        "info": 165,
-        "total": 165
+        "orange": 168,
+        "info": 168,
+        "total": 168
       },
       "un_csl": {
-        "orange": 14,
-        "info": 14,
-        "total": 14
+        "orange": 15,
+        "info": 15,
+        "total": 15
       }
     },
     "per_list_on": {
       "us_ofac": {
-        "orange": 205,
-        "info": 205,
-        "total": 205,
+        "orange": 194,
+        "info": 194,
+        "total": 194,
         "rescued": 0
       },
       "us_csl": {
-        "orange": 51,
-        "info": 51,
-        "total": 51,
+        "orange": 56,
+        "info": 56,
+        "total": 56,
         "rescued": 0
       },
       "uk_csl": {
-        "orange": 65,
-        "info": 65,
-        "total": 65,
+        "orange": 67,
+        "info": 67,
+        "total": 67,
         "rescued": 0
       },
       "eu_csl": {
-        "orange": 165,
-        "info": 165,
-        "total": 165,
+        "orange": 168,
+        "info": 168,
+        "total": 168,
         "rescued": 0
       },
       "un_csl": {
-        "orange": 14,
-        "info": 14,
-        "total": 14,
+        "orange": 15,
+        "info": 15,
+        "total": 15,
         "rescued": 0
       }
     }
   },
   "noise_test": {
-    "dataset_size": 260,
+    "dataset_size": 300,
     "mean_new_orange": 0.0,
     "p95_new_orange": 0.0,
     "max_new_orange": 0,
@@ -80,16 +80,16 @@
   },
   "performance": {
     "search_time_ms_off": {
-      "min": 15.949100023135543,
-      "median": 124.47389999579173,
-      "p95": 1445.4283549988759,
-      "max": 1517.4644000071567
+      "min": 15.620699967257679,
+      "median": 105.22314999252558,
+      "p95": 1245.057779995841,
+      "max": 1304.5288000139408
     },
     "search_time_ms_on": {
-      "min": 34.34059998835437,
-      "median": 147.47940000961535,
-      "p95": 1568.2257900218247,
-      "max": 1665.5467000091448
+      "min": 34.58949999185279,
+      "median": 131.76334998570383,
+      "p95": 1245.3008350072196,
+      "max": 1600.9633999783546
     }
   },
   "variant_groups": {

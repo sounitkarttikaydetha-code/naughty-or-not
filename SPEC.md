@@ -1,179 +1,93 @@
-# Naughty or not — Functional Specification (v0.1, draft)
+# Clearance Check — Product & Technical Specification (v1.1.0)
 
-**Project / app name:** Naughty or not
-**Main screen title (shown in UI):** Sanction checK
-**Owner:** Sounit Karttikay, Legal, JIAL
-**Status:** Test version, single user. May later be rolled out across the airport.
+**Application Name:** Clearance Check  
+**Main Screen Title:** Sanction checK  
+**Version:** 1.1.0  
+**Owner & Author:** Sounit Karttikay / Compliance Engineering  
+**Distribution:** Windows 10/11 x64 Standalone Desktop Application (Zero Admin Rights)  
 
 ---
 
-## 1. Purpose
+## 1. Purpose & Scope
 
-A single screen where the user enters a name (or an aircraft or vessel identifier) and gets one result for each source. It covers sanctions lists (US, UK, EU, UN, India) and aviation-specific checks. It replaces separate manual searches on each regulator's website, as required by the Sanctions Compliance Policy.
+Clearance Check is a unified desktop sanctions screening and beneficial ownership analysis engine. It provides compliance officers with a single interface to evaluate individuals, corporate entities, aircraft, vessels, countries, and complex multi-tier ownership structures against official global sanctions lists, export controls, and regulatory registers.
 
-The tool **flags** potential matches only. Verifying a match and escalating it stay with the user, as set out in the Policy.
+The application operates as a computational compliance screening aid. It flags potential matches and computes statutory ownership thresholds; statutory determinations and regulatory escalations remain the responsibility of the compliance analyst.
 
-## 2. Environments
+---
 
-| Item | Company laptop | Personal laptop |
-|---|---|---|
-| Purpose | Real screening | Development and testing |
-| Data | Real counterparty names | Publicly known test names only |
-| Code | Same repository | Same repository |
-| Config | `.env` file kept on the machine (never committed) | `.env` file kept on the machine (never committed) |
-| Logs and reports | Stored only on that machine (`/logs`, `/reports`) | Stored only on that machine |
+## 2. Core Functional Modules
 
-- Both machines need Docker Desktop and Python 3.10 or later. The company laptop needs IT approval for Docker.
-- No screened names, logs or reports are committed to Git. `.gitignore` must exclude `.env`, `/logs`, `/reports` and `/data`.
-- The company laptop may need proxy or SSL settings (`HTTPS_PROXY`, `SSL_CERT_FILE`) set in `.env`.
+### 2.1 Name Check (Screened Search)
+- **Entity Types:** Person, Organisation, Airline, Aircraft, Vessel, Country.
+- **Lists Screened:**
+  - US Treasury OFAC (SDN and SSI lists)
+  - US Consolidated Screening List (ITA: BIS, DTC, State)
+  - UK Sanctions List (FCDO)
+  - European Union Consolidated Sanctions List (EEAS)
+  - United Nations Security Council Consolidated List
+  - India Ministry of Home Affairs (UAPA Schedules 1, 4, and Unlawful Associations)
+  - Aviation restrictions (US BIS Export Restrict Aircraft, EU Air Safety Banned Carriers, FAA IASA Category 2)
+- **Matching Tiers:**
+  - 🔴 **POTENTIAL_MATCH (0.80 — 1.00):** High match requiring core-name equivalence, exact alias match, exact identifier match, or corroboration upgrade.
+  - 🟠 **POSSIBLE_MATCH_REVIEW (0.70 — 0.79):** Moderate match recommended for review (including phonetic matches and person subset matches).
+  - ℹ️ **BELOW_THRESHOLD (0.60 — 0.69):** Low score preserved for audit information.
+  - ⚪ **NO_MATCH (< 0.60):** Discarded without alert.
+- **Identifier Elevation & Corroboration:**
+  - Exact match on passport, national ID, tax ID, or registration number triggers 🔴 `id_match`.
+  - SOLAS 7-digit IMO validation via modulus 10 check digit.
+  - DOB + Nationality full match upgrades 🟠 to 🔴 `name_dob_nat_match`.
+  - Secondary identifier conflicts apply controlled single-tier downgrades.
 
-## 3. Architecture
+### 2.2 Beneficial Ownership & Control (UBO Check)
+- **US OFAC 50% Rule (FAQs 399, 401 Examples 1–3):**
+  - Aggregation of all direct and indirect holdings owned by blocked persons.
+  - Multi-tier subsidiary pass-through: Intermediate entities >=50% blocked are treated as 100% blocked downstream.
+  - Non-blocked intermediate entities (<50% blocked) do not pass through blocked status.
+- **EU Ownership & Control:**
+  - Proprietary ownership >50.0%.
+  - Control criterion: appointment power or majority board representation.
+- **UK OFSI Ownership & Control:**
+  - Condition 1: >50% shares or voting rights.
+  - Condition 2: Right to appoint or remove majority of board members.
+  - Condition 3: Dominant influence or conduct of affairs per wishes.
+- **Side-by-Side Economic Look-Through:** Multiplicative pro-rata breakdown displayed alongside statutory sanctions aggregation.
+- **Workflow & Audit:** Four-eyes review indicators (Preparer, Reviewer, Status) logged to local database under `mode = 'ownership'`.
 
-```
-[ Sanction checK UI (Streamlit, Python) ]
-        |                |                    |                     |
-        v                v                    v                     v
- Moov Watchman     OpenSanctions API     Aviation module       India module
- (Docker, local)   (optional, uses       (local tables:        (local tables:
- OFAC SDN/Non-SDN,  credits)              BIS aircraft list,    MHA / UAPA lists)
- US CSL, EU, UK, UN                       EU Air Safety List,
-                                          FAA IASA)
-        \_______________ results + list versions _______________/
-                                 |
-                      Log (append-only) + Report (PDF/Excel)
-```
+### 2.3 Country Check
+- **Territorial Sanctions Analysis:** Comprehensive embargoes (Cuba, Iran, North Korea, Syria, Russia) and selective regimes (Belarus, Myanmar, Venezuela, Zimbabwe, Sudan).
+- **Integrated Risk Factors:** FATF Call for Action (Black) and Monitored (Grey) lists, EU Air Safety banned states, and EAR Country Groups.
+- **Audit Logging:** Dedicated `mode = 'country'` records in local SQLite trail.
 
-- **Watchman** is the main engine. It runs locally on `localhost:8084` and loads `us_ofac, us_csl, eu_csl, uk_csl, un_csl`.
-- **OpenSanctions** is a second-opinion check through the hosted API. It is called only when the user ticks the checkbox. The API key goes in `.env` as `OPENSANCTIONS_API_KEY`.
-- **Aviation and India modules** read local tables built from official publications. Some of these are published only as PDFs and need to be parsed.
+### 2.4 Text Search (Keyword Exploration)
+- High-performance SQLite FTS5 full-text search across 40,400+ indexed sanctions records.
+- Allows direct raw inspection across all 8 supported source databases without fuzzy match filtering.
 
-## 4. Main screen: "Sanction checK"
+### 2.5 Start-up Self-Test Framework
+- **Layer 1 (Engine Canary):** 20 invariant test cases evaluated in-memory; hard-fails with `ENGINE_CANARY_FAILURE` banner if matching logic is inconsistent.
+- **Layer 2 (Self-Sampled Probes):** Samples 5 live records from local database and verifies 3 nonsense strings return no false alarms.
+- **Layer 3 (Named Probes):** Checks 10 benchmark designated entities for drift or list updates, reporting soft notes without blocking application startup.
+- Execution budget: Entire self-test runs in <= 2.0s (measured ~166ms).
 
-### 4.1 Inputs
+---
 
-**Search type** (selector): Person / Organisation / Airline / Aircraft / Vessel
+## 3. Reporting & Text Formatting Standards
 
-| Search type | Fields (only the name is mandatory, except Aircraft and Vessel) |
-|---|---|
-| Person | Full name\*, date of birth or year of birth, nationality, passport / ID number |
-| Organisation | Legal name\*, country, registration / tax number |
-| Airline | Airline name\*, ICAO / IATA code, country of AOC |
-| Aircraft | Registration (tail no.)\* **or** MSN\*, operator, aircraft type |
-| Vessel | Vessel name or IMO number\*, flag |
+- **PDF Generation (ReportLab):**
+  - Standard portrait A4 printable width: strictly 523pt (with 36pt margins).
+  - Cell rendering uses `Paragraph` flowables with soft zero-width space wrapping on delimiter characters (`/ ; , - _`).
+  - Table headers repeat on every page (`repeatRows=1`).
+- **Excel Generation (openpyxl):**
+  - All cells enabled with `wrap_text=True` and automatic row height adjustments.
+- **Branding Uniformity:** Application titles read from `config/branding.yaml` (`Sanction checK`).
+- **Signature Integrity (Rule 9):** Author easter egg signature preserved character-for-character across all 5 mandatory locations.
 
-**Source options:**
-- ☑ US / UK / EU / UN sanctions lists (Watchman). Always on.
-- ☑ India: MHA / UAPA lists. On by default.
-- ☑ Aviation checks. On by default for Airline and Aircraft searches; hidden for other types.
-- ☐ **OpenSanctions (uses credits)**. **Off by default.** This label must be shown exactly.
-- Match threshold slider. Default 0.80, range 0.60–1.00, with the help text: "Lower = more spelling variants caught, more false positives".
+---
 
-### 4.2 Results
+## 4. Security, Privacy & Local Storage
 
-**Overall banner** (one of):
-- 🔴 **Potential sanctions match**: verify on the official source and escalate under the Sanctions Compliance Policy before proceeding.
-- ⚠️ **No sanctions match, but aviation safety flag**: see the Aviation safety section.
-- ✅ **No match** on any source checked at the selected threshold.
-- ⚪ **Incomplete**: one or more sources could not be checked. Do not rely on this result alone.
-
-**Section A — Sanctions** (one row per source):
-
-| Source | Result | Top match | Score | List version / date | Verify link |
-|---|---|---|---|---|---|
-| OFAC SDN / Non-SDN | ✅ / 🔴 / ⚪ | | | | |
-| US CSL (incl. BIS denial orders) | | | | | |
-| UK Sanctions List | | | | | |
-| EU Consolidated List | | | | | |
-| UN SC Consolidated List | | | | | |
-| India (MHA / UAPA) | | | | | |
-| OpenSanctions | shows "Not run" when unticked | | | | |
-
-Each row can be expanded to show all matches: listed name, matched alias, type, programme or regime, countries, date of birth, listing date, reference ID and remarks.
-
-**Reason Code Taxonomy**:
-Every hit in Section A and Section B carries an explicit reason code documenting why the candidate was assigned its tier:
-
-| Reason Code | Tier | Description |
-|---|---|---|
-| `exact_full` | 🔴 Potential Match | Exact normalized string identity between query and candidate primary name or alias. |
-| `core_name` | 🔴 Potential Match | Substantial core name equivalence after discarding non-distinctive generic words (>= 0.80). |
-| `score` | 🔴 / 🟠 | High algorithmic similarity score (>= 0.80 for 🔴, 0.70–0.79 for 🟠). |
-| `score_rev` | 🟠 Possible Match | Reverse-direction similarity where target tokens cover query tokens. |
-| `fuzzy_word` | 🟠 Possible Match | Single-word fuzzy match (similarity >= 0.90, token length >= 5). |
-| `token_pass` | ℹ️ Sub-threshold | Retrieval candidate above display floor (0.50/0.45) but below match threshold (< 0.60 or < 0.70). |
-| `weak_reverse` | ℹ️ Sub-threshold | Reverse match where shared tokens consist predominantly of weak generic or geographic words. |
-| `type_mismatch_cap` | 🟠 Possible Match | High-scoring match downgraded to review due to incompatible entity types (e.g., Vessel vs Person). |
-| `mha_core_match` | 🔴 Potential Match | Exact or primary core-name match against Indian MHA UAPA terrorist register. |
-| `mha_partial` | 🟠 Possible Match | High partial or sub-group correlation on Indian MHA UAPA list. |
-| `opensanctions_score`| 🔴 / 🟠 | Multi-property scored match from OpenSanctions API integration. |
-
-
-**Section B — Aviation** (Airline and Aircraft searches only). This section is **always shown separately from sanctions**:
-
-| Check | Result |
-|---|---|
-| BIS aircraft list (potential EAR violation): matched on current registration, **previous** registration and MSN | 🔴 / ✅ |
-| EU Air Safety List: Annex A (banned) / Annex B (restricted) | ⚠️ / ✅ |
-| FAA IASA: country of the AOC is in Category 2 | ⚠️ / ✅ |
-
-The BIS aircraft list is shown as 🔴 because it is an export-control restriction. EU and FAA hits are shown as ⚠️ **safety flags, not sanctions**, with that wording visible on screen.
-
-**Footer disclaimer** (always shown): "Screening aid only. A result here is not a legal determination. Potential matches must be verified against the official source and escalated under the Sanctions Compliance Policy. Ownership/control (e.g. the US 50% rule) is not assessed."
-
-### 4.3 Outputs
-
-- **Download report:** PDF and Excel, one per search. The report includes the inputs, the timestamp, the user, the sources checked, the version or date of each list, all results, the threshold, whether OpenSanctions was used, and the disclaimer.
-- **Log:** an append-only local log (SQLite or CSV) with one row per source per search. Columns: timestamp, Windows user, machine name, search type, inputs, threshold, source, result, top match, score, list version, OpenSanctions used (Y/N), report file name. The log is retained for 10 years under the Policy.
-
-## 5. Data refresh (automatic, daily)
-
-| Source | Refresh method |
-|---|---|
-| Watchman lists | Watchman's built-in refresh interval, set to 24 hours. Show the version and date of each list from `/v2/listinfo` |
-| OpenSanctions | Live API, no refresh needed |
-| BIS aircraft list | Daily check of the BIS page. If the publication changes, download it, parse it and keep the previous version |
-| EU Air Safety List | Daily check. If it changes, re-parse it |
-| FAA IASA | Daily check. If it changes, re-parse it |
-| India (MHA) | Daily check. If it changes, re-parse it |
-
-**Failure rule:** if any refresh or parse fails, the app still runs on the last good version but shows ⚪ with the date of that version and the error message. A source must never fail silently.
-
-## 6. OpenSanctions credits
-
-- The API is called only when the checkbox is ticked. One search counts as one call.
-- The screen shows a "Credits used (this session / total logged)" counter, calculated from the log.
-- If no API key is set, the checkbox is disabled with the tooltip "Add OPENSANCTIONS_API_KEY to .env".
-- **Bulk data licensing notice**: If bulk data loading is ever enabled (via `OPENSANCTIONS_BULK_ENABLED=true`), the UI must show: `"OpenSanctions data is licensed under CC BY-NC 4.0; commercial use requires a licence from opensanctions.org"` on the screen where bulk data is configured or used. By default, bulk data loading is strictly disabled in code.
-
-## 7. Out of scope (phase 1)
-
-- Batch screening (phase 2)
-- A review workflow for false positives or escalations (the tool only flags)
-- Ownership / 50% rule analysis
-- Passenger-list screening
-- Multi-user hosting / server deployment
-
-## 8. Acceptance tests (initial)
-
-| # | Input | Expected |
-|---|---|---|
-| 1 | Organisation: Sberbank | 🔴 on OFAC, EU, UK |
-| 2 | Organisation: VTB Bank | 🔴 on OFAC, EU, UK |
-| 3 | Airline: S7 / Siberia Airlines | 🔴 (UK designation, US CSL denial order); ⚠️ EU Air Safety List |
-| 4 | Airline: Aeroflot | 🔴 US CSL denial order; ⚠️ EU Air Safety List |
-| 5 | Aircraft: a registration taken from the current BIS list, searched by its **previous** registration | 🔴 BIS aircraft list |
-| 6 | Organisation: Jaipur International Airport Limited | ✅ on all sources |
-| 7 | Any search with Docker stopped | ⚪ Incomplete banner; app does not crash |
-| 8 | OpenSanctions unticked | "Not run"; no API call made (check the log) |
-
-## 9. Build tasks
-
-| # | Task | Who |
-|---|---|---|
-| T1 | Set up Docker and Watchman, plus the project skeleton | Antigravity |
-| T2 | Connect the OpenSanctions API | Antigravity |
-| T3 | Aviation module: parse the BIS and EU Air Safety List PDFs, add the FAA IASA table | Antigravity |
-| T4 | India module (MHA / UAPA) | Antigravity |
-| T5 | "Sanction checK" UI, report and log | Antigravity |
-| T6 | Run the acceptance tests and agree the threshold | Antigravity runs; Sounit reviews |
-| T7 | Compliance note and one-page SOP | Copilot |
+- **100% Offline Screening:** Zero outbound network socket connections during standard screening, UBO calculations, and report generation.
+- **Local Datastore:** Stored in `%LOCALAPPDATA%\ClearanceCheck\`:
+  - `logs/screening.db`: SQLite database with WAL journaling.
+  - `reports/`: PDF and Excel compliance exports.
+- **Optional OpenSanctions API:** Disabled by default; activated only by explicit user opt-in with local API key storage. Unlimited calls without testing cap.

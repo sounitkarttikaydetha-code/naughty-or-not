@@ -1,0 +1,52 @@
+# Clearance Check v1.1.0 - KYC Annexure 1 Corporate Ownership Schedule Mapping
+version: "draft_2026-10"
+name: "KYC Annexure 1 Beneficial Ownership Schedule"
+format: "excel_or_csv"
+sheet_name: "Annexure 1 - UBO Schedule"
+
+columns:
+  owner_name:
+    headers: ["Full Legal Name of Shareholder / UBO", "Name of Shareholder", "Legal Name"]
+    required: true
+    type: "string"
+
+  entity_type:
+    headers: ["Constitution", "Entity Category", "Person or Corporate"]
+    required: false
+    default: "company"
+    type: "string"
+
+  ownership_pct:
+    headers: ["Percentage Holding (%)", "Equity Stake %", "Voting Rights %"]
+    required: true
+    type: "float"
+
+  parent_name:
+    headers: ["Held In Entity", "Immediate Intermediate Holding Company", "Tier 1 Target"]
+    required: false
+    default: ""
+    type: "string"
+
+  country:
+    headers: ["Country of Incorporation / Citizenship", "Country of Origin", "Jurisdiction"]
+    required: false
+    default: ""
+    type: "string"
+
+  is_board_member:
+    headers: ["Board Representation", "Director on Board", "Holds Board Seat"]
+    required: false
+    default: false
+    type: "boolean"
+
+  has_appointment_power:
+    headers: ["Board Appointment Authority", "Controls Board Composition", "Dominant Influence"]
+    required: false
+    default: false
+    type: "boolean"
+
+  notes:
+    headers: ["Declaration / Remarks", "PEP or Sanctions Disclosure", "Remarks"]
+    required: false
+    default: ""
+    type: "string"
