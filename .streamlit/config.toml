@@ -7,7 +7,6 @@ gatherUsageStats = false
 
 [client]
 toolbarMode = "viewer"
-showDeployButton = false
 
 [theme]
 base = "light"

@@ -40,10 +40,19 @@ def normalize_text_for_index(text: str) -> str:
 
 
 def get_connection(db_path: Path = INDEX_DB_PATH) -> sqlite3.Connection:
-    """Open or create the SQLite FTS5 database."""
+    """Open or create the SQLite FTS5 database with optimized performance pragmas."""
     db_path.parent.mkdir(parents=True, exist_ok=True)
     con = sqlite3.connect(str(db_path))
     con.row_factory = sqlite3.Row
+    try:
+        cur = con.cursor()
+        cur.execute("PRAGMA journal_mode = WAL;")
+        cur.execute("PRAGMA synchronous = NORMAL;")
+        cur.execute("PRAGMA cache_size = -64000;")
+        cur.execute("PRAGMA mmap_size = 268435456;")
+        cur.execute("PRAGMA temp_store = MEMORY;")
+    except Exception:
+        pass
     return con
 
 

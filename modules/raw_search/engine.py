@@ -26,6 +26,21 @@ def _resolve_index_db_path() -> Path:
 INDEX_DB_PATH = _resolve_index_db_path()
 SOURCES_YAML_PATH = Path("config/sources.yaml")
 
+def _get_connection(db_path: Path) -> sqlite3.Connection:
+    con = sqlite3.connect(str(db_path))
+    con.row_factory = sqlite3.Row
+    try:
+        cur = con.cursor()
+        cur.execute("PRAGMA journal_mode = WAL;")
+        cur.execute("PRAGMA synchronous = NORMAL;")
+        cur.execute("PRAGMA cache_size = -64000;")
+        cur.execute("PRAGMA mmap_size = 268435456;")
+        cur.execute("PRAGMA temp_store = MEMORY;")
+    except Exception:
+        pass
+    return con
+
+
 
 def load_sources_config() -> Dict[str, Dict[str, Any]]:
     """Load sources metadata from config/sources.yaml."""
@@ -158,7 +173,7 @@ class RawSearchEngine:
             return statuses
 
         try:
-            con = sqlite3.connect(str(self.db_path))
+            con = _get_connection(self.db_path)
             cur = con.cursor()
             cols = [col[1] for col in cur.execute("PRAGMA table_info(source_meta);").fetchall()]
             if "file_hash" in cols:
@@ -264,7 +279,7 @@ class RawSearchEngine:
                 "execution_time_ms": 0.0,
             }
 
-        con = sqlite3.connect(str(self.db_path))
+        con = _get_connection(self.db_path)
         con.row_factory = sqlite3.Row
         cur = con.cursor()
 

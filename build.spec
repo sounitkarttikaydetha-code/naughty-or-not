@@ -54,7 +54,6 @@ hidden_imports = (
     + collect_submodules('metaphone')
     + [
         'streamlit.web.bootstrap',
-        'streamlit.runtime.scriptrunner.magic_expressions',
         'truststore',
         'keyring',
         'keyring.backends.Windows',
@@ -85,6 +84,14 @@ a = Analysis(
         'tests',
         'pdb',
         'doctest',
+        'IPython',
+        'ipykernel',
+        'jedi',
+        'parso',
+        'webview.platforms.android',
+        'webview.platforms.cocoa',
+        'webview.platforms.gtk',
+        'webview.platforms.qt',
         'reportlab.fonts.DarkGarden',
         'reportlab.fonts.DarkGardenMK',
     ],
