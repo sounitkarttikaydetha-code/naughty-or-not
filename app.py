@@ -6,10 +6,8 @@ from modules.common.records_store import (
     populate_records_cache,
 )
 from modules.common.branding import APP_NAME, APP_SUBTITLE, MAIN_TITLE, VERSION_LABEL, CODENAME
-"""
-Naughty or not — Sanction checK
-Streamlit User Interface (T5, T5.1, T5.2).
-"""
+# Naughty or not — Sanction checK
+# Streamlit User Interface (T5, T5.1, T5.2).
 
 import getpass
 import os

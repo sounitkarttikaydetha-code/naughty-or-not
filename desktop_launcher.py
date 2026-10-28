@@ -245,6 +245,14 @@ def main():
         st_config.set_option("client.showDeployButton", False)
     except Exception:
         pass
+    try:
+        st_config.set_option("theme.base", "light")
+        st_config.set_option("theme.primaryColor", "#0F52BA")
+        st_config.set_option("theme.backgroundColor", "#F8FAFC")
+        st_config.set_option("theme.secondaryBackgroundColor", "#FFFFFF")
+        st_config.set_option("theme.textColor", "#0F172A")
+    except Exception:
+        pass
 
     app_py_path = str(root / "app.py")
     server_thread = threading.Thread(

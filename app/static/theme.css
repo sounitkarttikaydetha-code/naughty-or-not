@@ -51,13 +51,42 @@
   --cc-font-sans: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
 }
 
-/* Global Font & Viewport */
-html, body {
+/* Force clean modern light theme across the entire application */
+.stApp, html, body {
+  background-color: #F8FAFC !important;
+  color: #0F172A !important;
   font-family: var(--cc-font-sans) !important;
-  color: var(--cc-text-primary) !important;
-  background-color: var(--cc-bg-app) !important;
+  -webkit-font-smoothing: antialiased;
   overflow-x: hidden !important;
   max-width: 100vw !important;
+}
+
+[data-testid="stHeader"] {
+  background: transparent !important;
+}
+
+.main .block-container {
+  background-color: #F8FAFC !important;
+  max-width: 100% !important;
+  padding-top: 1.5rem !important;
+  padding-bottom: 2.5rem !important;
+  padding-left: 2rem !important;
+  padding-right: 2rem !important;
+}
+
+/* Sidebar styling */
+section[data-testid="stSidebar"] {
+  background-color: #FFFFFF !important;
+  border-right: 1px solid #E2E8F0 !important;
+}
+
+/* Application Title */
+.stApp h1, [data-testid="stHeaderTitle"] {
+  color: #0F52BA !important;
+  font-weight: 800 !important;
+  font-size: 2.2rem !important;
+  letter-spacing: -0.02em !important;
+  margin-bottom: 0.25rem !important;
 }
 
 /* Accessible Keyboard Focus States */
@@ -66,26 +95,108 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   outline-offset: 2px !important;
 }
 
+/* Form & Expander Card Styling */
+div[data-testid="stForm"], div[data-testid="stExpander"] {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+  border-radius: var(--cc-radius-md) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Tab navigation styling */
+div[data-baseweb="tab-list"] {
+  background-color: #FFFFFF !important;
+  border-bottom: 2px solid #E2E8F0 !important;
+  border-radius: var(--cc-radius-md) var(--cc-radius-md) 0 0 !important;
+  padding: 0 12px !important;
+  gap: 12px !important;
+}
+div[data-baseweb="tab"] {
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+  color: #64748B !important;
+  border-bottom: 3px solid transparent !important;
+  padding: 12px 18px !important;
+}
+div[data-baseweb="tab"][aria-selected="true"] {
+  color: #0F52BA !important;
+  border-bottom: 3px solid #0F52BA !important;
+}
+
+/* Primary Button Styling */
+button[kind="primary"], .stButton > button[kind="primary"], div[data-testid="stFormSubmitButton"] > button {
+  background-color: #0F52BA !important;
+  color: #FFFFFF !important;
+  border: 1px solid #0F52BA !important;
+  border-radius: 6px !important;
+  font-weight: 600 !important;
+  padding: 8px 24px !important;
+  box-shadow: 0 1px 2px rgba(15, 82, 186, 0.25) !important;
+}
+button[kind="primary"]:hover, .stButton > button[kind="primary"]:hover, div[data-testid="stFormSubmitButton"] > button:hover {
+  background-color: #0A3C85 !important;
+  border-color: #0A3C85 !important;
+  color: #FFFFFF !important;
+}
+
+/* Secondary Button Styling */
+button[kind="secondary"], .stButton > button {
+  background-color: #FFFFFF !important;
+  color: #334155 !important;
+  border: 1px solid #CBD5E1 !important;
+  border-radius: 6px !important;
+  font-weight: 500 !important;
+}
+button[kind="secondary"]:hover, .stButton > button:hover {
+  background-color: #F1F5F9 !important;
+  color: #0F172A !important;
+  border-color: #94A3B8 !important;
+}
+
+/* Input boxes & select boxes */
+div[data-baseweb="input"], div[data-baseweb="select"] > div {
+  background-color: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  border-radius: 6px !important;
+  color: #0F172A !important;
+}
+div[data-baseweb="input"]:focus-within, div[data-baseweb="select"] > div:focus-within {
+  border-color: #2563EB !important;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2) !important;
+}
+input, textarea {
+  color: #0F172A !important;
+}
+
 /* Cards & Containers */
 div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] > div[data-testid="stBlock"] {
   border-radius: var(--cc-radius-md);
 }
 
 .source-card {
-  background: var(--cc-bg-surface);
-  border: 1px solid var(--cc-border-subtle);
-  border-radius: var(--cc-radius-md);
-  padding: 0.75rem 0.85rem;
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+  background: var(--cc-bg-surface) !important;
+  border: 1px solid var(--cc-border-subtle) !important;
+  border-radius: var(--cc-radius-md) !important;
+  padding: 0.75rem 0.85rem !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+.source-card-title {
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  color: #0F172A !important;
+}
+.source-card-meta {
+  font-size: 0.75rem !important;
+  color: #64748B !important;
 }
 
 .result-card {
-  background: var(--cc-bg-surface);
-  border: 1px solid var(--cc-border-subtle);
-  border-radius: var(--cc-radius-md);
-  padding: 1rem;
-  margin-bottom: 0.75rem;
-  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05);
+  background: var(--cc-bg-surface) !important;
+  border: 1px solid var(--cc-border-subtle) !important;
+  border-radius: var(--cc-radius-md) !important;
+  padding: 1.25rem !important;
+  margin-bottom: 0.85rem !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
 }
 
 /* Status Chips */
@@ -107,31 +218,46 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] > div[da
 }
 
 .chip-likely {
-  background-color: var(--cc-likely-bg);
-  color: var(--cc-likely-text);
-  border: 1px solid var(--cc-likely-border);
+  background-color: var(--cc-likely-bg) !important;
+  color: var(--cc-likely-text) !important;
+  border: 1px solid var(--cc-likely-border) !important;
 }
 
 .chip-possible {
-  background-color: var(--cc-possible-bg);
-  color: var(--cc-possible-text);
-  border: 1px solid var(--cc-possible-border);
+  background-color: var(--cc-possible-bg) !important;
+  color: var(--cc-possible-text) !important;
+  border: 1px solid var(--cc-possible-border) !important;
 }
 
 .chip-clear {
-  background-color: var(--cc-clear-bg);
-  color: var(--cc-clear-text);
-  border: 1px solid var(--cc-clear-border);
+  background-color: var(--cc-clear-bg) !important;
+  color: var(--cc-clear-text) !important;
+  border: 1px solid var(--cc-clear-border) !important;
 }
 
 .chip-info {
-  background-color: var(--cc-info-bg);
-  color: var(--cc-info-text);
-  border: 1px solid var(--cc-info-border);
+  background-color: var(--cc-info-bg) !important;
+  color: var(--cc-info-text) !important;
+  border: 1px solid var(--cc-info-border) !important;
 }
 
 .chip-not-checked {
-  background-color: var(--cc-unchecked-bg);
-  color: var(--cc-unchecked-text);
-  border: 1px solid var(--cc-unchecked-border);
+  background-color: var(--cc-unchecked-bg) !important;
+  color: var(--cc-unchecked-text) !important;
+  border: 1px solid var(--cc-unchecked-border) !important;
+}
+
+/* Executive Warning & Alert Banners */
+.warning-banner {
+  background: #FEF3C7 !important;
+  border: 1px solid #F59E0B !important;
+  border-radius: 6px !important;
+  color: #92400E !important;
+  padding: 10px 16px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  margin-bottom: 16px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
 }
