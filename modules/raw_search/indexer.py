@@ -21,7 +21,20 @@ if str(PROJECT_ROOT) not in sys.path:
 
 logger = logging.getLogger(__name__)
 
-RAW_DIR = Path("data/raw")
+def _resolve_raw_dir() -> Path:
+    try:
+        from modules.common.paths import get_lists_dir, get_seed_data_dir
+        active_raw = get_lists_dir() / "raw"
+        if active_raw.is_dir() and any(active_raw.iterdir()):
+            return active_raw
+        seed_raw = get_seed_data_dir() / "raw"
+        if seed_raw.is_dir() and any(seed_raw.iterdir()):
+            return seed_raw
+    except Exception:
+        pass
+    return Path("data/raw")
+
+RAW_DIR = _resolve_raw_dir()
 def _resolve_index_db_path() -> Path:
     try:
         from modules.common.paths import get_index_db_path
@@ -581,6 +594,8 @@ def build_full_raw_index(
         if progress_callback:
             progress_callback(idx, len(parsers), src_id)
         p = Path(file_path_str)
+        if "data/raw" in file_path_str:
+            p = RAW_DIR / p.name
         file_hash = compute_file_sha256(p)
         if not p.is_file() and "data/raw" in file_path_str:
             cur.execute(

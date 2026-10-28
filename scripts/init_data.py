@@ -56,18 +56,34 @@ def download_official_sanctions_lists(force: bool = False):
     }
 
     import urllib.request
+    import time
 
     for fname, url in sources_map.items():
         dest = raw_dir / fname
         if force or not dest.exists() or dest.stat().st_size == 0:
             logger.info(f"Downloading {fname} from official source...")
-            try:
-                req = urllib.request.Request(url, headers={"User-Agent": "SanctionCheck-Init/1.0"})
-                with urllib.request.urlopen(req, timeout=30) as resp, open(dest, "wb") as out:
-                    out.write(resp.read())
-                logger.info(f"Successfully saved {fname}")
-            except Exception as e:
-                logger.warning(f"Could not download {fname}: {e}")
+            success = False
+            for attempt in range(1, 4):
+                try:
+                    headers = {
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                        "Accept": "*/*",
+                    }
+                    req = urllib.request.Request(url, headers=headers)
+                    with urllib.request.urlopen(req, timeout=90) as resp, open(dest, "wb") as out:
+                        out.write(resp.read())
+                    if dest.exists() and dest.stat().st_size > 1000:
+                        logger.info(f"Successfully saved {fname} ({dest.stat().st_size} bytes)")
+                        success = True
+                        break
+                    else:
+                        logger.warning(f"Downloaded {fname} was empty or truncated; retrying...")
+                except Exception as e:
+                    logger.warning(f"Attempt {attempt}/3 failed to download {fname}: {e}")
+                    if attempt < 3:
+                        time.sleep(3 * attempt)
+            if not success:
+                logger.error(f"Could not download {fname} after 3 attempts.")
 
 
 def bootstrap_data(force: bool = False, verify_only: bool = False):

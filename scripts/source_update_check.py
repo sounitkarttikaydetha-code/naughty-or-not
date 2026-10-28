@@ -379,8 +379,11 @@ def run_live_audit() -> Tuple[List[Dict[str, Any]], List[str]]:
         elif s_id == "os_bulk":
             idx_hash_disp = "— (API)"
             hash_match_disp = "N/A"
+        elif not idx_hash:
+            idx_hash_disp = "None"
+            hash_match_disp = "—"
         else:
-            idx_hash_disp = f"`{idx_hash[:12]}...`" if idx_hash else "None"
+            idx_hash_disp = f"`{idx_hash[:12]}...`"
             hash_match_disp = "Y" if (local_file_hash and local_file_hash == idx_hash) else "N"
             if hash_match_disp == "N" and "OK" in status_disp:
                 status_disp = "FAIL: Index hash mismatch with downloaded file"
