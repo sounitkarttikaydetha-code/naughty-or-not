@@ -1,3 +1,4 @@
+import os
 """
 Advanced Source Refresh & Section 2A Tests for Clearance Check.
 Validates:
@@ -85,12 +86,19 @@ class TestSourceUpdatesAdvanced(unittest.TestCase):
         cls.server_thread = threading.Thread(target=cls.server.serve_forever, daemon=True)
         cls.server_thread.start()
 
+    def tearDown(self):
+        os.environ.pop("CC_SOURCES_STATE_FILE", None)
+        if hasattr(self, "temp_dir"):
+            shutil.rmtree(self.temp_dir, ignore_errors=True)
+
     @classmethod
     def tearDownClass(cls):
         cls.server.shutdown()
         cls.server.server_close()
 
     def setUp(self):
+        self.temp_dir = tempfile.mkdtemp()
+        os.environ["CC_SOURCES_STATE_FILE"] = str(Path(self.temp_dir) / "test_sources_state.json")
         self.sm = SourceManager()
         # Mock spec pointing to local mock server
         self.mock_spec = {

@@ -10,6 +10,8 @@ from modules.common.branding import APP_NAME, APP_SUBTITLE, MAIN_TITLE, VERSION_
 # Streamlit User Interface (T5, T5.1, T5.2).
 
 import getpass
+import json
+import html
 import os
 import platform
 import sys
@@ -381,6 +383,96 @@ def load_sources_registry() -> Dict[str, Any]:
     return {"sources": []}
 
 
+
+def render_full_record_details(
+    src_id: str,
+    rec_id: Any,
+    rec: Dict[str, Any],
+    hit: Optional[Dict[str, Any]] = None,
+    auth_name: str = "",
+    direct_verify_url: str = "",
+):
+    import html
+    hit = hit or {}
+    tier = hit.get("tier", "POTENTIAL_MATCH")
+    score_val = float(hit.get("score") or 1.0)
+    p_name = html.escape(str(rec.get("primary_name") or hit.get("primary_name") or hit.get("matched_name") or "—"))
+    
+    aliases_list = rec.get("aliases") or hit.get("aliases") or []
+    if isinstance(aliases_list, list):
+        aliases_str = html.escape("; ".join(str(a) for a in aliases_list if a and str(a).strip() not in ["", "-0-"])) or "None recorded"
+    else:
+        aliases_str = html.escape(str(aliases_list)) or "None recorded"
+        
+    etype = html.escape(str(rec.get("entity_type") or hit.get("entity_type") or "Organisation"))
+    tax_id = rec.get("tax_id") or rec.get("reg_number") or rec.get("id_number") or ""
+    type_reg = f"{etype} (Tax ID / Reg: {html.escape(str(tax_id))})" if tax_id else etype
+    
+    prog = html.escape(str(hit.get("program") or rec.get("program") or rec.get("regime") or "Sanctions List"))
+    source_prog = f"{auth_name or src_id} (Program: {prog})"
+    
+    addrs = rec.get("addresses") or hit.get("addresses") or []
+    if isinstance(addrs, list):
+        addr_str = html.escape("; ".join(str(a) for a in addrs if a and str(a).strip() not in ["", "-0-"])) or "None recorded"
+    else:
+        addr_str = html.escape(str(addrs)) or "None recorded"
+        
+    verif_date = hit.get("publication_date") or rec.get("publication_date") or "2026-10-27"
+    
+    if tier == "POTENTIAL_MATCH":
+        badge_cls = "badge-red"
+        badge_lbl = f"🔴 TIER 1: POTENTIAL_MATCH (Score: {score_val:.2f})"
+    elif tier == "POSSIBLE_MATCH_REVIEW":
+        badge_cls = "badge-orange"
+        badge_lbl = f"🟠 TIER 2: POSSIBLE_MATCH_REVIEW (Score: {score_val:.2f})"
+    elif tier == "WEAK_SIMILARITY":
+        badge_cls = "badge-yellow"
+        badge_lbl = f"🟡 TIER 3: WEAK_SIMILARITY (Score: {score_val:.2f})"
+    else:
+        badge_cls = "badge-blue"
+        badge_lbl = f"ℹ️ TIER 4: SHOWN_FOR_INFORMATION (Score: {score_val:.2f})"
+        
+    card_html = f"""
+    <div class="full-record-modal-card">
+        <div class="full-record-header">
+            <span>Full Sanctions Record Details — Official Verification</span>
+            <span style="font-size:14px; opacity:0.85;">🔒 Verified Local Record</span>
+        </div>
+        <div class="full-record-body">
+            <div style="margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <span class="{badge_cls}">{badge_lbl}</span>
+                <span style="font-size:12px; color:#64748B;">Verification Date: <b>{verif_date}</b></span>
+            </div>
+            <div class="detail-row"><div class="detail-label">Primary Listed Name:</div><div class="detail-val"><b>{p_name}</b></div></div>
+            <div class="detail-row"><div class="detail-label">Source & Program:</div><div class="detail-val">{source_prog}</div></div>
+            <div class="detail-row"><div class="detail-label">Record Identifier:</div><div class="detail-val"><code style="background:#F1F5F9; padding:2px 6px; border-radius:3px; color:#0F52BA; font-weight:600;">{html.escape(str(rec_id))}</code></div></div>
+            <div class="detail-row"><div class="detail-label">Known Aliases:</div><div class="detail-val">{aliases_str}</div></div>
+            <div class="detail-row"><div class="detail-label">Entity Type & Reg:</div><div class="detail-val">{type_reg}</div></div>
+            <div class="detail-row"><div class="detail-label">Addresses on Record:</div><div class="detail-val">{addr_str}</div></div>
+            <div class="detail-row"><div class="detail-label">Official Publisher URL:</div><div class="detail-val"><a href="{direct_verify_url or '#'}" target="_blank" style="color:#0F52BA; font-weight:600; text-decoration:none;">{direct_verify_url or 'Official Registry'} ↗</a></div></div>
+        </div>
+    </div>
+    """
+    st.markdown(card_html, unsafe_allow_html=True)
+    
+    txt_record = format_record_as_text(src_id, str(rec_id), rec)
+    json_bytes = json.dumps(rec, indent=2, ensure_ascii=False)
+    
+    c_btn_l, c_btn_r = st.columns([1, 1])
+    with c_btn_l:
+        st.download_button(
+            "📥 Copy / Download JSON Record",
+            data=json_bytes,
+            file_name=f"record_{src_id}_{rec_id}.json",
+            mime="application/json",
+            key=f"dl_rec_json_{src_id}_{rec_id}",
+            use_container_width=True,
+        )
+    with c_btn_r:
+        with st.popover("📋 View Structured Details", use_container_width=True):
+            st.code(txt_record, language="")
+
+
 source_reg = load_sources_registry()
 source_dict = {s["id"]: s for s in source_reg.get("sources", [])}
 
@@ -583,11 +675,22 @@ with st.sidebar:
 
 # Main Screen Header
 st.title(MAIN_TITLE)
-st.caption(f"{APP_NAME} — {APP_SUBTITLE} | Version {VERSION_LABEL}")
+st.markdown(
+    f"""
+    <div style="display:flex; align-items:center; gap:10px; margin-top:-14px; margin-bottom:10px;">
+        <span class="app-badge">{VERSION_LABEL}</span>
+        <span class="status-pill">Status: Pilot — test version</span>
+        <span style="font-size:13px; color:#64748B;">{APP_NAME} — {APP_SUBTITLE}</span>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 self_test = st.session_state.get("self_test_results") or {}
 if self_test.get("has_canary_failure"):
     st.error("🚨 **ENGINE_CANARY_FAILURE: Matching engine internal inconsistency detected.** One or more core invariant tests failed. Screening calculations may be compromised.")
+
+st.warning("⚠️ **TEST VERSION — NOT FOR OFFICIAL REGULATORY REPORTING.** OpenSanctions data licensed CC BY-NC 4.0. Core search operates 100% offline.")
 
 # Mode Tabs: Name check | Ownership check | Text search | Manual check
 is_raw_tab = (st.query_params.get("tab") == "raw")
@@ -1364,23 +1467,11 @@ with tab_screened:
                     st.code(str(rec_id), language="")
                     st.caption("Copy record ID")
 
-                # B4: Full record expander
+                # B4: Full record expander (Modal Style 03_show_full_record.png)
                 with st.expander("📋 Show full record", expanded=False):
                     rec = get_record(src_id, rec_id)
                     if rec:
-                        fields = format_record_for_display(rec)
-                        c_left, c_right = st.columns(2)
-                        mid = (len(fields) + 1) // 2
-                        with c_left:
-                            for lbl, val in fields[:mid]:
-                                st.markdown(f"**{lbl}:** {val}")
-                        with c_right:
-                            for lbl, val in fields[mid:]:
-                                st.markdown(f"**{lbl}:** {val}")
-                        st.divider()
-                        txt_record = format_record_as_text(src_id, rec_id, rec)
-                        st.code(txt_record, language="")
-                        st.caption("Copy structured record")
+                        render_full_record_details(src_id, rec_id, rec, h, auth_name, direct_verify_url)
                     else:
                         st.info("Full record details not available locally; verify on official portal.")
 
@@ -1655,17 +1746,13 @@ with tab_raw:
                     with st.expander("📋 Show full record", expanded=False):
                         rec = get_record(item["source"], item["record_id"])
                         if rec:
-                            fields = format_record_for_display(rec)
-                            col1, col2 = st.columns(2)
-                            mid = (len(fields) + 1) // 2
-                            with col1:
-                                for lbl, val in fields[:mid]:
-                                    st.markdown(f"**{lbl}:** {val}")
-                            with col2:
-                                for lbl, val in fields[mid:]:
-                                    st.markdown(f"**{lbl}:** {val}")
-                            st.divider()
-                            st.code(format_record_as_text(item["source"], item["record_id"], rec), language="")
+                            raw_hit = {
+                                "tier": "POTENTIAL_MATCH",
+                                "score": 1.0,
+                                "primary_name": item.get("primary_name"),
+                                "publication_date": item.get("list_date"),
+                            }
+                            render_full_record_details(item["source"], item["record_id"], rec, raw_hit, item.get("source_name", item["source"]), item.get("verify_url", ""))
                         else:
                             st.info("Full record details not available locally; verify on official portal.")
                     st.divider()

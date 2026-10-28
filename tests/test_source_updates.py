@@ -145,6 +145,8 @@ class TestSourceUpdates(unittest.TestCase):
     def setUp(self):
         DynamicSourceHandler.scenario = "normal"
         DynamicSourceHandler.extra_entity = False
+        self.temp_dir = tempfile.mkdtemp()
+        os.environ["CC_SOURCES_STATE_FILE"] = str(Path(self.temp_dir) / "test_sources_state.json")
         self.sm = SourceManager()
         # Register a mock source in registry
         self.mock_spec = {
@@ -166,6 +168,9 @@ class TestSourceUpdates(unittest.TestCase):
         self.sm.registry = {"mock_sdn": self.mock_spec}
 
     def tearDown(self):
+        os.environ.pop("CC_SOURCES_STATE_FILE", None)
+        if hasattr(self, "temp_dir"):
+            shutil.rmtree(self.temp_dir, ignore_errors=True)
         stop_periodic_source_refresh_worker()
 
     @patch("modules.raw_search.indexer.build_full_raw_index")

@@ -146,6 +146,11 @@ def get_source_check_interval_hours() -> int:
 
 def get_sources_state_file() -> Path:
     """Path to persisted sources_state.json in user data directory."""
+    env_override = os.environ.get("CC_SOURCES_STATE_FILE")
+    if env_override:
+        p = Path(env_override)
+        p.parent.mkdir(parents=True, exist_ok=True)
+        return p
     lists_dir = get_lists_dir()
     lists_dir.mkdir(parents=True, exist_ok=True)
     return lists_dir / "sources_state.json"
@@ -292,7 +297,8 @@ def count_records(path: Path, fmt: str) -> int:
                 header = next(reader, None)
                 if not header:
                     return 0
-                return sum(1 for row in reader if any(row))
+                initial = 1 if (header and len(header) >= 11 and header[0].strip().isdigit()) else 0
+                return initial + sum(1 for row in reader if any(row))
         elif fmt == "xml":
             count = 0
             # Count sanctionEntity or INDIVIDUALS/ENTITIES
@@ -350,9 +356,23 @@ def validate_file(path: Path, spec: Dict[str, Any], last_good_count: int = 0) ->
         try:
             with open(path, "r", encoding="utf-8", errors="replace") as f:
                 reader = csv.reader(f)
-                header = next(reader, None)
+                header = None
+                first_row = None
+                for _ in range(10):
+                    row = next(reader, None)
+                    if not row:
+                        break
+                    if first_row is None:
+                        first_row = row
+                    row_set = {c.strip() for c in row if c}
+                    if any(rc in row_set or any(rc.lower() == h.lower() for h in row_set) for rc in req_cols):
+                        header = row
+                        break
                 if not header:
-                    return False, "Empty CSV header", 0
+                    if first_row and len(first_row) >= 11 and first_row[0].strip().isdigit():
+                        header = ["ent_num", "SDN_Name", "SDN_Type", "Program"]
+                    else:
+                        return False, "Missing required column in CSV header", 0
                 header_set = {c.strip() for c in header if c}
                 for rc in req_cols:
                     if rc not in header_set:

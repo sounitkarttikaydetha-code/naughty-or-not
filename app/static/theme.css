@@ -261,3 +261,133 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] > div[da
   align-items: center !important;
   gap: 10px !important;
 }
+
+/* Header and Badges */
+.app-title, h1 {
+    color: #0F52BA !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.5px !important;
+}
+
+.app-badge {
+    background: #EBF3FE !important;
+    color: #0F52BA !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    padding: 3px 10px !important;
+    border-radius: 12px !important;
+    border: 1px solid #BFDBFE !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
+}
+
+.status-pill {
+    background: #F1F5F9 !important;
+    color: #475569 !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    padding: 3px 10px !important;
+    border-radius: 12px !important;
+    border: 1px solid #E2E8F0 !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
+}
+
+/* Full Sanctions Record Inspection Card (03_show_full_record.png) */
+.full-record-modal-card {
+    width: 100% !important;
+    max-width: 840px !important;
+    background: #FFFFFF !important;
+    border-radius: 8px !important;
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.1) !important;
+    border: 1px solid #CBD5E1 !important;
+    overflow: hidden !important;
+    margin: 14px 0 !important;
+}
+
+.full-record-header {
+    background: #0F52BA !important;
+    color: #FFFFFF !important;
+    padding: 14px 20px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.2px !important;
+}
+
+.full-record-body {
+    padding: 20px 24px !important;
+    background: #FFFFFF !important;
+}
+
+.detail-row {
+    display: flex !important;
+    padding: 9px 0 !important;
+    border-bottom: 1px solid #F1F5F9 !important;
+    font-size: 13px !important;
+    align-items: flex-start !important;
+}
+
+.detail-row:last-child {
+    border-bottom: none !important;
+}
+
+.detail-label {
+    width: 200px !important;
+    min-width: 180px !important;
+    font-weight: 600 !important;
+    color: #475569 !important;
+    flex-shrink: 0 !important;
+}
+
+.detail-val {
+    flex: 1 !important;
+    color: #0F172A !important;
+    word-break: break-word !important;
+}
+
+.badge-red {
+    background: #FEE2E2 !important;
+    color: #991B1B !important;
+    border: 1px solid #DC2626 !important;
+    padding: 3px 8px !important;
+    border-radius: 4px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    display: inline-block !important;
+}
+
+.badge-orange {
+    background: #FEF3C7 !important;
+    color: #92400E !important;
+    border: 1px solid #F59E0B !important;
+    padding: 3px 8px !important;
+    border-radius: 4px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    display: inline-block !important;
+}
+
+.badge-yellow {
+    background: #FEF9C3 !important;
+    color: #854D0E !important;
+    border: 1px solid #EAB308 !important;
+    padding: 3px 8px !important;
+    border-radius: 4px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    display: inline-block !important;
+}
+
+.badge-blue {
+    background: #DBEAFE !important;
+    color: #1E40AF !important;
+    border: 1px solid #3B82F6 !important;
+    padding: 3px 8px !important;
+    border-radius: 4px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    display: inline-block !important;
+}

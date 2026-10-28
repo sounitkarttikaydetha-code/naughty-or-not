@@ -160,6 +160,7 @@ class TestSourceRefresh(unittest.TestCase):
 
     def setUp(self):
         self.temp_dir = tempfile.mkdtemp()
+        os.environ["CC_SOURCES_STATE_FILE"] = str(Path(self.temp_dir) / "test_sources_state.json")
         self.sm = SourceManager()
         # Mock registry with fixture URLs
         self.test_spec = {
@@ -182,6 +183,7 @@ class TestSourceRefresh(unittest.TestCase):
         self.sm.registry["test_src"] = self.test_spec
 
     def tearDown(self):
+        os.environ.pop("CC_SOURCES_STATE_FILE", None)
         shutil.rmtree(self.temp_dir, ignore_errors=True)
 
     def test_01_http_404_handling(self):
@@ -262,9 +264,12 @@ class TestSourceRefresh(unittest.TestCase):
     def test_10_index_hash_matches_downloaded_files(self):
         """Release-blocking: index built-from hash must equal downloaded file hash for all sources."""
         import sqlite3, hashlib
-        from modules.common.paths import get_index_db_path
-        db_path = get_index_db_path()
-        if not db_path.is_file():
+        from modules.common.paths import get_index_db_path
+
+        db_path = get_index_db_path()
+
+        if not db_path.is_file():
+
             db_path = Path("raw_index.db")
         if not db_path.is_file():
             self.skipTest("raw_index.db not present in test environment")

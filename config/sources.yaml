@@ -4,12 +4,15 @@ sources:
   authority: US Department of the Treasury (OFAC)
   landing_page: https://ofac.treasury.gov/specially-designated-nationals-and-blocked-persons-list-sdn-human-readable-lists
   candidate_urls:
+  - https://sanctionslistservice.ofac.treas.gov/api/publicationpreview/exports/sdn.csv
   - https://www.treasury.gov/ofac/downloads/sdn.csv
-  - https://sanctionssearch.ofac.treas.gov/Files/sdn.csv
   allowed_domains:
   - treasury.gov
   - ofac.treasury.gov
   - sanctionssearch.ofac.treas.gov
+  - sanctionslistservice.ofac.treas.gov
+  - s3.us-gov-west-1.amazonaws.com
+  - amazonaws.com
   discovery: href=[\"'](/?(?:https?://[^\"']*/|ofac/downloads/|Files/)sdn\.csv)[\"']
   expected:
     format: csv
@@ -91,7 +94,7 @@ sources:
     required_columns:
     - Unique ID
     - Name 6
-    - Group Type
+    - Designation Type
     - Regime Name
     min_records: 4500
     count_range_ratio:
