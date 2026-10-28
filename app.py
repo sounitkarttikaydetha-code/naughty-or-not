@@ -401,6 +401,7 @@ def render_full_record_details(
     hit: Optional[Dict[str, Any]] = None,
     auth_name: str = "",
     direct_verify_url: str = "",
+    key_prefix: str = "",
 ):
     import html
     hit = hit or {}
@@ -470,12 +471,13 @@ def render_full_record_details(
     
     c_btn_l, c_btn_r = st.columns([1, 1])
     with c_btn_l:
+        key_tag = f"{key_prefix}_{src_id}_{rec_id}" if key_prefix else f"{src_id}_{rec_id}"
         st.download_button(
             "📥 Copy / Download JSON Record",
             data=json_bytes,
             file_name=f"record_{src_id}_{rec_id}.json",
             mime="application/json",
-            key=f"dl_rec_json_{src_id}_{rec_id}",
+            key=f"dl_rec_json_{key_tag}",
             use_container_width=True,
         )
     with c_btn_r:
@@ -518,6 +520,7 @@ FRIENDLY_AUTHORITIES = {
     "bis_aircraft": "US BIS Export Administration",
     "bis_tdo": "US BIS Export Administration",
     "eu_air_safety": "European Commission",
+    "eu_air_safety_list": "European Commission",
     "faa_iasa": "Federal Aviation Administration",
     "fatf_jurisdictions": "FATF",
     "os_bulk": "OpenSanctions",
@@ -532,6 +535,7 @@ FRIENDLY_SOURCE_NAMES = {
     "bis_aircraft": "BIS Identified Aircraft",
     "bis_tdo": "BIS Denial Orders",
     "eu_air_safety": "EU Air Safety List",
+    "eu_air_safety_list": "EU Air Safety List",
     "faa_iasa": "FAA IASA Safety Assessments",
     "in_mha_first_schedule": "India MHA Terrorist Orgs (1st Sch)",
     "in_mha_fourth_schedule": "India MHA Terrorist Individuals (4th Sch)",
@@ -1481,7 +1485,7 @@ with tab_screened:
                 with st.expander("📋 Show full record", expanded=False):
                     rec = get_record(src_id, rec_id)
                     if rec:
-                        render_full_record_details(src_id, rec_id, rec, h, auth_name, direct_verify_url)
+                        render_full_record_details(src_id, rec_id, rec, h, auth_name, direct_verify_url, key_prefix=f"scr_{idx}")
                     else:
                         st.info("Full record details not available locally; verify on official portal.")
 
@@ -1622,7 +1626,7 @@ with tab_raw:
     raw_engine = RawSearchEngine()
     all_raw_sources = [
         "us_ofac", "us_csl", "uk_csl", "eu_csl", "un_csl",
-        "bis_aircraft", "eu_air_safety", "faa_iasa",
+        "bis_aircraft", "eu_air_safety_list", "faa_iasa",
         "in_mha_first_schedule", "in_mha_fourth_schedule", "in_mha_unlawful_assoc",
         "fatf_jurisdictions"
     ]
@@ -1751,7 +1755,7 @@ with tab_raw:
                     )
 
         if rr["results"]:
-            for item in rr["results"]:
+            for idx, item in enumerate(rr["results"]):
                 with st.container():
                     r_c1, r_c2, r_c3 = st.columns([2, 3, 2])
                     with r_c1:
@@ -1775,7 +1779,7 @@ with tab_raw:
                                 "primary_name": item.get("primary_name"),
                                 "publication_date": item.get("list_date"),
                             }
-                            render_full_record_details(item["source"], item["record_id"], rec, raw_hit, item.get("source_name", item["source"]), item.get("verify_url", ""))
+                            render_full_record_details(item["source"], item["record_id"], rec, raw_hit, item.get("source_name", item["source"]), item.get("verify_url", ""), key_prefix=f"raw_{idx}")
                         else:
                             st.info("Full record details not available locally; verify on official portal.")
                     st.divider()

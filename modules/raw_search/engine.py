@@ -342,6 +342,16 @@ class RawSearchEngine:
                     filtered_rows.append(r)
             rows = filtered_rows
 
+        # Deduplicate records by (source, record_id)
+        seen_keys = set()
+        deduped_rows = []
+        for r in rows:
+            k = (r["source"], r["record_id"])
+            if k not in seen_keys:
+                seen_keys.add(k)
+                deduped_rows.append(r)
+        rows = deduped_rows
+
         limit_reached = len(rows) > limit
         result_rows = rows[:limit]
 

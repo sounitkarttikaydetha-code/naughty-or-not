@@ -381,7 +381,7 @@ def parse_eu_air_safety_records() -> List[Tuple[str, str, str, str, str, str, st
         state = row.get("state", "")
         all_text = f"Airline: {airline} AOC: {aoc} ICAO: {icao} State: {state} Annex A Banned"
         records.append((
-            "eu_air_safety",
+            "eu_air_safety_list",
             aoc or airline,
             airline,
             f"{airline}; {icao}",
@@ -395,7 +395,7 @@ def parse_eu_air_safety_records() -> List[Tuple[str, str, str, str, str, str, st
         restrictions = row.get("restricted_aircraft", "")
         all_text = f"Airline: {airline} State: {state} Restrictions: {restrictions} Annex B"
         records.append((
-            "eu_air_safety",
+            "eu_air_safety_list",
             airline,
             airline,
             airline,
@@ -556,7 +556,7 @@ def build_full_raw_index(
         ("eu_csl", "data/raw/eu_csl.xml", lambda: parse_eu_csl(RAW_DIR / "eu_csl.xml")),
         ("un_csl", "data/raw/un_csl.xml", lambda: parse_un_csl(RAW_DIR / "un_csl.xml")),
         ("bis_aircraft", "data/aviation/bis_aircraft.pdf", parse_bis_aircraft_records),
-        ("eu_air_safety", "data/aviation/eu_air_safety_list.pdf", parse_eu_air_safety_records),
+        ("eu_air_safety_list", "data/aviation/eu_air_safety_list.pdf", parse_eu_air_safety_records),
         ("faa_iasa", "data/aviation/faa_iasa.pdf", parse_faa_iasa_records),
         ("in_mha_first_schedule", "data/india/first_schedule.pdf", lambda: [r for r in parse_india_records() if r[0] == "in_mha_first_schedule"]),
         ("in_mha_fourth_schedule", "data/india/individuals_all.json", lambda: [r for r in parse_india_records() if r[0] == "in_mha_fourth_schedule"]),
