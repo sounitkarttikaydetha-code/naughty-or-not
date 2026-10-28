@@ -28,6 +28,7 @@ reportlab_metadata = [d for d in copy_metadata('reportlab') if datas_filter(d)]
 
 datas = [
     ('app.py', '.'),
+    ('app', 'app'),
     ('config', 'config'),
     ('modules', 'modules'),
     ('assets', 'assets'),

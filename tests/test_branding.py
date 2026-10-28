@@ -18,7 +18,7 @@ class TestBranding(unittest.TestCase):
         self.assertEqual(APP_NAME, "Clearance Check")
         self.assertEqual(MAIN_TITLE, "Sanction checK", "Main title must strictly have capital K")
         self.assertEqual(SHORT_NAME, "ClearanceCheck")
-        self.assertEqual(VERSION_LABEL, "v1.1.0")
+        self.assertEqual(VERSION_LABEL, "v1.1.3")
         self.assertEqual(CODENAME, "Naughty or not")
 
     def test_02_app_title_and_main_screen(self):

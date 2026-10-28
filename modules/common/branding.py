@@ -14,7 +14,7 @@ _defaults = {
     "app_subtitle": "Sanctions, Export-Control & Aviation Screening",
     "main_title": "Sanction checK",
     "short_name": "ClearanceCheck",
-    "version_label": "v1.1.0",
+    "version_label": "v1.1.3",
 }
 
 
