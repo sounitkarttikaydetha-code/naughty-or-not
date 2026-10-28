@@ -876,11 +876,7 @@ class SourceManager:
                     except Exception:
                         pass
 
-                if rejection_reason and ("0 bytes" in str(rejection_reason).lower() or "file size 0" in str(rejection_reason).lower()):
-                    # Network interruption during download; local copy remains completely valid
-                    new_state = STATE_OFFLINE_NOTE
-                    note = f"Update download interrupted (0 bytes received); using verified copy dated {current_state.get('publication_date', '2026-10-18')}"
-                elif validation_rejected or (rejection_reason and ("validation" in rejection_reason.lower() or "outside allowed range" in str(rejection_reason).lower() or "missing required" in str(rejection_reason).lower() or "rejected" in str(rejection_reason).lower())):
+                if validation_rejected or (rejection_reason and ("validation" in rejection_reason.lower() or "outside allowed range" in str(rejection_reason).lower() or "missing required" in str(rejection_reason).lower() or "rejected" in str(rejection_reason).lower())):
                     new_state = STATE_UPDATE_REJECTED
                     note = f"Update rejected ({rejection_reason}); using copy dated {current_state.get('publication_date', '2026-10-18')}"
                 elif age_days > max_age:

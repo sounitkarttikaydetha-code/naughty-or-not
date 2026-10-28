@@ -27,7 +27,14 @@ def _load_fatf_config() -> Tuple[Dict[str, Any], Path]:
         if p.is_file():
             try:
                 with open(p, "r", encoding="utf-8") as f:
-                    return json.load(f), p
+                    data = json.load(f)
+                    if "black_list" in data and "grey_list" in data:
+                        return data, p
+                    elif "details" in data and "body" in data.get("details", {}):
+                        from modules.fatf.republication import parse_hm_treasury_html
+                        parsed = parse_hm_treasury_html(data["details"]["body"], data.get("public_updated_at", ""))
+                        if parsed and "black_list" in parsed:
+                            return parsed, p
             except Exception as e:
                 logger.warning(f"Could not load {p}: {e}")
     return {}, CONFIG_FATF_JSON

@@ -1485,7 +1485,7 @@ with tab_screened:
                 with st.expander("📋 Show full record", expanded=False):
                     rec = get_record(src_id, rec_id)
                     if rec:
-                        render_full_record_details(src_id, rec_id, rec, h, auth_name, direct_verify_url, key_prefix=f"scr_{idx}")
+                        render_full_record_details(src_id, rec_id, rec, h, auth_name, direct_verify_url, key_prefix="scr")
                     else:
                         st.info("Full record details not available locally; verify on official portal.")
 
