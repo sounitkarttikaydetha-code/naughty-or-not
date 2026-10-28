@@ -2,7 +2,7 @@
 ; Installs per-user to %LOCALAPPDATA%\Programs\ClearanceCheck with NO ADMIN RIGHTS required.
 
 #define MyAppName "Clearance Check"
-#define MyAppVersion "1.1.1"
+#define MyAppVersion "1.1.3"
 #define MyAppPublisher "Compliance Engineering"
 #define MyAppURL "https://github.com/organization/clearance-check"
 #define MyAppExeName "Clearance Check.exe"

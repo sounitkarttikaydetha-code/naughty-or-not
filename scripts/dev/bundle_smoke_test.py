@@ -13,9 +13,9 @@ def smoke_test_bundle(bundle_dir: Path) -> bool:
         print(f"[FAIL] Bundle directory does not exist: {bundle_dir}")
         return False
 
-    exe_path = bundle_dir / "Naughty or not.exe"
+    exe_path = bundle_dir / "Clearance Check.exe" if (bundle_dir / "Clearance Check.exe").is_file() else bundle_dir / "Naughty or not.exe"
     if not exe_path.is_file():
-        print(f"[FAIL] Main executable not found: {exe_path}")
+        print(f"[FAIL] Main executable not found (expected Clearance Check.exe or Naughty or not.exe in {bundle_dir})")
         return False
 
     internal_dir = bundle_dir / "_internal"

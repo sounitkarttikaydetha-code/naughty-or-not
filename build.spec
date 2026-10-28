@@ -1,5 +1,5 @@
 # -*- mode: python ; coding: utf-8 -*-
-# PyInstaller specification for Naughty or not desktop application.
+# PyInstaller specification for Naughty or not / Clearance Check desktop application.
 # Explicitly excludes GPL-licensed font (DarkGarden) bundled in ReportLab
 # to ensure the built binary complies strictly with corporate permissive licensing.
 
@@ -96,6 +96,25 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
+    name='Clearance Check',
+    debug=False,
+    bootloader_ignore_signals=False,
+    strip=False,
+    upx=False,
+    console=False,
+    disable_windowed_traceback=False,
+    argv_emulation=False,
+    target_arch=None,
+    codesign_identity=None,
+    entitlements_file=None,
+    icon='assets/icon.ico',
+)
+
+exe_legacy = EXE(
+    pyz,
+    a.scripts,
+    [],
+    exclude_binaries=True,
     name='Naughty or not',
     debug=False,
     bootloader_ignore_signals=False,
@@ -112,6 +131,7 @@ exe = EXE(
 
 coll = COLLECT(
     exe,
+    exe_legacy,
     a.binaries,
     a.zipfiles,
     a.datas,

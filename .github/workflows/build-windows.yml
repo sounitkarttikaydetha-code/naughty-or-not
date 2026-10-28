@@ -67,6 +67,9 @@ jobs:
       - name: Build PyInstaller Desktop App
         run: |
           pyinstaller build.spec --clean --noconfirm
+          if (Test-Path "dist\NaughtyOrNot") {
+            Copy-Item -Path "dist\NaughtyOrNot" -Destination "dist\ClearanceCheck" -Recurse -Force
+          }
 
       - name: Run Release Hygiene Check on App Bundle
         run: |
