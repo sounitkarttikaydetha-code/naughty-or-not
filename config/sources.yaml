@@ -153,6 +153,8 @@ sources:
   allowed_domains:
   - un.org
   - scsanctions.un.org
+  - unsolprodfiles.blob.core.windows.net
+  - blob.core.windows.net
   discovery: href=[\"\'](https?://[^\"\']*consolidated\.xml)[\"\']
   expected:
     format: xml

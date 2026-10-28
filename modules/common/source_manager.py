@@ -190,7 +190,7 @@ def get_source_file_path(source_id: str) -> Path:
         "eu_csl": lists_dir / "raw" / "eu_csl.xml",
         "un_csl": lists_dir / "raw" / "un_csl.xml",
         "in_mha_first_schedule": lists_dir / "india" / "first_schedule.pdf",
-        "in_mha_fourth_schedule": seed_dir / "india" / "fourth_schedule_registry.json" if (seed_dir / "india" / "fourth_schedule_registry.json").is_file() else lists_dir / "india" / "individuals_all.json",
+        "in_mha_fourth_schedule": lists_dir / "india" / "individuals_all.json" if (lists_dir / "india" / "individuals_all.json").is_file() else seed_dir / "india" / "individuals_all.json",
         "in_mha_unlawful_assoc": seed_dir / "india" / "unlawful_associations_all_pages.html" if (seed_dir / "india" / "unlawful_associations_all_pages.html").is_file() else lists_dir / "india" / "unlawful_associations_all.json",
         "bis_aircraft": lists_dir / "aviation" / "bis_aircraft.pdf",
         "eu_air_safety_list": lists_dir / "aviation" / "eu_air_safety_list.pdf",
@@ -209,7 +209,7 @@ def get_source_file_path(source_id: str) -> Path:
             "eu_csl": seed_dir / "raw" / "eu_csl.xml",
             "un_csl": seed_dir / "raw" / "un_csl.xml",
             "in_mha_first_schedule": seed_dir / "india" / "first_schedule.pdf",
-            "in_mha_fourth_schedule": seed_dir / "india" / "fourth_schedule_registry.json" if (seed_dir / "india" / "fourth_schedule_registry.json").is_file() else seed_dir / "india" / "individuals_all.json",
+            "in_mha_fourth_schedule": seed_dir / "india" / "individuals_all.json" if (seed_dir / "india" / "individuals_all.json").is_file() else lists_dir / "india" / "individuals_all.json",
             "in_mha_unlawful_assoc": seed_dir / "india" / "unlawful_associations_all_pages.html" if (seed_dir / "india" / "unlawful_associations_all_pages.html").is_file() else seed_dir / "india" / "unlawful_associations_all.json",
             "bis_aircraft": seed_dir / "aviation" / "bis_aircraft.pdf",
             "eu_air_safety_list": seed_dir / "aviation" / "eu_air_safety_list.pdf",
@@ -345,6 +345,14 @@ def count_records(path: Path, fmt: str) -> int:
                         return len(res["countries"])
                 except Exception:
                     pass
+            elif "first_schedule" in p_name or "terrorist" in p_name or "mha" in p_name:
+                try:
+                    from modules.india.parser import parse_first_schedule
+                    res = parse_first_schedule(path)
+                    if res and res.get("entities"):
+                        return len(res["entities"])
+                except Exception:
+                    pass
 
             import pypdf
             reader = pypdf.PdfReader(str(path))
@@ -356,7 +364,7 @@ def count_records(path: Path, fmt: str) -> int:
     return 0
 
 
-def validate_file(path: Path, spec: Dict[str, Any], last_good_count: int = 0) -> Tuple[bool, str, int]:
+def validate_file(path: Any, spec: Dict[str, Any], last_good_count: int = 0) -> Tuple[bool, str, int]:
     """
     Validate a downloaded file against expected specifications:
     - size >= min_bytes
@@ -365,6 +373,8 @@ def validate_file(path: Path, spec: Dict[str, Any], last_good_count: int = 0) ->
     - record count >= min_records
     - count within count_range_ratio of last good copy
     """
+    if not isinstance(path, Path):
+        path = Path(path)
     if not path.is_file():
         return False, "File not found", 0
 
@@ -416,7 +426,7 @@ def validate_file(path: Path, spec: Dict[str, Any], last_good_count: int = 0) ->
             for _, elem in context:
                 tag = elem.tag.split("}")[-1]
                 found_elems.add(tag)
-                if len(found_elems) >= 50:
+                if req_elems and all(r in found_elems for r in req_elems):
                     break
             for re_tag in req_elems:
                 if re_tag not in found_elems:
@@ -478,7 +488,7 @@ def validate_file(path: Path, spec: Dict[str, Any], last_good_count: int = 0) ->
             if len(reader.pages) == 0:
                 return False, "PDF contains zero pages", 0
             pages_text = [reader.pages[i].extract_text() or "" for i in range(min(3, len(reader.pages)))]
-            combined_text = " ".join(pages_text).lower()
+            combined_text = " ".join(" ".join(pages_text).split()).lower()
             for req_word in req_elems:
                 rw = req_word.lower()
                 if rw == "category 2":
@@ -498,7 +508,7 @@ def validate_file(path: Path, spec: Dict[str, Any], last_good_count: int = 0) ->
     if count < min_records:
         return False, f"Record count {count} below minimum expected {min_records}", count
 
-    if last_good_count > 0:
+    if last_good_count > 0 and last_good_count >= min_records:
         ratio_range = expected.get("count_range_ratio", [0.70, 1.50])
         min_allowed = int(last_good_count * ratio_range[0])
         max_allowed = int(last_good_count * ratio_range[1])

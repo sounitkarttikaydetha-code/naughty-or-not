@@ -285,25 +285,58 @@ def parse_fourth_schedule(html_path: Optional[Path] = None, allow_fallback: bool
     if path.is_file():
         try:
             content = path.read_text(encoding="utf-8", errors="ignore")
-            # Extract documentRecordTitle divs
-            matches = re.findall(
-                r'<div[^>]*class="[^"]*documentRecordTitle[^"]*"[^>]*>(.*?)</div>',
-                content,
-                re.DOTALL,
-            )
-            for m in matches:
-                clean_t = " ".join(re.sub(r"<[^>]+>", " ", m).split())
-                if clean_t and clean_t not in raw_records:
-                    raw_records.append(clean_t)
+            # If the file happens to be JSON (e.g. individuals_all.json)
+            if content.strip().startswith("[") or content.strip().startswith("{"):
+                try:
+                    jdata = json.loads(content)
+                    if isinstance(jdata, list):
+                        raw_records = [str(x) for x in jdata if x]
+                except Exception:
+                    pass
+            if not raw_records:
+                matches = re.findall(
+                    r'<div[^>]*class="[^"]*documentRecordTitle[^"]*"[^>]*>(.*?)</div>',
+                    content,
+                    re.DOTALL,
+                )
+                for m in matches:
+                    clean_t = " ".join(re.sub(r"<[^>]+>", " ", m).split())
+                    if clean_t and clean_t not in raw_records:
+                        raw_records.append(clean_t)
         except Exception as e:
             logger.warning(f"Error reading {path}: {e}")
 
-    # Fallback if raw_records empty
-    if not raw_records and allow_fallback and fallback.is_file():
-        try:
-            raw_records = json.load(fallback.open(encoding="utf-8"))
-        except Exception as e:
-            logger.warning(f"Error reading fallback {fallback}: {e}")
+    # If raw_records has fewer than 50 entries, merge/fallback with full corpus
+    if len(raw_records) < 50 and allow_fallback:
+        all_pages = DATA_DIR / "fourth_schedule_all_pages.html"
+        full_found: List[str] = []
+        if all_pages.is_file():
+            try:
+                ap_content = all_pages.read_text(encoding="utf-8", errors="ignore")
+                matches = re.findall(
+                    r'<div[^>]*class="[^"]*documentRecordTitle[^"]*"[^>]*>(.*?)</div>',
+                    ap_content,
+                    re.DOTALL,
+                )
+                for m in matches:
+                    clean_t = " ".join(re.sub(r"<[^>]+>", " ", m).split())
+                    if clean_t and clean_t not in full_found:
+                        full_found.append(clean_t)
+            except Exception:
+                pass
+        if len(full_found) < 50 and fallback.is_file():
+            try:
+                fb_data = json.load(fallback.open(encoding="utf-8"))
+                for fb in fb_data:
+                    if fb not in full_found:
+                        full_found.append(fb)
+            except Exception:
+                pass
+        if full_found:
+            for r in raw_records:
+                if r not in full_found:
+                    full_found.insert(0, r)
+            raw_records = full_found
 
     if not raw_records:
         return {
@@ -398,11 +431,36 @@ def parse_unlawful_associations(html_path: Optional[Path] = None, allow_fallback
         except Exception as e:
             logger.warning(f"Error reading {path}: {e}")
 
-    if not raw_records and allow_fallback and fallback.is_file():
-        try:
-            raw_records = json.load(fallback.open(encoding="utf-8"))
-        except Exception as e:
-            logger.warning(f"Error reading fallback {fallback}: {e}")
+    if len(raw_records) < 20 and allow_fallback:
+        all_pages = DATA_DIR / "unlawful_associations_all_pages.html"
+        full_found: List[str] = []
+        if all_pages.is_file():
+            try:
+                ap_content = all_pages.read_text(encoding="utf-8", errors="ignore")
+                matches = re.findall(
+                    r'<div[^>]*class="[^"]*documentRecordTitle[^"]*"[^>]*>(.*?)</div>',
+                    ap_content,
+                    re.DOTALL,
+                )
+                for m in matches:
+                    clean_t = " ".join(re.sub(r"<[^>]+>", " ", m).split())
+                    if clean_t and clean_t not in full_found:
+                        full_found.append(clean_t)
+            except Exception:
+                pass
+        if len(full_found) < 20 and fallback.is_file():
+            try:
+                fb_data = json.load(fallback.open(encoding="utf-8"))
+                for fb in fb_data:
+                    if fb not in full_found:
+                        full_found.append(fb)
+            except Exception:
+                pass
+        if full_found:
+            for r in raw_records:
+                if r not in full_found:
+                    full_found.insert(0, r)
+            raw_records = full_found
 
     if not raw_records:
         return {

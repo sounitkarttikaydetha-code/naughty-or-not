@@ -445,7 +445,7 @@ def parse_india_records() -> List[Tuple[str, str, str, str, str, str, str]]:
     from modules.india.parser import parse_first_schedule, parse_fourth_schedule, parse_unlawful_associations
     
     # 1. First Schedule
-    fs = parse_first_schedule(Path("data/india/first_schedule.pdf"))
+    fs = parse_first_schedule()
     for ent in fs.get("entities", []):
         eid = ent.get("id", "")
         name = ent.get("name", "")
@@ -464,7 +464,7 @@ def parse_india_records() -> List[Tuple[str, str, str, str, str, str, str]]:
         ))
         
     # 2. Fourth Schedule
-    f4 = parse_fourth_schedule(Path("data/india/fourth_schedule_registry.json"))
+    f4 = parse_fourth_schedule()
     for ent in f4.get("entities", []):
         eid = ent.get("id", "")
         name = ent.get("name", "")
@@ -482,8 +482,7 @@ def parse_india_records() -> List[Tuple[str, str, str, str, str, str, str]]:
         ))
 
     # 3. Unlawful Associations (all pages: 44 entities)
-    all_pages_path = Path("data/india/unlawful_associations_all_pages.html")
-    ua = parse_unlawful_associations(all_pages_path if all_pages_path.is_file() else None)
+    ua = parse_unlawful_associations()
     for ent in ua.get("entities", []):
         eid = ent.get("id", "")
         name = ent.get("name", "")
@@ -560,7 +559,7 @@ def build_full_raw_index(
         ("eu_air_safety", "data/aviation/eu_air_safety_list.pdf", parse_eu_air_safety_records),
         ("faa_iasa", "data/aviation/faa_iasa.pdf", parse_faa_iasa_records),
         ("in_mha_first_schedule", "data/india/first_schedule.pdf", lambda: [r for r in parse_india_records() if r[0] == "in_mha_first_schedule"]),
-        ("in_mha_fourth_schedule", "data/india/fourth_schedule_registry.json", lambda: [r for r in parse_india_records() if r[0] == "in_mha_fourth_schedule"]),
+        ("in_mha_fourth_schedule", "data/india/individuals_all.json", lambda: [r for r in parse_india_records() if r[0] == "in_mha_fourth_schedule"]),
         ("in_mha_unlawful_assoc", "data/india/unlawful_associations_all_pages.html", lambda: [r for r in parse_india_records() if r[0] == "in_mha_unlawful_assoc"]),
         ("fatf_jurisdictions", "config/fatf.json", parse_fatf_records),
     ]
