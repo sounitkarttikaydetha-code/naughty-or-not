@@ -101,13 +101,19 @@ jobs:
           "$hash  $($installer.Name)" | Out-File -FilePath "dist\installer\SHA256.txt" -Encoding ascii
           Write-Host "Installer SHA-256: $hash"
 
-          $version = "1.1.1"
+          $version = "1.1.3"
           if ($env:GITHUB_REF -match "refs/tags/v(.*)") {
             $version = $Matches[1]
           }
           $zipName = "ClearanceCheck_v${version}_Portable.zip"
           $zipPath = "dist\installer\$zipName"
           Write-Host "Creating portable archive: $zipName"
+
+          # Add portable marker and convenient batch launcher into portable bundle
+          New-Item -Path "dist\NaughtyOrNot\.portable" -ItemType File -Force | Out-Null
+          "@echo off`r`ncd /d `"%~dp0`"`r`nstart `"`" `"Clearance Check.exe`"`r`n" | Out-File -FilePath "dist\NaughtyOrNot\Clearance Check.bat" -Encoding ascii
+          "@echo off`r`ncd /d `"%~dp0`"`r`necho Starting Clearance Check in diagnostic mode...`r`n`"Clearance Check.exe`"`r`nif %ERRORLEVEL% NEQ 0 (`r`n    echo.`r`n    echo Application exited with code %ERRORLEVEL%.`r`n    pause`r`n)`r`n" | Out-File -FilePath "dist\NaughtyOrNot\Diagnostic_Launcher.bat" -Encoding ascii
+
           Compress-Archive -Path "dist\NaughtyOrNot\*" -DestinationPath $zipPath -Force
           $zipHash = (Get-FileHash -Path $zipPath -Algorithm SHA256).Hash.ToLower()
           "$zipHash  $zipName" | Out-File -FilePath "dist\installer\SHA256.txt" -Append -Encoding ascii

@@ -110,6 +110,16 @@ if "first_run_init_done" not in st.session_state:
 if "self_test_results" not in st.session_state:
     from modules.common.self_test import run_full_self_test
     st.session_state.self_test_results = run_full_self_test()
+if "records_cache_init_done" not in st.session_state:
+    st.session_state.records_cache_init_done = True
+    import threading
+    def _bg_populate():
+        try:
+            from modules.common.records_store import populate_records_cache
+            populate_records_cache(force=False)
+        except Exception:
+            pass
+    threading.Thread(target=_bg_populate, daemon=True, name="BgRecordsPopulate").start()
 
 st.set_page_config(
     page_title=f"{APP_NAME} — {MAIN_TITLE}",
@@ -1641,13 +1651,26 @@ with tab_raw:
         with r_col3:
             fold_accents = st.checkbox("Accent & case folding", value=True)
 
-        st.markdown("**Sources to Search** (all ticked by default)")
-        selected_raw_sources = st.multiselect(
-            "Selected Sources",
-            options=all_raw_sources,
-            default=all_raw_sources,
-            format_func=lambda s: f"{s} ({source_dict.get(s, {}).get('authority', s)})",
-        )
+        # Dropdown menu with checkboxes for sources
+        with st.popover("📂 Regulatory Sources to Search ▾", use_container_width=True):
+            st.markdown("**Select Sources to Search**")
+            st.caption("Toggle checkboxes to include or exclude specific regulatory lists:")
+            col_s1, col_s2 = st.columns(2)
+            selected_raw_sources = []
+            for idx, s in enumerate(all_raw_sources):
+                auth = source_dict.get(s, {}).get("authority", s)
+                friendly = FRIENDLY_SOURCE_NAMES.get(s, s)
+                target_col = col_s1 if (idx % 2 == 0) else col_s2
+                with target_col:
+                    if st.checkbox(
+                        f"{friendly} ({auth})",
+                        value=True,
+                        key=f"cb_raw_src_{s}",
+                    ):
+                        selected_raw_sources.append(s)
+
+        if not selected_raw_sources:
+            selected_raw_sources = all_raw_sources
 
         raw_submitted = st.form_submit_button("🔎 Search Records", type="primary")
 

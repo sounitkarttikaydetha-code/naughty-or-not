@@ -154,16 +154,35 @@ def run_layer2_sampled_probes(
     try:
         conn = sqlite3.connect(str(path))
         cursor = conn.cursor()
-        cursor.execute("""
-            SELECT primary_name, source_id, entity_type 
-            FROM records 
-            WHERE entity_type IN ('person', 'organization', 'organisation') 
-              AND length(primary_name) > 6 
-              AND primary_name NOT LIKE '%/%'
-            ORDER BY RANDOM() LIMIT ?
-        """, (sample_size,))
-        rows = cursor.fetchall()
+        try:
+            cursor.execute("""
+                SELECT primary_name, source_id, entity_type 
+                FROM records 
+                WHERE entity_type IN ('person', 'organization', 'organisation') 
+                  AND length(primary_name) > 6 
+                  AND primary_name NOT LIKE '%/%'
+                ORDER BY RANDOM() LIMIT ?
+            """, (sample_size,))
+            rows = cursor.fetchall()
+        except Exception:
+            rows = []
         conn.close()
+
+        # Fallback to engine if records table not yet populated
+        if not rows:
+            try:
+                from modules.watchman.client import get_python_engine
+                eng = get_python_engine()
+                for src_id, entities in eng.records_by_source.items():
+                    for rec in entities:
+                        if rec.name and len(rec.name) > 6 and "/" not in rec.name:
+                            rows.append((rec.name, src_id, getattr(rec, "entity_type", "organization") or "organization"))
+                            if len(rows) >= sample_size:
+                                break
+                    if len(rows) >= sample_size:
+                        break
+            except Exception:
+                pass
 
         for name, sid, et in rows:
             # Self-match verification
@@ -240,12 +259,41 @@ def run_layer3_named_probes(
     try:
         conn = sqlite3.connect(str(db_file))
         cursor = conn.cursor()
+        has_records_table = False
+        try:
+            cursor.execute("SELECT COUNT(1) FROM records")
+            has_records_table = (cursor.fetchone()[0] > 0)
+        except Exception:
+            has_records_table = False
+
+        eng = None
         for p in probes:
             name = p.get("name", "")
             exp_tier = p.get("expected_tier", TIER_POTENTIAL_MATCH)
-            cursor.execute("SELECT primary_name FROM records WHERE primary_name LIKE ? LIMIT 1", (f"%{name}%",))
-            row = cursor.fetchone()
-            if row:
+            found = False
+            if has_records_table:
+                try:
+                    cursor.execute("SELECT primary_name FROM records WHERE primary_name LIKE ? LIMIT 1", (f"%{name}%",))
+                    if cursor.fetchone():
+                        found = True
+                except Exception:
+                    pass
+
+            if not found:
+                # Check active Python screening engine
+                try:
+                    if eng is None:
+                        from modules.watchman.client import get_python_engine
+                        eng = get_python_engine()
+                    s_res = eng.search(name)
+                    res_obj = s_res.get("results")
+                    ents = res_obj.get("entities", []) if isinstance(res_obj, dict) else (res_obj or [])
+                    if ents:
+                        found = True
+                except Exception:
+                    pass
+
+            if found:
                 matched_count += 1
             else:
                 notes.append(f"Probe '{name}' not found in active database (expected {exp_tier}). List data may have updated.")

@@ -192,12 +192,21 @@ def main():
 
     # 3. Environment configuration
     root = get_project_root()
+    exe_dir = Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else root
     os.environ["ENGINE"] = "python"
     os.environ["NAUGHTY_DESKTOP_MODE"] = "1"
 
-    # Portable mode check: if .portable or portable.dat exists in application directory
-    if (root / ".portable").exists() or (root / "portable.dat").exists():
-        app_data = root / "data"
+    # Portable mode check: if .portable or portable.dat exists in application directory or root
+    is_portable = (
+        (exe_dir / ".portable").exists()
+        or (root / ".portable").exists()
+        or (exe_dir / "portable.dat").exists()
+        or (root / "portable.dat").exists()
+        or (exe_dir / "PORTABLE").exists()
+        or (root / "PORTABLE").exists()
+    )
+    if is_portable:
+        app_data = exe_dir / "data"
     else:
         local_app = os.environ.get("LOCALAPPDATA", str(Path.home() / "AppData" / "Local"))
         app_data = Path(local_app) / "NaughtyOrNot"
@@ -211,11 +220,18 @@ def main():
     except Exception as e:
         print(f"Notice: Seed init: {e}")
 
-    # Warm up screening engine in background daemon thread (T8-3)
+    # Warm up screening engine in background daemon thread (T8-3) and pre-populate records cache
     try:
         from modules.watchman.client import get_python_engine
         import threading
-        threading.Thread(target=get_python_engine, daemon=True, name="EngineWarmupThread").start()
+        def warmup_engine_and_cache():
+            get_python_engine()
+            try:
+                from modules.common.records_store import populate_records_cache
+                populate_records_cache(force=False)
+            except Exception:
+                pass
+        threading.Thread(target=warmup_engine_and_cache, daemon=True, name="EngineWarmupThread").start()
     except Exception as e:
         print(f"Notice: Background engine warm-up: {e}")
 
@@ -264,8 +280,8 @@ def main():
     # 6. Wait for server to be responsive
     health_url = f"http://127.0.0.1:{port}/_stcore/health"
     ready = False
-    for _ in range(30):
-        time.sleep(0.3)
+    for _ in range(90):
+        time.sleep(0.5)
         try:
             with urllib.request.urlopen(health_url, timeout=1) as resp:
                 if resp.status == 200:
@@ -275,7 +291,13 @@ def main():
             pass
 
     if not ready:
-        print("Error: In-process server failed to start within timeout.")
+        msg = f"{APP_NAME} failed to start its local engine within timeout.\n\nPlease ensure no local antivirus is blocking port {port}."
+        if sys.platform == "win32":
+            try:
+                ctypes.windll.user32.MessageBoxW(0, msg, f"{APP_NAME} — Engine Startup Timeout", 0x10)
+            except Exception:
+                pass
+        print(msg, file=sys.stderr)
         sys.exit(1)
 
     # 7. Open pywebview Window
@@ -357,4 +379,15 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as exc:
+        import traceback
+        err_msg = f"{APP_NAME} encountered an unexpected startup error:\n\n{exc}\n\n{traceback.format_exc()}"
+        if sys.platform == "win32":
+            try:
+                ctypes.windll.user32.MessageBoxW(0, err_msg, f"{APP_NAME} — Launch Error", 0x10)
+            except Exception:
+                pass
+        print(err_msg, file=sys.stderr)
+        sys.exit(1)

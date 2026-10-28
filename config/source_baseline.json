@@ -3,7 +3,7 @@
     "file_path": "data/raw/us_ofac_sdn.csv",
     "record_count": 19457,
     "publication_date": "2026-10-18",
-    "last_verified_at": "2026-10-22T00:00:00Z",
+    "last_verified_at": "2026-10-28T00:00:00Z",
     "sha256": "0dee0d2de5e5a240e3e545741ee2903cfa3508666d2f2841d5d1ff2d59f0ce71",
     "bytes": 5741043
   },
@@ -11,7 +11,7 @@
     "file_path": "data/raw/us_csl.csv",
     "record_count": 6702,
     "publication_date": "2026-10-18",
-    "last_verified_at": "2026-10-22T00:00:00Z",
+    "last_verified_at": "2026-10-28T00:00:00Z",
     "sha256": "1e60a6f79f3423275d7437d506391a814e3e7c4ea3bababd46b64e43970a0d31",
     "bytes": 16825396
   },
@@ -19,7 +19,7 @@
     "file_path": "data/raw/uk_csl.csv",
     "record_count": 6408,
     "publication_date": "2026-10-18",
-    "last_verified_at": "2026-10-22T00:00:00Z",
+    "last_verified_at": "2026-10-28T00:00:00Z",
     "sha256": "0d87329971a70ccdd0cdab6033f703520c08e21eff00dea6c7cc1101389d6ff2",
     "bytes": 50154885
   },
@@ -27,7 +27,7 @@
     "file_path": "data/raw/eu_csl.xml",
     "record_count": 6234,
     "publication_date": "2026-10-18",
-    "last_verified_at": "2026-10-22T00:00:00Z",
+    "last_verified_at": "2026-10-28T00:00:00Z",
     "sha256": "7d21a5c7574eae8192ce15dcd02f53b7e81b05d01d4d3f2b2eb903f3aec8f400",
     "bytes": 25767041
   },
@@ -35,7 +35,7 @@
     "file_path": "data/raw/un_csl.xml",
     "record_count": 1010,
     "publication_date": "2026-10-18",
-    "last_verified_at": "2026-10-22T00:00:00Z",
+    "last_verified_at": "2026-10-28T00:00:00Z",
     "sha256": "d7df15ecfbf09d96028e45ba171dc798af29f2ba4cf19b06e8404415eb40f268",
     "bytes": 2185376
   },
@@ -43,7 +43,7 @@
     "file_path": "data/india/first_schedule.pdf",
     "record_count": 48,
     "publication_date": "2026-10-01",
-    "last_verified_at": "2026-10-22T00:00:00Z",
+    "last_verified_at": "2026-10-28T00:00:00Z",
     "sha256": "8c33d4175680927cd1d27dbfe71eb66e73fd035663c419382c6b3aebb2da7b91",
     "bytes": 102517
   },
@@ -51,7 +51,7 @@
     "file_path": "data/india/individuals_all.json",
     "record_count": 80,
     "publication_date": "2026-07-04",
-    "last_verified_at": "2026-10-22T00:00:00Z",
+    "last_verified_at": "2026-10-28T00:00:00Z",
     "sha256": "c579ef8b0cf4e6d38af42769a8b2072f925eff4ee4b4561961e6764c39fd3b3f",
     "bytes": 4462
   },
@@ -59,7 +59,7 @@
     "file_path": "data/india/unlawful_associations_all.json",
     "record_count": 44,
     "publication_date": "2025-03-17",
-    "last_verified_at": "2026-10-22T00:00:00Z",
+    "last_verified_at": "2026-10-28T00:00:00Z",
     "sha256": "ceaf9bbeba2c2a31f9b8e8e2e047ae9d4b57a92baf5b64932af493ebcb39819b",
     "bytes": 1476
   },
@@ -67,7 +67,7 @@
     "file_path": "data/aviation/bis_aircraft.pdf",
     "record_count": 305,
     "publication_date": "2025-10-10",
-    "last_verified_at": "2026-10-22T00:00:00Z",
+    "last_verified_at": "2026-10-28T00:00:00Z",
     "sha256": "c31c6e62d2899ea4282a78c24ff4dd2c4544d630e37b419d866a1dc6ef69e56e",
     "bytes": 281677
   },
@@ -75,7 +75,7 @@
     "file_path": "data/aviation/eu_air_safety_list.pdf",
     "record_count": 156,
     "publication_date": "2026-06-09",
-    "last_verified_at": "2026-10-22T00:00:00Z",
+    "last_verified_at": "2026-10-28T00:00:00Z",
     "sha256": "7d9323517302108170675fb13c21925f19d9680f3fccceee30dfe99bd5cc94da",
     "bytes": 324021
   },
@@ -83,7 +83,7 @@
     "file_path": "data/aviation/faa_iasa.pdf",
     "record_count": 9,
     "publication_date": "2025-04-18",
-    "last_verified_at": "2026-10-22T00:00:00Z",
+    "last_verified_at": "2026-10-28T00:00:00Z",
     "sha256": "73ef0e78c2d17454d89393f3eb1159081c9bc14833e32289da01cfd2e0b23294",
     "bytes": 146803
   },
@@ -91,7 +91,7 @@
     "file_path": "config/fatf.json",
     "record_count": 25,
     "publication_date": "2026-06-19",
-    "last_verified_at": "2026-10-22T00:00:00Z",
+    "last_verified_at": "2026-10-28T00:00:00Z",
     "sha256": "b5d45daa2b91bd896a4091599a1f79da6c9d50e9ed6e3496133ea5520db7cf41",
     "bytes": 2964
   }
