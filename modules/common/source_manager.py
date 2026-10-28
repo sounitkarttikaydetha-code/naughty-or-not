@@ -484,6 +484,9 @@ def validate_file(path: Path, spec: Dict[str, Any], last_good_count: int = 0) ->
                 if rw == "category 2":
                     if "category" in combined_text and (" 2" in combined_text or "2 " in combined_text or "\n2" in combined_text or "russia 2" in combined_text):
                         continue
+                if rw in ["first schedule", "1st schedule"]:
+                    if "first schedule" in combined_text or "1st schedule" in combined_text or "1st\nschedule" in combined_text or "first\nschedule" in combined_text:
+                        continue
                 if rw not in combined_text:
                     return False, f"Missing required text anchor '{req_word}' in PDF", 0
         except Exception as e:
@@ -863,7 +866,11 @@ class SourceManager:
                     except Exception:
                         pass
 
-                if validation_rejected or (rejection_reason and ("validation" in rejection_reason.lower() or "outside allowed range" in str(rejection_reason).lower() or "missing required" in str(rejection_reason).lower() or "rejected" in str(rejection_reason).lower())):
+                if rejection_reason and ("0 bytes" in str(rejection_reason).lower() or "file size 0" in str(rejection_reason).lower()):
+                    # Network interruption during download; local copy remains completely valid
+                    new_state = STATE_OFFLINE_NOTE
+                    note = f"Update download interrupted (0 bytes received); using verified copy dated {current_state.get('publication_date', '2026-10-18')}"
+                elif validation_rejected or (rejection_reason and ("validation" in rejection_reason.lower() or "outside allowed range" in str(rejection_reason).lower() or "missing required" in str(rejection_reason).lower() or "rejected" in str(rejection_reason).lower())):
                     new_state = STATE_UPDATE_REJECTED
                     note = f"Update rejected ({rejection_reason}); using copy dated {current_state.get('publication_date', '2026-10-18')}"
                 elif age_days > max_age:

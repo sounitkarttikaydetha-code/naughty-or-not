@@ -1,0 +1,210 @@
+# Clearance Check v1.1.0 - Engine Canary Test Cases (T11 Part I Layer 1)
+# 20 fixed invariant test cases evaluated against the core matching engine.
+# If ANY canary fails, the engine is broken (ENGINE_CANARY_FAILURE).
+
+canaries:
+  - id: canary_01_exact_entity
+    description: "Exact entity name match at 1.0 similarity"
+    query: "Omega Global Trade Ltd"
+    entity:
+      name: "Omega Global Trade Ltd"
+      match: 1.0
+      entityType: "organization"
+    expected_tier: "POTENTIAL_MATCH"
+
+  - id: canary_02_exact_alias
+    description: "Exact match on entity alias list"
+    query: "Starlight Holdings"
+    entity:
+      name: "Alpha Omega Corp"
+      altNames: ["Starlight Holdings", "Beta LLC"]
+      match: 1.0
+      entityType: "organization"
+    expected_tier: "POTENTIAL_MATCH"
+
+  - id: canary_03_reverse_person
+    description: "Reversed person name (Last, First Middle)"
+    query: "Smith, John David"
+    query_type: "person"
+    entity:
+      name: "John David Smith"
+      match: 0.95
+      entityType: "person"
+    expected_tier: "POTENTIAL_MATCH"
+
+  - id: canary_04_core_name_high
+    description: "High similarity score (0.85) with distinctive core-name equivalence"
+    query: "Titan Maritime Shipping"
+    entity:
+      name: "Titan Maritime Logistics"
+      match: 0.85
+      entityType: "organization"
+    expected_tier: "POTENTIAL_MATCH"
+
+  - id: canary_05_rule6_discard_low_no_core
+    description: "Score < 0.70 without core-name match -> below threshold"
+    query: "International Commercial Trading Company"
+    entity:
+      name: "National Commercial Trading Company"
+      match: 0.65
+      entityType: "organization"
+    expected_tier: "BELOW_THRESHOLD"
+
+  - id: canary_06_possible_match_72
+    description: "Score between 0.70 and 0.79 with core-name match -> possible match"
+    query: "Blue Sky Technologies"
+    entity:
+      name: "Blue Sky Innovations"
+      match: 0.72
+      entityType: "organization"
+    expected_tier: "POSSIBLE_MATCH_REVIEW"
+
+  - id: canary_07_sound_alike
+    description: "Phonetic similarity between person names"
+    query: "Jonathon Smyth"
+    query_type: "person"
+    entity:
+      name: "Johnathan Smith"
+      match: 0.75
+      entityType: "person"
+    expected_tier: "POSSIBLE_MATCH_REVIEW"
+
+  - id: canary_08_exact_id_override
+    description: "Exact identifier match overrides lower score to POTENTIAL_MATCH"
+    query: "Solaris Industrial"
+    identifiers: ["IMO 9123456"]
+    entity:
+      name: "Solar Industries Corp"
+      match: 0.65
+      entityType: "organization"
+      identifications:
+        - number: "IMO 9123456"
+    expected_tier: "POTENTIAL_MATCH"
+
+  - id: canary_09_dob_nat_corroboration
+    description: "Full DOB + Nationality corroboration upgrades score 0.76 to POTENTIAL_MATCH"
+    query: "Aleksandr Petrov"
+    dob: "1980-05-15"
+    nationality: "RU"
+    query_type: "person"
+    entity:
+      name: "Aleksander Petrov"
+      match: 0.76
+      entityType: "person"
+      person:
+        birthDate: "1980-05-15"
+        nationalities: ["RU"]
+    expected_tier: "POTENTIAL_MATCH"
+
+  - id: canary_10_single_conflict_downgrade
+    description: "Single conflicting DOB downgrades POTENTIAL_MATCH to POSSIBLE_MATCH_REVIEW"
+    query: "Viktor Ivanov"
+    dob: "1990-12-31"
+    query_type: "person"
+    entity:
+      name: "Viktor Ivanov"
+      match: 0.88
+      entityType: "person"
+      person:
+        birthDate: "1975-01-01"
+        nationalities: ["RU"]
+    expected_tier: "POSSIBLE_MATCH_REVIEW"
+
+  - id: canary_11_double_conflict_downgrade
+    description: "Double conflict (DOB and Nationality) downgrades POSSIBLE_MATCH to BELOW_THRESHOLD"
+    query: "Maria Ivanova"
+    dob: "1995-01-01"
+    nationality: "US"
+    query_type: "person"
+    entity:
+      name: "Maria Ann Ivanova"
+      match: 0.75
+      entityType: "person"
+      person:
+        birthDate: "1982-04-10"
+        nationalities: ["RU"]
+    expected_tier: "BELOW_THRESHOLD"
+
+  - id: canary_12_weak_words_discard
+    description: "Low match with only weak words -> below threshold"
+    query: "Trading Corporation"
+    entity:
+      name: "Trading Development Corporation"
+      match: 0.60
+      entityType: "organization"
+    expected_tier: "BELOW_THRESHOLD"
+
+  - id: canary_13_bracketed_alias
+    description: "Bracketed a.k.a. in alias stripped and matched"
+    query: "Phoenix Aerospace"
+    entity:
+      name: "Orion Group"
+      altNames: ["Orion Group (a.k.a. Phoenix Aerospace)"]
+      match: 0.90
+      entityType: "organization"
+    expected_tier: "POTENTIAL_MATCH"
+
+  - id: canary_14_translit_match
+    description: "Latin transliteration variation matches correctly"
+    query: "Dmitry Medvedev"
+    query_type: "person"
+    entity:
+      name: "Dmitri Medvedyev"
+      match: 0.82
+      entityType: "person"
+    expected_tier: "POTENTIAL_MATCH"
+
+  - id: canary_15_imo_check
+    description: "Vessel query with valid SOLAS IMO number"
+    query: "Sea Pearl"
+    identifiers: ["IMO 9074729"]
+    entity:
+      name: "Sea Pearl"
+      match: 0.85
+      entityType: "vessel"
+      identifications:
+        - number: "IMO 9074729"
+    expected_tier: "POTENTIAL_MATCH"
+
+  - id: canary_16_company_suffix_equiv
+    description: "Company legal suffixes (GmbH vs Ltd) equated in core-name match"
+    query: "Apex Dynamics GmbH"
+    entity:
+      name: "Apex Dynamics Ltd"
+      match: 0.85
+      entityType: "organization"
+    expected_tier: "POTENTIAL_MATCH"
+
+  - id: canary_17_low_match_discard
+    description: "Score < 0.50 below threshold"
+    query: "Global Horizons"
+    entity:
+      name: "Local Verticals"
+      match: 0.40
+      entityType: "organization"
+    expected_tier: null
+
+  - id: canary_18_empty_query
+    description: "Empty query string returns None"
+    query: ""
+    entity:
+      name: "Any Entity"
+      match: 0.80
+    expected_tier: null
+
+  - id: canary_19_whitespace_query
+    description: "Whitespace query string returns None"
+    query: "   "
+    entity:
+      name: "Any Entity"
+      match: 0.80
+    expected_tier: null
+
+  - id: canary_20_distinctive_acronym
+    description: "Punctuated acronym normalized and matched"
+    query: "A.B.C. Freight"
+    entity:
+      name: "ABC Freight"
+      match: 0.88
+      entityType: "organization"
+    expected_tier: "POTENTIAL_MATCH"

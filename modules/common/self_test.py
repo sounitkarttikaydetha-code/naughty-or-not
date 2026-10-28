@@ -28,7 +28,22 @@ from modules.screening.tiering import (
 
 logger = logging.getLogger(__name__)
 
-CANARY_FILE = Path(__file__).resolve().parent.parent.parent / "tests" / "fixtures" / "canary" / "canary_records.yaml"
+def _resolve_canary_file() -> Path:
+    candidates = [
+        Path(__file__).resolve().parent.parent.parent / "config" / "canary_records.yaml",
+        Path(__file__).resolve().parent.parent.parent / "tests" / "fixtures" / "canary" / "canary_records.yaml",
+    ]
+    try:
+        from modules.common.paths import get_base_dir
+        candidates.append(get_base_dir() / "config" / "canary_records.yaml")
+    except Exception:
+        pass
+    for cand in candidates:
+        if cand.is_file():
+            return cand
+    return candidates[0]
+
+CANARY_FILE = _resolve_canary_file()
 PROBES_FILE = Path(__file__).resolve().parent.parent.parent / "config" / "self_test_probes.yaml"
 
 

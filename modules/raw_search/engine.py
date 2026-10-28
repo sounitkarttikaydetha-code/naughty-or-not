@@ -131,9 +131,15 @@ def determine_matched_field(
 class RawSearchEngine:
     """Engine executing raw text queries against the local FTS5 database."""
 
-    def __init__(self, db_path: Path = INDEX_DB_PATH):
-        self.db_path = db_path
+    def __init__(self, db_path: Optional[Path] = None):
+        self._custom_db_path = db_path
         self.sources_cfg = load_sources_config()
+
+    @property
+    def db_path(self) -> Path:
+        if self._custom_db_path:
+            return self._custom_db_path
+        return _resolve_index_db_path()
 
     def get_source_statuses(self) -> Dict[str, Dict[str, Any]]:
         """Return index status for every source."""
@@ -294,14 +300,10 @@ class RawSearchEngine:
             where_clauses.append(f"({' OR '.join(col_clauses)})")
             params.extend([f"{clean_q}%"] * len(target_cols))
         elif match_option == "Whole word":
-            # Word boundary regex or space-padded LIKE
-            col_clauses = [
-                f"({col} LIKE ? OR {col} LIKE ? OR {col} LIKE ? OR {col} = ?)"
-                for col in target_cols
-            ]
+            # Candidate pre-filter via LIKE; true regex \b word boundary filter applied below
+            col_clauses = [f"{col} LIKE ?" for col in target_cols]
             where_clauses.append(f"({' OR '.join(col_clauses)})")
-            for _ in target_cols:
-                params.extend([f"{clean_q} %", f"% {clean_q} %", f"% {clean_q}", clean_q])
+            params.extend([f"%{clean_q}%"] * len(target_cols))
         else:
             # Contains (default)
             col_clauses = [f"{col} LIKE ?" for col in target_cols]
@@ -330,6 +332,15 @@ class RawSearchEngine:
             }
 
         con.close()
+
+        # If Whole word, apply regex word-boundary filter supporting spaces, semicolons, commas, and punctuation
+        if match_option == "Whole word":
+            pattern = re.compile(rf"\b{re.escape(clean_q)}\b", re.IGNORECASE if fold_accents_and_case else 0)
+            filtered_rows = []
+            for r in rows:
+                if any(pattern.search(r[col] or "") for col in target_cols if col in r.keys()):
+                    filtered_rows.append(r)
+            rows = filtered_rows
 
         limit_reached = len(rows) > limit
         result_rows = rows[:limit]

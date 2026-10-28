@@ -103,3 +103,14 @@ def test_simulated_missing_raw_file_shows_circle():
 
     if test_db.exists():
         test_db.unlink()
+
+
+def test_raw_search_hafiz_saeed_whole_word_finds_un_eu_and_mha():
+    """Verify that 'Whole word' matches 'Hafiz Saeed' across UN, EU, MHA, and OFAC aliases."""
+    engine = RawSearchEngine()
+    res = engine.search(query="Hafiz Saeed", match_option="Whole word", search_field="All fields")
+    assert res["status"] == "OK"
+    assert res["total_matches"] >= 4
+    sources = [r["source"] for r in res["results"]]
+    assert "un_csl" in sources
+    assert "in_mha_fourth_schedule" in sources

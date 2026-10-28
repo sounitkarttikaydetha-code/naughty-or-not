@@ -193,7 +193,7 @@ sources:
     format: pdf
     min_bytes: 10000
     required_elements:
-    - FIRST SCHEDULE
+    - 1st SCHEDULE
     - TERRORIST
     min_records: 40
     count_range_ratio:

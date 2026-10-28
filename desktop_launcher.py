@@ -231,6 +231,11 @@ def main():
                 populate_records_cache(force=False)
             except Exception:
                 pass
+            try:
+                from modules.common.list_updater import ensure_text_search_index
+                ensure_text_search_index()
+            except Exception:
+                pass
         threading.Thread(target=warmup_engine_and_cache, daemon=True, name="EngineWarmupThread").start()
     except Exception as e:
         print(f"Notice: Background engine warm-up: {e}")
