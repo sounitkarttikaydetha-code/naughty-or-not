@@ -1,6 +1,6 @@
 # Clearance Check — Software License Agreement
 
-Copyright (c) 2026 Sounit Karttikay / Compliance Engineering. All rights reserved.
+Copyright (c) 2026 Sounit Karttikay. All rights reserved.
 
 ## Proprietary Commercial / Enterprise License
 
