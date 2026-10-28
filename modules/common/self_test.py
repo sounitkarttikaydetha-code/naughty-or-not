@@ -1,3 +1,4 @@
+import sys
 """
 Start-up Self-Test Framework (T11 Part I).
 Provides three layers of startup validation:
@@ -29,22 +30,54 @@ from modules.screening.tiering import (
 logger = logging.getLogger(__name__)
 
 def _resolve_canary_file() -> Path:
-    candidates = [
-        Path(__file__).resolve().parent.parent.parent / "config" / "canary_records.yaml",
-        Path(__file__).resolve().parent.parent.parent / "tests" / "fixtures" / "canary" / "canary_records.yaml",
-    ]
+    candidates = []
+    meipass = getattr(sys, "_MEIPASS", None)
+    if meipass:
+        candidates.append(Path(meipass) / "config" / "canary_records.yaml")
+    if getattr(sys, "frozen", False):
+        exe_dir = Path(sys.executable).resolve().parent
+        candidates.append(exe_dir / "_internal" / "config" / "canary_records.yaml")
+        candidates.append(exe_dir / "config" / "canary_records.yaml")
     try:
         from modules.common.paths import get_base_dir
-        candidates.append(get_base_dir() / "config" / "canary_records.yaml")
+        b = get_base_dir()
+        candidates.append(b / "config" / "canary_records.yaml")
+        candidates.append(b / "_internal" / "config" / "canary_records.yaml")
     except Exception:
         pass
+    candidates.extend([
+        Path(__file__).resolve().parent.parent.parent / "config" / "canary_records.yaml",
+        Path(__file__).resolve().parent.parent.parent / "tests" / "fixtures" / "canary" / "canary_records.yaml",
+    ])
+    for cand in candidates:
+        if cand.is_file():
+            return cand
+    return candidates[0]
+
+def _resolve_probes_file() -> Path:
+    candidates = []
+    meipass = getattr(sys, "_MEIPASS", None)
+    if meipass:
+        candidates.append(Path(meipass) / "config" / "self_test_probes.yaml")
+    if getattr(sys, "frozen", False):
+        exe_dir = Path(sys.executable).resolve().parent
+        candidates.append(exe_dir / "_internal" / "config" / "self_test_probes.yaml")
+        candidates.append(exe_dir / "config" / "self_test_probes.yaml")
+    try:
+        from modules.common.paths import get_base_dir
+        b = get_base_dir()
+        candidates.append(b / "config" / "self_test_probes.yaml")
+        candidates.append(b / "_internal" / "config" / "self_test_probes.yaml")
+    except Exception:
+        pass
+    candidates.append(Path(__file__).resolve().parent.parent.parent / "config" / "self_test_probes.yaml")
     for cand in candidates:
         if cand.is_file():
             return cand
     return candidates[0]
 
 CANARY_FILE = _resolve_canary_file()
-PROBES_FILE = Path(__file__).resolve().parent.parent.parent / "config" / "self_test_probes.yaml"
+PROBES_FILE = _resolve_probes_file()
 
 
 def run_layer1_canary(fixture_path: Optional[Path] = None) -> Dict[str, Any]:

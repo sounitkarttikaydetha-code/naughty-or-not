@@ -1,3 +1,4 @@
+import sys
 """Raw search execution engine.
 Performs plain text search across full records with no scoring, no tiers,
 and provides highlighted snippets and official verification links.
@@ -24,7 +25,32 @@ def _resolve_index_db_path() -> Path:
         return Path("data/raw_index.db")
 
 INDEX_DB_PATH = _resolve_index_db_path()
-SOURCES_YAML_PATH = Path("config/sources.yaml")
+def _resolve_sources_yaml_path() -> Path:
+    candidates = []
+    meipass = getattr(sys, "_MEIPASS", None)
+    if meipass:
+        candidates.append(Path(meipass) / "config" / "sources.yaml")
+    if getattr(sys, "frozen", False):
+        exe_dir = Path(sys.executable).resolve().parent
+        candidates.append(exe_dir / "_internal" / "config" / "sources.yaml")
+        candidates.append(exe_dir / "config" / "sources.yaml")
+    try:
+        from modules.common.paths import get_base_dir
+        b = get_base_dir()
+        candidates.append(b / "config" / "sources.yaml")
+        candidates.append(b / "_internal" / "config" / "sources.yaml")
+    except Exception:
+        pass
+    candidates.extend([
+        Path("config/sources.yaml"),
+        Path(__file__).resolve().parent.parent.parent / "config" / "sources.yaml",
+    ])
+    for cand in candidates:
+        if cand.is_file():
+            return cand
+    return Path("config/sources.yaml")
+
+SOURCES_YAML_PATH = _resolve_sources_yaml_path()
 
 def _get_connection(db_path: Path) -> sqlite3.Connection:
     con = sqlite3.connect(str(db_path))

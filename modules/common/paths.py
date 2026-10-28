@@ -12,9 +12,13 @@ from typing import Optional
 def get_base_dir() -> Path:
     """Return the base directory of the installed application or repository."""
     if getattr(sys, "frozen", False):
-        # PyInstaller creates a temp folder and stores path in _MEIPASS
-        # or sys.executable folder for onedir
-        return Path(sys.executable).resolve().parent
+        meipass = getattr(sys, "_MEIPASS", None)
+        if meipass and Path(meipass).is_dir():
+            return Path(meipass)
+        exe_parent = Path(sys.executable).resolve().parent
+        if (exe_parent / "_internal").is_dir():
+            return exe_parent / "_internal"
+        return exe_parent
     return Path(__file__).resolve().parent.parent.parent
 
 
@@ -98,13 +102,21 @@ def get_settings_path() -> Path:
 def get_seed_data_dir() -> Path:
     """Path to bundled seed lists bundled with the installer."""
     if getattr(sys, "frozen", False):
-        # Look in _MEIPASS or alongside executable
         meipass = getattr(sys, "_MEIPASS", None)
         if meipass:
             cand = Path(meipass) / "data"
             if cand.is_dir():
                 return cand
-        cand2 = Path(sys.executable).resolve().parent / "data"
+        exe_parent = Path(sys.executable).resolve().parent
+        cand_internal = exe_parent / "_internal" / "data"
+        if cand_internal.is_dir():
+            return cand_internal
+        cand2 = exe_parent / "data"
         if cand2.is_dir():
             return cand2
-    return get_base_dir() / "data"
+    base = get_base_dir()
+    if (base / "data").is_dir():
+        return base / "data"
+    if (base / "_internal" / "data").is_dir():
+        return base / "_internal" / "data"
+    return base / "data"
