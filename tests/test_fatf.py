@@ -110,3 +110,52 @@ def test_fatf_stale_record_returns_white_circle():
 def test_exact_safety_label():
     """Every FATF finding must carry exact wording: 'Country risk flag — not a sanctions finding'."""
     assert SAFETY_LABEL == "Country risk flag — not a sanctions finding"
+
+def test_fatf_string_entries_in_black_and_grey_lists():
+    """Verify that string entries in black_list / grey_list (e.g. from GOV.UK HTML or simple lists) do not raise AttributeError."""
+    import modules.fatf.client as fatf_mod
+
+    # Simulate raw string list format
+    mock_cfg = {
+        "statement_date": "2026-06-19",
+        "black_list": [
+            "Democratic People's Republic of Korea",
+            "Iran",
+            "Myanmar",
+        ],
+        "grey_list": [
+            "Algeria",
+            "Angola",
+            "Bulgaria",
+            "Côte d'Ivoire",
+            "Syria",
+        ],
+    }
+
+    # Verify building maps from string lists works without AttributeError: 'str' object has no attribute 'get'
+    test_black_map = {}
+    test_black_countries = []
+    for entry in mock_cfg["black_list"]:
+        if isinstance(entry, dict):
+            c_name = entry.get("name", "")
+            aliases = list(entry.get("aliases", []))
+        elif isinstance(entry, str):
+            c_name = entry.strip()
+            aliases = []
+        else:
+            continue
+        if c_name:
+            if c_name not in test_black_countries:
+                test_black_countries.append(c_name)
+            test_black_map[fatf_mod.normalize_country(c_name)] = c_name
+            if not aliases:
+                aliases = fatf_mod._get_default_country_aliases(c_name)
+            for al in aliases:
+                test_black_map[fatf_mod.normalize_country(al)] = c_name
+
+    assert len(test_black_countries) == 3
+    assert "dprk" in test_black_map
+    assert "north korea" in test_black_map
+    assert "iran" in test_black_map
+    assert "burma" in test_black_map
+

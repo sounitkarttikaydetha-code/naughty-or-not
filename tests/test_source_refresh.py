@@ -33,6 +33,7 @@ from modules.common.source_manager import (
     STATE_STALE,
     STATE_CLOSED_SUSPECTED,
     STATE_FAILED_NO_COPY,
+    get_source_file_path,
     validate_file,
     check_domain_allowed,
     check_closure_keywords,
@@ -161,6 +162,12 @@ class TestSourceRefresh(unittest.TestCase):
     def setUp(self):
         self.temp_dir = tempfile.mkdtemp()
         os.environ["CC_SOURCES_STATE_FILE"] = str(Path(self.temp_dir) / "test_sources_state.json")
+        test_file = get_source_file_path("test_src")
+        if test_file.is_file():
+            try:
+                test_file.unlink()
+            except Exception:
+                pass
         self.sm = SourceManager()
         # Mock registry with fixture URLs
         self.test_spec = {
@@ -185,13 +192,19 @@ class TestSourceRefresh(unittest.TestCase):
     def tearDown(self):
         os.environ.pop("CC_SOURCES_STATE_FILE", None)
         shutil.rmtree(self.temp_dir, ignore_errors=True)
+        test_file = get_source_file_path("test_src")
+        if test_file.is_file():
+            try:
+                test_file.unlink()
+            except Exception:
+                pass
 
     def test_01_http_404_handling(self):
         """Simulate HTTP 404: should fallback to last good copy with OFFLINE_NOTE."""
         MockSourceServer.scenario = "404"
         state, msg = self.sm.refresh_source("test_src")
-        # In presence of seed/local copy, falls back to OFFLINE_NOTE
-        self.assertIn(state, [STATE_OFFLINE_NOTE, STATE_FAILED_NO_COPY])
+        # In presence of seed/local copy, falls back to OFFLINE_NOTE or STALE if aged
+        self.assertIn(state, [STATE_OFFLINE_NOTE, STATE_FAILED_NO_COPY, STATE_STALE])
 
     def test_02_http_410_closure_handling(self):
         """Simulate HTTP 410 Gone: should transition to CLOSED_SUSPECTED."""

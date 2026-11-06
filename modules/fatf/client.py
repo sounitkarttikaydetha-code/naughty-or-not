@@ -18,12 +18,46 @@ logger = logging.getLogger(__name__)
 
 SAFETY_LABEL = "Country risk flag — not a sanctions finding"
 
+import sys
+
+def _resolve_fatf_config_paths() -> List[Path]:
+    candidates = []
+    meipass = getattr(sys, "_MEIPASS", None)
+    if meipass:
+        candidates.append(Path(meipass) / "config" / "fatf.json")
+        candidates.append(Path(meipass) / "config" / "fatf_lists.json")
+    if getattr(sys, "frozen", False):
+        exe_dir = Path(sys.executable).resolve().parent
+        candidates.append(exe_dir / "_internal" / "config" / "fatf.json")
+        candidates.append(exe_dir / "_internal" / "config" / "fatf_lists.json")
+        candidates.append(exe_dir / "config" / "fatf.json")
+        candidates.append(exe_dir / "config" / "fatf_lists.json")
+    try:
+        from modules.common.paths import get_base_dir
+        b = get_base_dir()
+        candidates.append(b / "config" / "fatf.json")
+        candidates.append(b / "config" / "fatf_lists.json")
+        candidates.append(b / "_internal" / "config" / "fatf.json")
+        candidates.append(b / "_internal" / "config" / "fatf_lists.json")
+    except Exception:
+        pass
+    root = Path(__file__).resolve().parent.parent.parent
+    candidates.append(root / "config" / "fatf.json")
+    candidates.append(root / "config" / "fatf_lists.json")
+    seen = set()
+    unique = []
+    for c in candidates:
+        if str(c) not in seen:
+            seen.add(str(c))
+            unique.append(c)
+    return unique
+
 CONFIG_FATF_JSON = Path(__file__).resolve().parent.parent.parent / "config" / "fatf.json"
 CONFIG_FATF_LISTS_JSON = Path(__file__).resolve().parent.parent.parent / "config" / "fatf_lists.json"
 
 
 def _load_fatf_config() -> Tuple[Dict[str, Any], Path]:
-    for p in [CONFIG_FATF_JSON, CONFIG_FATF_LISTS_JSON]:
+    for p in _resolve_fatf_config_paths():
         if p.is_file():
             try:
                 with open(p, "r", encoding="utf-8") as f:
@@ -68,17 +102,58 @@ def normalize_country(country: Optional[str]) -> str:
     return " ".join(clean.split())
 
 
+DEFAULT_COUNTRY_ALIASES: Dict[str, List[str]] = {
+    "democratic people's republic of korea": [
+        "dprk",
+        "democratic peoples republic of korea",
+        "north korea",
+        "korea, democratic people's republic of",
+    ],
+    "iran": ["islamic republic of iran", "iran, islamic republic of"],
+    "myanmar": ["burma"],
+    "côte d'ivoire": ["cote d'ivoire", "ivory coast", "cote d ivoire"],
+    "democratic republic of the congo": [
+        "drc",
+        "democratic republic of congo",
+        "congo, democratic republic of the",
+        "congo (kinshasa)",
+    ],
+    "syria": ["syrian arab republic"],
+    "bolivia": ["plurinational state of bolivia"],
+    "bosnia and herzegovina": ["bosnia", "herzegovina"],
+    "lao pdr": ["laos"],
+    "british virgin islands": ["virgin islands, british", "virgin islands british"],
+}
+
+def _get_default_country_aliases(name: str) -> List[str]:
+    norm = normalize_country(name)
+    for k, aliases in DEFAULT_COUNTRY_ALIASES.items():
+        if normalize_country(k) == norm:
+            return aliases
+    return []
+
+
 # Build lookup maps and country lists
 BLACK_LIST_MAP: Dict[str, str] = {}
 BLACK_LIST_COUNTRIES: List[str] = []
 _raw_black = _cfg.get("black_list", [])
 if isinstance(_raw_black, list):
     for entry in _raw_black:
-        c_name = entry.get("name", "")
+        if isinstance(entry, dict):
+            c_name = entry.get("name", "")
+            aliases = list(entry.get("aliases", []))
+        elif isinstance(entry, str):
+            c_name = entry.strip()
+            aliases = []
+        else:
+            continue
         if c_name:
-            BLACK_LIST_COUNTRIES.append(c_name)
+            if c_name not in BLACK_LIST_COUNTRIES:
+                BLACK_LIST_COUNTRIES.append(c_name)
             BLACK_LIST_MAP[normalize_country(c_name)] = c_name
-            for al in entry.get("aliases", []):
+            if not aliases:
+                aliases = _get_default_country_aliases(c_name)
+            for al in aliases:
                 BLACK_LIST_MAP[normalize_country(al)] = c_name
 elif isinstance(_raw_black, dict):
     BLACK_LIST_MAP = dict(_raw_black)
@@ -89,11 +164,21 @@ GREY_LIST_COUNTRIES: List[str] = []
 _raw_grey = _cfg.get("grey_list", [])
 if isinstance(_raw_grey, list):
     for entry in _raw_grey:
-        c_name = entry.get("name", "")
+        if isinstance(entry, dict):
+            c_name = entry.get("name", "")
+            aliases = list(entry.get("aliases", []))
+        elif isinstance(entry, str):
+            c_name = entry.strip()
+            aliases = []
+        else:
+            continue
         if c_name:
-            GREY_LIST_COUNTRIES.append(c_name)
+            if c_name not in GREY_LIST_COUNTRIES:
+                GREY_LIST_COUNTRIES.append(c_name)
             GREY_LIST_MAP[normalize_country(c_name)] = c_name
-            for al in entry.get("aliases", []):
+            if not aliases:
+                aliases = _get_default_country_aliases(c_name)
+            for al in aliases:
                 GREY_LIST_MAP[normalize_country(al)] = c_name
 elif isinstance(_raw_grey, dict):
     GREY_LIST_MAP = dict(_raw_grey)
