@@ -28,7 +28,7 @@ jobs:
           cache: 'pip'
       - run: pip install pytest fastapi pydantic httpx
       - name: Verify AST Layer Boundaries (Zero reverse imports)
-        run: pytest tests/test_layered_architecture.py -v
+        run: pytest tests/canary/test_layered_architecture.py -v
 
   # 2. Hard Rule 9: Signature Integrity
   signature_integrity:
@@ -54,7 +54,7 @@ jobs:
           cache: 'pip'
       - run: pip install pytest fastapi pydantic httpx
       - name: Run Schema Up/Down & Trigger Tests
-        run: pytest tests/test_db_migration.py -v
+        run: pytest tests/canary/test_db_migration.py -v
 
   # 4. Identity, Roles & Four-Eyes Governance (C4)
   roles_and_auth:
@@ -66,9 +66,11 @@ jobs:
         with:
           python-version: '3.12'
           cache: 'pip'
-      - run: pip install pytest fastapi pydantic httpx
+      - run: |
+          pip install -r requirements.txt
+          pip install pytest fastapi pydantic httpx
       - name: Run RBAC & Four-Eyes Tests
-        run: pytest tests/test_roles_and_auth.py -v
+        run: pytest tests/canary/test_roles_and_auth.py -v
 
   # 5. Side-by-Side Isolation Tests
   isolation_verification:
@@ -82,7 +84,7 @@ jobs:
           cache: 'pip'
       - run: pip install pytest pyyaml pillow
       - name: Verify Isolated Folders, Icons & Read-Only Import
-        run: pytest tests/test_side_by_side_isolation.py -v
+        run: pytest tests/canary/test_side_by_side_isolation.py -v
 
   # 6. API Contract Validation (C2)
   api_contract_tests:
@@ -100,7 +102,7 @@ jobs:
       - name: Initialize Sanctions Data Fixtures
         run: python scripts/init_data.py
       - name: Run API Contract & Problem Details Tests
-        run: pytest tests/test_api_contract.py -v
+        run: pytest tests/canary/test_api_contract.py -v
 
   # 7. Results Parity Job against v1.2.1 (C6)
   results_parity_job:
@@ -118,7 +120,7 @@ jobs:
       - name: Initialize Sanctions Data Fixtures
         run: python scripts/init_data.py
       - name: Run 100% Results Parity Verification
-        run: pytest tests/test_results_parity.py -v
+        run: pytest tests/canary/test_results_parity.py -v
 
   # 8. Dependency and Container Security Scans
   dependency_and_image_scan:
@@ -162,8 +164,16 @@ jobs:
             --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m \
             -v canary-data:/var/lib/clearance-check \
             clearance-check-canary:latest
-          sleep 5
-          docker exec canary-test python -c "import urllib.request; assert urllib.request.urlopen('http://localhost:8000/health').getcode() == 200"
+          for i in $(seq 1 20); do
+            if docker exec canary-test python -c "import urllib.request; assert urllib.request.urlopen('http://localhost:8000/health').getcode() == 200"; then
+              break
+            fi
+            if [ "$i" -eq 20 ]; then
+              docker logs canary-test || true
+              exit 1
+            fi
+            sleep 1
+          done
           docker stop canary-test
 
   # 10. Canary Pre-Release Packaging & Publishing

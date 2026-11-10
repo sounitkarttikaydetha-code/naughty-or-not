@@ -1,6 +1,6 @@
 .env
 logs/
-reports/
+/reports/
 data/raw/
 data/raw_search/
 data/fatf/

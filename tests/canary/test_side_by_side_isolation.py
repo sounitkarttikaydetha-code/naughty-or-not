@@ -24,7 +24,7 @@ from canary.interfaces.desktop.import_stable import (
     compute_file_sha256,
 )
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 
 
 def test_01_distinct_data_directories():
@@ -33,8 +33,8 @@ def test_01_distinct_data_directories():
     canary_dir = get_canary_data_dir()
 
     assert stable_dir.name != canary_dir.name
-    assert "Canary" in canary_dir.name
-    assert "Canary" not in stable_dir.name
+    assert "canary" in canary_dir.name.lower()
+    assert "canary" not in stable_dir.name.lower()
 
 
 def test_02_separate_installer_app_id_and_paths():

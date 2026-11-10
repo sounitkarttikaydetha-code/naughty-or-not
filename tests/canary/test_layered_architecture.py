@@ -9,7 +9,7 @@ import ast
 from pathlib import Path
 from typing import List, Tuple
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 CANARY_DIR = PROJECT_ROOT / "canary"
 
 

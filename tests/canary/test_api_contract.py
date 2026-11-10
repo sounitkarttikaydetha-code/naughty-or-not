@@ -11,7 +11,7 @@ from starlette.testclient import TestClient
 from canary.interfaces.api.app import app
 from canary.adapters.identity.oidc_client import MockOIDCProvider
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 OPENAPI_PATH = PROJECT_ROOT / "docs" / "api" / "openapi.yaml"
 
 client = TestClient(app)

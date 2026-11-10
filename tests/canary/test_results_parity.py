@@ -15,7 +15,7 @@ from starlette.testclient import TestClient
 from canary.interfaces.api.app import app
 from canary.adapters.identity.oidc_client import MockOIDCProvider
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 BASELINE_PATH = PROJECT_ROOT / "reviews" / "baseline_v1.1.3.json"
 LIST_NAMES = ["us_ofac", "us_csl", "uk_csl", "eu_csl", "un_csl"]
 
