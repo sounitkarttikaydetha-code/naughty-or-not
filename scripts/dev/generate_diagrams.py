@@ -6,7 +6,7 @@ Generate crisp, high-resolution architectural diagrams for Clearance Check Techn
 4. dataflow_name_check.png
 5. dataflow_ownership_check.png
 6. dataflow_list_refresh.png
-Uses strict neutral corporate styling: Navy (#0F2A4A, #1E3A5F), Slate (#64748B), Light Slate (#F8FAFC), White (#FFFFFF).
+Uses strict neutral corporate styling: Blue (#0F2A4A, #0F52BA), Slate (#64748B), Light Slate (#F8FAFC), White (#FFFFFF).
 Zero emojis.
 """
 from pathlib import Path
@@ -18,7 +18,7 @@ DIAGRAMS_DIR.mkdir(parents=True, exist_ok=True)
 
 # Colors
 NAVY = (15, 42, 74)
-STEEL = (30, 58, 95)
+STEEL = (15, 82, 186)
 SLATE = (100, 116, 139)
 DARK_TEXT = (15, 23, 42)
 LIGHT_BG = (248, 250, 252)

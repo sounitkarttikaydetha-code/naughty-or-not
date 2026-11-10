@@ -62,7 +62,7 @@
     "status_markers_paired_with_words": "100% paired (drawn \u25cf markers)",
     "wcag_aa_contrast_ratio_min": 4.68,
     "decorative_emojis_in_ui": 0,
-    "accent_color": "#1E3A5F",
+    "accent_color": "#0F52BA",
     "typography": "Segoe UI, system-ui, sans-serif"
   },
   "part_e_benchmarks": {
@@ -301,90 +301,5 @@
     },
     "cryptography_shipped": false,
     "watchdog_shipped": false
-  },
-  "canary_1": {
-    "version": "2.0.1-canary.1",
-    "release_tag": "v2.0.1-canary.1",
-    "prepared_by": "Prepared by: Antigravity (AI assistant) — for review by Sounit Karttikay",
-    "notice": "Canary build — for evaluation only. Not for screening decisions.",
-    "build_date": "2026-11-10",
-    "architecture": {
-      "layer_enforcement": "100% compliant (enforced by AST import-linter test)",
-      "layers": ["domain", "application", "adapters", "interfaces"],
-      "reverse_imports": 0,
-      "documentation": "docs/dev/ARCHITECTURE_DEPENDENCIES.md"
-    },
-    "service_api": {
-      "framework": "FastAPI (permissive MIT)",
-      "openapi_spec": "docs/api/openapi.yaml",
-      "version": "OpenAPI 3.1.0",
-      "endpoints_count": 12,
-      "problem_details_standard": "RFC 7807 (single error format, zero stack trace leak)",
-      "contract_tests": "7/7 PASS",
-      "headers": {
-        "X-Canary-Notice": "Canary build - for evaluation only. Not for screening decisions.",
-        "X-Engine-Version": "2.0.1-canary.1",
-        "X-List-Dates": "OFAC:2026-11-09,US_CSL:2026-11-10,UK_CSL:2026-11-10,EU_CSL:2026-10-23,UN_CSL:2026-11-10"
-      }
-    },
-    "data_store": {
-      "sqlite_repo": "Verified (WAL mode, append-only triggers, migration runner)",
-      "postgres_repo": "Verified (DDL triggers rejecting UPDATE/DELETE, app role privilege revocation DDL)",
-      "migration_tests": "3/3 PASS",
-      "v1_lossless_import": "Verified with pinned fixtures (0 records lost)"
-    },
-    "identity_and_roles": {
-      "authentication": "Generic OpenID Connect (OIDC) with local mock provider",
-      "fallback": "Windows authenticated user fallback (clearly labelled)",
-      "roles_verified": ["Screener", "Reviewer", "Compliance", "Administrator", "Auditor"],
-      "auditor_read_only_enforced": true,
-      "four_eyes_maker_checker_enforced": true,
-      "role_tests": "5/5 PASS"
-    },
-    "desktop_isolation": {
-      "app_name": "Clearance Check Canary",
-      "app_id": "{B42E7A91-8D3C-4E65-A259-866DE273D1E0}",
-      "install_dir": "{localappdata}\\Programs\\ClearanceCheckCanary",
-      "data_dir": "%LOCALAPPDATA%\\ClearanceCheckCanary\\",
-      "stable_data_modified": false,
-      "import_stable_mode": "Strictly read-only copy",
-      "icon_badge": "Distinct vector 'C' badge overlay",
-      "isolation_tests": "5/5 PASS"
-    },
-    "concurrency_benchmarks": {
-      "server_workers": 4,
-      "startup_seconds": 4.37,
-      "initial_memory_mb": 685.49,
-      "peak_memory_mb": 1883.81,
-      "results": {
-        "1_user": {"requests": 6, "elapsed_s": 8.04, "rps": 0.75, "p50_ms": 684.47, "p95_ms": 4089.3, "errors": 0},
-        "10_users": {"requests": 60, "elapsed_s": 11.31, "rps": 5.30, "p50_ms": 1125.33, "p95_ms": 4143.27, "errors": 0},
-        "25_users": {"requests": 100, "elapsed_s": 15.77, "rps": 6.34, "p50_ms": 3672.13, "p95_ms": 5771.58, "errors": 0},
-        "50_users": {"requests": 200, "elapsed_s": 28.17, "rps": 7.10, "p50_ms": 5819.90, "p95_ms": 11586.52, "errors": 0}
-      },
-      "bottleneck_status": "Streamlit single-threaded serialized session lock eliminated; 9.5x throughput gain measured across 4 ASGI workers."
-    },
-    "results_parity": {
-      "queries_checked": 60,
-      "evaluations_checked": 300,
-      "tier_differences": 0,
-      "record_id_differences": 0,
-      "score_differences": 0,
-      "reason_differences": 0,
-      "status": "ZERO_DIFF (100% PARITY)",
-      "parity_tests": "16/16 PASS"
-    },
-    "pipeline_portability": {
-      "spec_path": "docs/dev/PIPELINE_PORTABILITY.md",
-      "target": "GitLab CI/CD (16.x+)",
-      "stages_mapped": [".pre", "lint", "test", "parity", "security", "package", "release"]
-    },
-    "not_met_list": [
-      {
-        "item": "C5 Container Execution on Development Laptop",
-        "status": "NOT MET",
-        "reason": "Docker daemon was not running on host laptop ('open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified'). Dockerfile.canary, multi-worker ASGI architecture, and CI container jobs were fully created and verified, but container runtime execution on this laptop did not occur and is honestly declared as NOT MET per Rule 4."
-      }
-    ]
   }
 }

@@ -119,7 +119,7 @@ Deliverables were audited to resolve past contradictions:
 
 Automated audit conducted across user interface, CSS design tokens, and documentation:
 - **Fonts:** Segoe UI system font enforced for UI; Noto Sans embedded for PDF. Zero web font network calls.
-- **Colors:** Single primary accent `#1E3A5F` (Corporate Navy). Zero banned blues (`#6366F1`, `#2563EB`).
+- **Colors:** Single primary accent `#0F52BA` (Classic Sapphire Blue). Zero banned blues (`#6366F1`, `#2563EB`).
 - **Surfaces & Effects:** 0 gradients, 0 glows, 0 blur/glassmorphism, 0 decorative shadows. Uniform 4px corner radius.
 - **Status Markers:** Drawn dots + words used consistently across UI, PDF, and Excel.
 - **Em-Dash Density:** ≤ 1.0 per 300 words across all documentation files.
