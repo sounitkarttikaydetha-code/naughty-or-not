@@ -39,7 +39,7 @@ TEMPLATE_PATH = Path(__file__).resolve().parent.parent.parent / "templates" / "o
 
 def render_ownership_tab():
     """Render the comprehensive Ownership Check tab."""
-    st.markdown("### 🏢 Beneficial Ownership & Control (UBO) Screening")
+    st.markdown("### Beneficial Ownership & Control (UBO) Screening")
     st.caption(
         "Multilateral 50% Rule and Control analysis covering US OFAC (FAQs 399, 401), "
         "EU Council Regulations, and UK OFSI Sanctions Regulations. "
@@ -52,14 +52,14 @@ def render_ownership_tab():
         if TEMPLATE_PATH.exists():
             with open(TEMPLATE_PATH, "rb") as tf:
                 st.download_button(
-                    "📥 Download 7-Sheet Excel Template",
+                    "Download 7-Sheet Excel Template",
                     data=tf.read(),
                     file_name="clearance_check_ownership_template.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     use_container_width=True,
                 )
     with c_top2:
-        if st.button("📋 Load Example: Alpha Ground Services (Worked Example 4)", use_container_width=True):
+        if st.button("Load Example: Alpha Ground Services (Worked Example 4)", use_container_width=True):
             st.session_state["ubo_counterparty"] = Counterparty(
                 name="Alpha Ground Services Private Limited",
                 jurisdiction="India",
@@ -97,7 +97,7 @@ def render_ownership_tab():
     st.session_state["ubo_counterparty"] = cp_curr
 
     # Input method tabs
-    in_tab_upload, in_tab_word, in_tab_mappings = st.tabs(["📁 Excel Upload & Preview", "📄 Word (.docx) Import", "⚙️ Mappings & Settings"])
+    in_tab_upload, in_tab_word, in_tab_mappings = st.tabs(["Excel Upload & Preview", "Word (.docx) Import", "Mappings & Settings"])
 
     with in_tab_upload:
         uploaded_file = st.file_uploader(
@@ -122,7 +122,7 @@ def render_ownership_tab():
                     st.session_state["ubo_key_persons"] = kp_parsed
 
                 if preview_issues:
-                    st.markdown("##### ⚠️ Import Preview: Validation Warnings & Fixes")
+                    st.markdown("##### Import Preview: Validation Warnings & Fixes")
                     st.dataframe(preview_issues, use_container_width=True, hide_index=True)
                 else:
                     st.success(f"Workbook successfully validated: {len(h_parsed)} holdings, {len(cr_parsed)} control relations, {len(kp_parsed)} key persons.")
@@ -156,7 +156,7 @@ def render_ownership_tab():
                 st.success(f"Parsed {len(h_d)} ownership rows from Word document.")
 
     with in_tab_mappings:
-        st.markdown("##### 📋 Configured Import Mappings")
+        st.markdown("##### Configured Import Mappings")
         mappings = list_available_mappings()
         if mappings:
             m_display = []
@@ -173,7 +173,7 @@ def render_ownership_tab():
     # Review loaded data
     holdings_curr: List[Holding] = st.session_state.get("ubo_holdings", [])
     if holdings_curr:
-        with st.expander(f"📋 Loaded Holdings & Control Hierarchy ({len(holdings_curr)} shareholdings)", expanded=False):
+        with st.expander(f"Loaded Holdings & Control Hierarchy ({len(holdings_curr)} shareholdings)", expanded=False):
             disp_data = []
             for h in holdings_curr:
                 disp_data.append({
@@ -187,7 +187,7 @@ def render_ownership_tab():
             st.dataframe(disp_data, use_container_width=True, hide_index=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
-    btn_screen = st.button("🚀 Screen Corporate Structure & Evaluate Control", type="primary", use_container_width=True)
+    btn_screen = st.button("Screen Corporate Structure & Evaluate Control", type="primary", use_container_width=True)
 
     if btn_screen:
         if not target_name.strip():
@@ -212,11 +212,11 @@ def render_ownership_tab():
     last_res: Optional[UBOResult] = st.session_state.get("ubo_last_result")
     if last_res:
         st.markdown("---")
-        st.markdown(f"### 📊 Evaluation Findings: **{last_res.target_name}**")
+        st.markdown(f"### Evaluation Findings: **{last_res.target_name}**")
         st.caption(f"Evaluation completed in {last_res.execution_time_ms:.1f}ms | Offline Lists")
 
         # Interactive Tree Visualization
-        with st.expander("🌳 Interactive Ownership Hierarchy Tree", expanded=True):
+        with st.expander("Interactive Ownership Hierarchy Tree", expanded=True):
             try:
                 # Build graphviz dot string
                 dot_lines = [
@@ -249,7 +249,7 @@ def render_ownership_tab():
                 st.error(f"🔴 **CRITERIA MET**\n\nAggregate: **{last_res.ofac_aggregate_pct:.1f}%**")
                 st.caption(last_res.ofac_verdict.get("verdict_text", ""))
             else:
-                st.success(f"🟢 **CRITERIA NOT MET**\n\nAggregate: **{last_res.ofac_aggregate_pct:.1f}%**")
+                st.success(f"✅ **CLEAR: CRITERIA NOT MET**\n\nAggregate: **{last_res.ofac_aggregate_pct:.1f}%**")
                 st.caption(last_res.ofac_verdict.get("verdict_text", ""))
 
         with v_col2:
@@ -258,7 +258,7 @@ def render_ownership_tab():
                 st.error("🔴 **CRITERIA MET**")
                 st.caption(last_res.eu_verdict.get("verdict_text", ""))
             else:
-                st.success("🟢 **CRITERIA NOT MET**")
+                st.success("✅ **CLEAR: CRITERIA NOT MET**")
                 st.caption(last_res.eu_verdict.get("verdict_text", ""))
 
         with v_col3:
@@ -267,7 +267,7 @@ def render_ownership_tab():
                 st.error("🔴 **CRITERIA MET**")
                 st.caption(last_res.uk_verdict.get("verdict_text", ""))
             else:
-                st.success("🟢 **CRITERIA NOT MET**")
+                st.success("✅ **CLEAR: CRITERIA NOT MET**")
                 st.caption(last_res.uk_verdict.get("verdict_text", ""))
 
         with v_col4:
@@ -277,11 +277,11 @@ def render_ownership_tab():
                 for f in last_res.un_mha_flags:
                     st.caption(f["note"])
             else:
-                st.success("🟢 **No Listed Parties**")
+                st.success("✅ **CLEAR: No Listed Parties**")
                 st.caption("No owners or key persons listed on UN or India MHA registers.")
 
         # Traces & Calculation Notes
-        with st.expander("🔍 Detailed Sanctions Traces & Boundary Notices", expanded=True):
+        with st.expander("Detailed Sanctions Traces & Boundary Notices", expanded=True):
             if last_res.ofac_path_traces:
                 st.markdown("**OFAC Blocked Aggregation Traces:**")
                 for tr in last_res.ofac_path_traces:
@@ -293,28 +293,28 @@ def render_ownership_tab():
             if last_res.uk_verdict.get("notes"):
                 st.markdown("**UK OFSI Boundary Notices:**")
                 for un in last_res.uk_verdict.get("notes", []):
-                    st.markdown(f"- ℹ️ *{un}*")
+                    st.markdown(f"- ℹ️ INFO: *{un}*")
             if last_res.bis_affiliate_flags:
                 st.markdown("**BIS Entity List 50%+ Affiliates:**")
                 for bf in last_res.bis_affiliate_flags:
-                    st.warning(f"⚠️ {bf['note']}")
+                    st.warning(f"{bf['note']}")
 
         # Shortfall & Undisclosed Ownership Warning
         if last_res.undisclosed_ownership_pct > 0.0:
             st.warning(
-                f"⚠️ **Undisclosed Ownership: {last_res.undisclosed_ownership_pct:.1f}% shortfall.** "
+                f"**Undisclosed Ownership: {last_res.undisclosed_ownership_pct:.1f}% shortfall.** "
                 + ("**CRITICAL: Result depends on undisclosed ownership.**" if last_res.depends_on_undisclosed else "")
             )
 
         # Adani 20% Diligence Triggers & Indian 10% BO Markers
         if last_res.diligence_triggers or last_res.india_bo_markers:
-            st.markdown("#### 🔍 Compliance Triggers & Markers")
+            st.markdown("#### Compliance Triggers & Markers")
             c_tr1, c_tr2 = st.columns(2)
             with c_tr1:
-                st.markdown("##### ✈️ Adani SOP 20% Diligence Triggers")
+                st.markdown("##### ✈️ SAFETY: 20% Diligence Triggers")
                 if last_res.diligence_triggers:
                     for dt in last_res.diligence_triggers:
-                        badge = "🔴 KYC Incomplete" if dt.get("kyc_incomplete") else "🟡 Diligence Required"
+                        badge = "🔴 KYC Incomplete" if dt.get("kyc_incomplete") else "ℹ️ INFO: Diligence Required"
                         st.markdown(f"- **{dt['name']}**: Direct {dt['direct_pct']}%, Look-Through {dt['effective_pct']}% — *{badge}*")
                 else:
                     st.caption("No parties meet or exceed the 20.0% diligence threshold.")
@@ -327,10 +327,10 @@ def render_ownership_tab():
                     st.caption("No parties meet or exceed the 10.0% Indian BO marker.")
 
         # Side-by-side comparison table
-        st.markdown("#### ⚖️ Side-by-Side: Sanctions Aggregation vs Economic Look-Through")
+        st.markdown("#### Side-by-Side: Sanctions Aggregation vs Economic Look-Through")
         summary_rows = []
         for s in last_res.look_through_summary:
-            status_badge = "🔴 Blocked" if s["is_blocked"] else "🟢 Clear"
+            status_badge = "🔴 Blocked" if s["is_blocked"] else "✅ CLEAR"
             summary_rows.append({
                 "Entity / Shareholder": s["name"],
                 "Type": s["type"].capitalize(),
@@ -344,7 +344,7 @@ def render_ownership_tab():
         st.dataframe(summary_rows, use_container_width=True, hide_index=True)
 
         # Four-Eyes Review Disposition
-        st.markdown("#### ✍️ Four-Eyes Compliance Sign-Off")
+        st.markdown("#### Four-Eyes Compliance Sign-Off")
         c_fe1, c_fe2, c_fe3 = st.columns([1, 1, 1])
         with c_fe1:
             preparer = st.text_input("Preparer Name", value=last_res.disposition.preparer or "Compliance Analyst")
@@ -360,7 +360,7 @@ def render_ownership_tab():
 
         c_act1, c_act2 = st.columns(2)
         with c_act1:
-            if st.button("💾 Save Four-Eyes Sign-Off to Audit Trail", use_container_width=True):
+            if st.button("Save Four-Eyes Sign-Off to Audit Trail", use_container_width=True):
                 last_res.disposition.preparer = preparer
                 last_res.disposition.reviewer = reviewer
                 sep_ok, sep_msg = last_res.disposition.validate_user_separation()
@@ -373,6 +373,6 @@ def render_ownership_tab():
                     st.success(f"Audit record saved: status '{status}' (Review due {last_res.disposition.review_due_date}).")
 
         with c_act2:
-            if st.button("📦 Generate UBO Evidence Pack (PDF + Excel)", use_container_width=True):
+            if st.button("Generate UBO Evidence Pack (PDF + Excel)", use_container_width=True):
                 p_pdf, p_xlsx = UBOEngine().generate_ubo_evidence_pack(last_res)
                 st.success(f"Evidence pack generated!\n\n- PDF: `{p_pdf.name}`\n- Excel: `{p_xlsx.name}`")

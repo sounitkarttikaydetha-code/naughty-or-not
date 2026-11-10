@@ -861,9 +861,9 @@ def _screen_direct_all_lists(
                 else:
                     info_hits.append(tiered)
 
-        red_hits.sort(key=lambda x: x["score"], reverse=True)
-        orange_hits.sort(key=lambda x: x["score"], reverse=True)
-        info_hits.sort(key=lambda x: x["score"], reverse=True)
+        red_hits.sort(key=lambda x: (-x["score"], str(x.get("source_list", "") or src), str(x.get("source_id", "") or "")))
+        orange_hits.sort(key=lambda x: (-x["score"], str(x.get("source_list", "") or src), str(x.get("source_id", "") or "")))
+        info_hits.sort(key=lambda x: (-x["score"], str(x.get("source_list", "") or src), str(x.get("source_id", "") or "")))
 
         all_candidates = red_hits + orange_hits + info_hits
         limit_reached = len(all_candidates) >= DISPLAY_LIMIT

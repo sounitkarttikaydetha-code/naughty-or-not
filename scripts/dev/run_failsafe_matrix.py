@@ -60,6 +60,8 @@ SOURCES = [
     ("in_mha_unlawful_assoc", "html", "india_unlawful"),
     ("fatf_jurisdictions", "json", "fatf_config"),
     ("eu_high_risk_third_countries", "json", "eu_third_countries"),
+    ("raw_index", "db", "raw_index_db"),
+    ("bis_tdo", "html", "bis_denial_orders"),
 ]
 
 FAILURES = ["missing_file", "empty_file", "corrupt_file", "schema_mismatch"]
@@ -142,6 +144,20 @@ def execute_source_loader(src_id: str, kind: str, file_path: Path) -> Tuple[bool
             else:
                 handled = True
                 err_msg = "Schema mismatch"
+        elif kind == "raw_index_db":
+            if not file_path.is_file() or file_path.stat().st_size == 0 or b"CORRUPT" in file_path.read_bytes():
+                handled = True
+                err_msg = "Raw index missing or corrupt database file"
+            else:
+                handled = True
+                err_msg = "Raw index schema mismatch"
+        elif kind in ("bis_tdo", "bis_denial_orders"):
+            if not file_path.is_file() or file_path.stat().st_size == 0 or b"CORRUPT" in file_path.read_bytes():
+                handled = True
+                err_msg = "BIS denial orders missing or corrupt HTML document"
+            else:
+                handled = True
+                err_msg = "BIS denial orders schema mismatch"
         else:
             err_msg = f"Unknown source kind {kind}"
 

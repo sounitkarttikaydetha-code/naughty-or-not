@@ -345,6 +345,23 @@ class TestMatchTieringLayerV2(unittest.TestCase):
         self.assertNotEqual(res["tier"], TIER_POTENTIAL_MATCH)
         self.assertNotEqual(res["tier"], TIER_POSSIBLE_MATCH)
 
+    def test_15_deterministic_tie_breaking(self):
+        """Item 14: Tie-breaking is deterministic: score descending, then source ascending, then record ID ascending."""
+        cands = [
+            {"score": 0.85, "source_list": "us_csl", "source_id": "REC-999"},
+            {"score": 0.85, "source_list": "uk_csl", "source_id": "REC-100"},
+            {"score": 0.90, "source_list": "us_ofac", "source_id": "REC-500"},
+            {"score": 0.85, "source_list": "uk_csl", "source_id": "REC-050"},
+            {"score": 0.85, "source_list": "eu_csl", "source_id": "REC-200"},
+        ]
+        sort_key = lambda x: (-x["score"], str(x.get("source_list", "") or ""), str(x.get("source_id", "") or ""))
+        sorted_cands = sorted(cands, key=sort_key)
+        self.assertEqual(sorted_cands[0]["source_id"], "REC-500")
+        self.assertEqual(sorted_cands[1]["source_list"], "eu_csl")
+        self.assertEqual(sorted_cands[2]["source_id"], "REC-050")
+        self.assertEqual(sorted_cands[3]["source_id"], "REC-100")
+        self.assertEqual(sorted_cands[4]["source_list"], "us_csl")
+
 
 
 

@@ -1,0 +1,376 @@
+{
+  "runtime": {
+    "altair": {
+      "spec": "altair==6.3.0",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "anyio": {
+      "spec": "anyio==4.15.1",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "attrs": {
+      "spec": "attrs==26.1.0",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "bottle": {
+      "spec": "bottle==0.13.4",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "certifi": {
+      "spec": "certifi==2026.10.19",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "cffi": {
+      "spec": "cffi==2.1.1",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "charset-normalizer": {
+      "spec": "charset-normalizer==3.5.2",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "click": {
+      "spec": "click==8.5.0",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "clr_loader": {
+      "spec": "clr_loader==0.3.1",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "colorama": {
+      "spec": "colorama==0.4.6",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "et_xmlfile": {
+      "spec": "et_xmlfile==2.0.0",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "h11": {
+      "spec": "h11==0.16.0",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "idna": {
+      "spec": "idna==3.20",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "itsdangerous": {
+      "spec": "itsdangerous==2.2.0",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "jaraco.classes": {
+      "spec": "jaraco.classes==3.4.0",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "jaraco.context": {
+      "spec": "jaraco.context==6.1.2",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "jaraco.functools": {
+      "spec": "jaraco.functools==4.6.0",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "Jinja2": {
+      "spec": "Jinja2==3.1.6",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "jsonschema": {
+      "spec": "jsonschema==4.26.0",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "jsonschema-specifications": {
+      "spec": "jsonschema-specifications==2025.9.1",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "keyring": {
+      "spec": "keyring==25.7.0",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "lxml": {
+      "spec": "lxml==6.1.3",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "MarkupSafe": {
+      "spec": "MarkupSafe==3.0.4",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "more-itertools": {
+      "spec": "more-itertools==11.2.1",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "narwhals": {
+      "spec": "narwhals==2.27.1",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "numpy": {
+      "spec": "numpy==2.5.4",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "openpyxl": {
+      "spec": "openpyxl==3.1.5",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "packaging": {
+      "spec": "packaging==26.3",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "pandas": {
+      "spec": "pandas==3.0.6",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "pillow": {
+      "spec": "pillow>=13.0.0",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "protobuf": {
+      "spec": "protobuf==7.36.2",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "proxy_tools": {
+      "spec": "proxy_tools==0.1.0",
+      "status": "built locally from a pure-Python source distribution (no compiler needed)",
+      "error": ""
+    },
+    "pyarrow": {
+      "spec": "pyarrow==26.0.0",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "pycparser": {
+      "spec": "pycparser==3.11",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "pydeck": {
+      "spec": "pydeck==0.9.3",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "Pygments": {
+      "spec": "Pygments==2.21.0",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "pypdf": {
+      "spec": "pypdf>=7.0.0",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "python-dateutil": {
+      "spec": "python-dateutil==2.9.0.post0",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "python-docx": {
+      "spec": "python-docx==1.2.0",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "python-multipart": {
+      "spec": "python-multipart==0.0.32",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "pythonnet": {
+      "spec": "pythonnet==3.2.1",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "pywebview": {
+      "spec": "pywebview==6.2.1",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "pywin32-ctypes": {
+      "spec": "pywin32-ctypes==0.2.3",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "PyYAML": {
+      "spec": "PyYAML==6.0.3",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "rapidfuzz": {
+      "spec": "rapidfuzz==3.14.6",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "referencing": {
+      "spec": "referencing==0.37.0",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "reportlab": {
+      "spec": "reportlab==5.0.1",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "requests": {
+      "spec": "requests==2.34.2",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "rpds-py": {
+      "spec": "rpds-py==2026.9.1",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "six": {
+      "spec": "six==1.17.0",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "starlette": {
+      "spec": "starlette==1.9.0",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "streamlit": {
+      "spec": "streamlit==1.66.0",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "truststore": {
+      "spec": "truststore==0.10.5",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "typing_extensions": {
+      "spec": "typing_extensions==4.16.0",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "tzdata": {
+      "spec": "tzdata==2026.5",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "urllib3": {
+      "spec": "urllib3==2.8.0",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "uvicorn": {
+      "spec": "uvicorn==0.54.0",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "watchdog": {
+      "spec": "watchdog==6.0.0",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "websockets": {
+      "spec": "websockets==17.3",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "anyascii": {
+      "spec": "anyascii==0.3.3",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "Metaphone": {
+      "spec": "Metaphone==0.6",
+      "status": "built locally from a pure-Python source distribution (no compiler needed)",
+      "error": ""
+    }
+  },
+  "dev": {
+    "altgraph": {
+      "spec": "altgraph==0.17.5",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "detect-secrets": {
+      "spec": "detect-secrets>=1.4.0",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "iniconfig": {
+      "spec": "iniconfig==2.3.1",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "mypy": {
+      "spec": "mypy>=1.0.0",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "pdfplumber": {
+      "spec": "pdfplumber>=0.11.0",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "pefile": {
+      "spec": "pefile==2024.8.26",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "pip-licenses": {
+      "spec": "pip-licenses>=4.0.0",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "pluggy": {
+      "spec": "pluggy==1.7.0",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "pyinstaller": {
+      "spec": "pyinstaller==6.22.3",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "pyinstaller-hooks-contrib": {
+      "spec": "pyinstaller-hooks-contrib==2026.9",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "pytest": {
+      "spec": "pytest==9.1.1",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "playwright": {
+      "spec": "playwright>=1.40.0",
+      "status": "installed from a wheel",
+      "error": ""
+    },
+    "ruff": {
+      "spec": "ruff>=0.1.0",
+      "status": "installed from a wheel",
+      "error": ""
+    }
+  }
+}

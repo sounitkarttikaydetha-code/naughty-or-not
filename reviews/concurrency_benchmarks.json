@@ -1,0 +1,64 @@
+{
+  "timestamp": "2026-11-10T09:45:34Z",
+  "python_version": "3.14.10 (tags/v3.14.10:b703b2c, Oct 25 2026, 17:36:52) [MSC v.1944 64 bit (AMD64)]",
+  "index_sharing_mechanism": "Python Watchman engine singleton (_shared_engine): index is loaded into shared memory as read-only dictionary data structures. Worker threads execute concurrent rapidfuzz and metaphone similarity matches without Python-level mutex locks or cross-session serialization.",
+  "limits_identified": "GIL (Global Interpreter Lock) in CPython limits CPU scaling to a single core during raw Python execution, though rapidfuzz C-extensions release GIL during matrix scoring. For production high-throughput hosting (>100 QPS), multiple Gunicorn/Uvicorn worker processes with shared read-only memory or pre-forked workers are recommended over pure multithreading.",
+  "benchmarks": {
+    "concurrency_1": {
+      "concurrency_level": 1,
+      "total_requests": 50,
+      "elapsed_seconds": 4.673,
+      "qps": 10.7,
+      "median_latency_ms": 57.27,
+      "p95_latency_ms": 279.88,
+      "min_latency_ms": 23.8,
+      "max_latency_ms": 351.9,
+      "mem_before_mb": 251.8,
+      "mem_after_mb": 272.2,
+      "peak_mem_mb": 272.2,
+      "cpu_utilization_pct": 100.0
+    },
+    "concurrency_10": {
+      "concurrency_level": 10,
+      "total_requests": 50,
+      "elapsed_seconds": 4.587,
+      "qps": 10.9,
+      "median_latency_ms": 397.41,
+      "p95_latency_ms": 2247.18,
+      "min_latency_ms": 24.52,
+      "max_latency_ms": 3578.97,
+      "mem_before_mb": 272.2,
+      "mem_after_mb": 274.2,
+      "peak_mem_mb": 274.2,
+      "cpu_utilization_pct": 99.5
+    },
+    "concurrency_25": {
+      "concurrency_level": 25,
+      "total_requests": 50,
+      "elapsed_seconds": 4.451,
+      "qps": 11.23,
+      "median_latency_ms": 345.94,
+      "p95_latency_ms": 2317.04,
+      "min_latency_ms": 23.69,
+      "max_latency_ms": 3119.23,
+      "mem_before_mb": 274.2,
+      "mem_after_mb": 274.3,
+      "peak_mem_mb": 274.3,
+      "cpu_utilization_pct": 110.6
+    },
+    "concurrency_50": {
+      "concurrency_level": 50,
+      "total_requests": 100,
+      "elapsed_seconds": 9.002,
+      "qps": 11.11,
+      "median_latency_ms": 451.67,
+      "p95_latency_ms": 3607.01,
+      "min_latency_ms": 23.29,
+      "max_latency_ms": 4955.67,
+      "mem_before_mb": 274.3,
+      "mem_after_mb": 273.7,
+      "peak_mem_mb": 274.3,
+      "cpu_utilization_pct": 100.3
+    }
+  }
+}

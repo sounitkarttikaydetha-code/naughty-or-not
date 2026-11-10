@@ -57,7 +57,7 @@
    - 8.2 [Raw TLS/SSL Certificate Audit & eMudhra CA Distrust](#82-raw-tlsssl-certificate-audit--emudhra-ca-distrust)
    - 8.3 [Access Barrier & HTTP 403 Respect Rule](#83-access-barrier--http-403-respect-rule)
    - 8.4 [Single-Instance Mutex & Process Tree Termination](#84-single-instance-mutex--process-tree-termination)
-   - 8.5 [Immutable Append-Only Audit Database](#85-immutable-append-only-audit-database)
+   - 8.5 [Append-Only Audit Database](#85-append-only-audit-database)
 9. [Fail-Safe Validation, Mutation Suite & Self-Test](#9-fail-safe-validation-mutation-suite--self-test)
    - 9.1 [52-Cell Fail-Safe Matrix](#91-52-cell-fail-safe-matrix)
    - 9.2 [27 Named Mutation Checks](#92-27-named-mutation-checks)
@@ -170,7 +170,10 @@ sequenceDiagram
 ### 2.3 Process Model & Lifecycle Execution
 - **Process Hierarchy:** The application initiates via `desktop_launcher.py`, creating a Windows single-instance named mutex (`Global\ClearanceCheck_SingleInstance_Mutex`).
 - **Webview Architecture:** It spawns a dedicated local Streamlit subprocess bound to `127.0.0.1` on a dynamically allocated loopback port. The analyst interacts via a native Windows window managed by `pywebview` utilizing the Microsoft Edge WebView2 runtime.
-- **Process Tree Cleanup:** On window close, `desktop_launcher.py` traps `WM_CLOSE` and executes an aggressive process tree termination (`taskkill /F /T /PID`), guaranteeing that no orphaned Python processes or Streamlit server daemons remain resident in memory.
+- **Graceful Shutdown Lifecycle:** On window close (`WM_CLOSE`), `desktop_launcher.py` executes an orderly shutdown sequence:
+  1. Flushes and checkpoints all active SQLite databases via `PRAGMA wal_checkpoint(FULL)` for both the local screening audit ledger (`screening.db`) and the raw search index.
+  2. Stops the local Streamlit application server and terminates background list-refresh threads.
+  3. Closes database handles and exits cleanly; an asynchronous watchdog thread provides a 5.0-second safety timeout, invoking process-tree termination only if background sockets or threads fail to unbind within 5 seconds.
 
 ### 2.4 Technology Stack & Dependency Inventory
 
@@ -281,7 +284,7 @@ Before matching, input queries and list records pass through an 8-stage normaliz
 
 ### 5.3 Fuzzy Scoring Blend (Jaro–Winkler & The 0.81225 Penalty)
 Matching computes a blended similarity score:
-$$\text{Score} = w_1 \cdot \text{TokenSort} + w_2 \cdot \text{JaroWinkler} + w_3 \cdot \text{TokenSet}$$
+Score = (w1 * TokenSort) + (w2 * JaroWinkler) + (w3 * TokenSet)
 When an entity name exhibits high token overlap but contains an unmatched core substantive token, the engine imposes the canonical **`0.81225` penalty multiplier**, bounding the match safely within Tier 2 (🟠) and preventing false-positive Tier 1 (🔴) flags.
 
 ### 5.4 Phonetic Matching (Double Metaphone) & Non-Latin Transliteration
@@ -304,7 +307,7 @@ A candidate scoring `< 0.50` on raw name similarity can survive filtering **only
 ### 5.7 Identifier Elevation & Corroboration Engine
 - **Identifier Elevation:** Any exact identifier match (tax ID, passport, registration number) immediately elevates the candidate to **🔴 Potential Match** with reason `id_match`.
 - **IMO Check Digit Validation:** Validates International Maritime Organization vessel numbers using Modulus 10 weighted sum verification:
-  $$\left(\sum_{i=1}^6 d_i \cdot (8 - i)\right) \pmod{10} = d_7$$
+  `(sum(d_i * (8 - i) for i in 1..6)) % 10 == d_7`
 - **Corroboration Upgrade:** If an orange candidate (🟠) matches both **Date of Birth (DOB)** and **Nationality**, it upgrades to **🔴 Potential Match** with reason `name_dob_nat_match`.
 
 ### 5.8 Controlled Secondary Conflict Downgrade Rules
@@ -338,14 +341,14 @@ The Beneficial Ownership & Control suite satisfies all 45 statutory requirements
 
 ### 6.2 Multi-Regime Statutory Aggregation Rules
 1. **US OFAC 50% Rule (50 Percent Rule FAQs 399, 401 Examples 1–3):**
-   - Direct aggregate ownership $\ge 50\%$ by blocked persons blocks the entity.
-   - Intermediate pass-through: If an intermediate subsidiary is $\ge 50\%$ owned by blocked persons, it is treated as **100% blocked** for all subsequent down-tree ownership multiplications. Intermediate entities $< 50\%$ do not pass through blocked status.
+   - Direct aggregate ownership >= 50% by blocked persons blocks the entity.
+   - Intermediate pass-through: If an intermediate subsidiary is >= 50% owned by blocked persons, it is treated as **100% blocked** for all subsequent down-tree ownership multiplications. Intermediate entities < 50% do not pass through blocked status.
 2. **EU Ownership & Control (Council Regulation (EU) 267/2012):**
-   - Evaluates proprietary ownership at $\ge 50\%$.
+   - Evaluates proprietary ownership at >= 50%.
    - Aggregation across distinct blocked shareholders is supported (default enabled) with the analytical assumption explicitly disclosed in the report.
    - Control tests evaluate majority board appointment rights and decisive operating influence.
 3. **UK OFSI Ownership and Control Regulations:**
-   - Evaluates direct or indirect shareholding strictly exceeding $50\%$ (Condition 1: $> 50\%$).
+   - Evaluates direct or indirect shareholding strictly exceeding 50% (Condition 1: > 50%).
    - Evaluates voting power ($> 50\%$) and the right to appoint or remove majority management.
 4. **India PMLA / Prevention of Money-Laundering Rules:**
    - Companies: Controlling ownership interest $> 10\%$.
@@ -364,10 +367,10 @@ Implemented in [`modules/ownership/engine.py`](file:///d:/Naughty%20or%20not/mod
 
 ### 6.4 Four-Eyes Principle & Review Due Dates
 - **Maker-Checker Separation:** Implements strict separation of duties. The user recording an initial analysis cannot approve or sign off on the compliance disposition.
-- **Review Due Dates:** Automatic scheduling of periodic compliance reviews:
-  - High-risk / Sanctioned: 90 days.
-  - Medium-risk (FATF / Complex): 180 days.
-  - Standard compliance: 365 days.
+- **Review Due Dates:** Automatic risk-based compliance review scheduling (configured in `modules/ownership/engine.py`):
+  - Standard compliance review interval: 12 months.
+  - Risk indicator present (sanctioned counterparty, complex multi-tier cascade, structural risk): 6 months.
+  - Compliance sets the final operational review cycle according to counterparty risk appetite.
 
 ### 6.5 Spreadsheet & Word Document Ingestion Engine
 - **Standardized 7-Sheet Excel Template (`ownership_template.xlsx`):** Ingests structured corporate groups across sheets: `Instructions`, `Counterparty`, `Parties`, `Holdings`, `Control`, `Key_Persons`, and `Documents`.
@@ -375,7 +378,7 @@ Implemented in [`modules/ownership/engine.py`](file:///d:/Naughty%20or%20not/mod
 - **Word (`.docx`) Table Ingestion:** Ingests corporate hierarchies formatted as Microsoft Word tables via clean-room AST table extraction.
 
 ### 6.6 Evidence Pack Generation & SHA-256 Digest Ledger
-- Generates an immutable corporate audit pack detailing the ownership tree, regime calculation matrices, and analyst dispositions.
+- Generates an append-only corporate audit pack detailing the ownership tree, regime calculation matrices, and analyst dispositions.
 - **Wording Standard:** Strictly recorded as **"SHA-256 checksum recorded in the report"** (never "cryptographically signed").
 
 ---
@@ -384,12 +387,12 @@ Implemented in [`modules/ownership/engine.py`](file:///d:/Naughty%20or%20not/mod
 
 ### 7.1 Comprehensive vs Selective Embargo Regimes
 Maintained in [`config/country_regimes.yaml`](file:///d:/Naughty%20or%20not/config/country_regimes.yaml):
-- **Comprehensive Embargoes (🔴 High Risk):** Iran, North Korea, Cuba, Syria. Full financial and transaction prohibitions.
-- **Selective & Sectoral Sanctions (🟠 Medium Risk):** Russia (SSI directives, sovereign debt, petroleum caps), Belarus, Myanmar, Venezuela, Zimbabwe.
+- **Comprehensive Embargoes (🔴 High Risk):** Iran, North Korea, Cuba, and occupied regions of Ukraine (Crimea, DNR, LNR). Full financial and commercial transaction prohibitions.
+- **Selective & Sectoral Sanctions (🟠 Medium Risk):** Syria (targeted sanctions under PAARSS programme following revocation of comprehensive embargo via E.O. 14312), Russia (extensive sectoral prohibitions, SSI directives, sovereign debt, petroleum caps), Belarus, Myanmar, Venezuela, Zimbabwe.
 
 ### 7.2 Syria PAARSS Statutory Program
 - **Legal Modernization:** Obsolete references to 31 CFR Part 542 were eliminated (removed from the Code of Federal Regulations on 26 August 2025).
-- **Statutory Authority:** Governed by the **Promoting Accountability for Assad and Regional Stabilization Sanctions Act (PAARSS)**.
+- **Statutory Authority:** Governed by the **Promoting Accountability for Assad and Regional Stabilization Sanctions (PAARSS)** programme.
 - **Sanctions Relief Notes:** Incorporates the 24 August 2026 rescission of the Syria State Sponsor of Terrorism (SST) designation and HTS SDGT removals (OFAC FAQ 1220).
 
 ### 7.3 Ukraine Regional Embargo Delineation
@@ -401,7 +404,7 @@ Maintained in [`config/country_regimes.yaml`](file:///d:/Naughty%20or%20not/conf
 - **Lag Rule:** From **31 October 2026**, the system displays `"FATF update due"` until an official post-plenary republication (HM Treasury on GOV.UK, IFSCA, or FinCEN) is ingested.
 - **Active Lists:**
   - **Black List (Call for Action):** DPRK, Iran, Myanmar.
-  - **Grey List (Increased Monitoring):** 22 jurisdictions (Bulgaria, Burkina Faso, Cameroon, Croatia, DRC, Haiti, Kenya, Mali, Monaco, Mozambique, Namibia, Nigeria, Philippines, Senegal, South Africa, South Sudan, Syria, Tanzania, Venezuela, Vietnam, Yemen, etc.).
+  - **Grey List (Increased Monitoring):** 22 jurisdictions (Angola, Bolivia, Bosnia and Herzegovina, Bulgaria, Cameroon, Côte d'Ivoire, Democratic Republic of the Congo, Haiti, Iraq, Kenya, Kuwait, Lao PDR, Lebanon, Monaco, Nepal, Papua New Guinea, South Sudan, Syria, Venezuela, Vietnam, Virgin Islands (UK), Yemen).
 
 ### 7.5 Aviation Safety & Export-Restricted Aircraft
 - **EU Air Safety List:** 156 airlines banned or restricted from European airspace.
@@ -445,7 +448,7 @@ Python 3.12 distrusts compromised eMudhra intermediate CA keys. All 14 regulator
 - Enforces Windows named mutex `Global\ClearanceCheck_SingleInstance_Mutex` to prevent concurrent instance data races.
 - Traps exit signals and cleanly terminates all sub-processes, child threads, and Streamlit listeners.
 
-### 8.5 Immutable Append-Only Audit Database
+### 8.5 Append-Only Audit Database
 - Uses SQLite with Write-Ahead Logging (`PRAGMA journal_mode=WAL`).
 - Audit tables (`screening_logs`, `ownership_checks`, `source_events`) operate strictly via `INSERT`. No `UPDATE` or `DELETE` queries are executed on compliance audit records.
 
@@ -493,7 +496,7 @@ Verified via [`scripts/dev/run_mutation_check.py`](file:///d:/Naughty%20or%20not
 15. `[15/16]` Secondary conflict downgrade caught (1 conflict -> 🟠 `conflict_downgrade_1`).
 16. `[16/16]` Corroboration upgrade caught (DOB + Nationality -> 🔴 `name_dob_nat_match`).
 17. `[17/17]` Startup self-test gate caught (canary tamper triggers `ENGINE_CANARY_FAILURE`).
-18. `[18/21]` UBO mutation: Aggregation OFF caught ($25\% + 25\% \ge 50\%$).
+18. `[18/21]` UBO mutation: Aggregation OFF caught (25% + 25% >= 50%).
 19. `[19/21]` UBO mutation: Indirect ownership OFF caught (intermediate pass-through).
 20. `[20/21]` UBO mutation: UK operator flipped caught (strictly enforces $> 50\%$).
 21. `[21/21]` UBO mutation: Undisclosed warning OFF caught.
@@ -586,9 +589,9 @@ These tests execute live calls against the external OpenSanctions commercial API
 ### 13.2 Author's Signature Verification
 Verified via [`tests/test_signature.py`](file:///d:/Naughty%20or%20not/tests/test_signature.py):
 ```text
-Naughty or not, a brainchild of Sounit Karttikay — no AIs were sanctioned in the making of this tool.
+You actually scrolled all the way down here? Gotcha. Now smile for the camera. 📸. The developer got bored, you got curious and now we're even. Now go screen something. 🕵️ — Naughty or not, a brainchild of Sounit Karttikay (and the blood, sweat and tokens of Antigravity and Opus, no AIs were sanctioned in the making of this tool)
 ```
-- SHA-256 Digest: `3ea9e4fae758efc3c54d19488a0ca1a8ea6c753381a171d1ff39665bc7be9404`
+- SHA-256 Digest: `5055d04ad71e3e50a14ae794a87a23b6aef6b93aef07951a47ab5a9cb27f60a2`
 
 ---
 

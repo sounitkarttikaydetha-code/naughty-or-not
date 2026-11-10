@@ -4,6 +4,7 @@ from modules.common.records_store import (
     format_record_as_text,
     format_programs,
     populate_records_cache,
+    build_13_sections,
 )
 from modules.common.branding import APP_NAME, APP_SUBTITLE, MAIN_TITLE, VERSION_LABEL, CODENAME
 # Naughty or not — Sanction checK
@@ -35,7 +36,7 @@ from modules.fatf.client import FATFClient
 from modules.india.client import IndiaClient
 from modules.opensanctions.client import OpenSanctionsClient
 from modules.raw_search.engine import RawSearchEngine
-from modules.reporting.generator import generate_reports, generate_raw_reports
+from modules.reporting.generator import generate_reports, generate_raw_reports, ReportGenerationError
 try:
     from modules.reporting.logger import (
         has_user_acknowledged,
@@ -115,6 +116,8 @@ if "records_cache_init_done" not in st.session_state:
     import threading
     def _bg_populate():
         try:
+            from modules.watchman.client import get_python_engine
+            get_python_engine()
             from modules.common.records_store import populate_records_cache
             populate_records_cache(force=False)
         except Exception:
@@ -123,7 +126,7 @@ if "records_cache_init_done" not in st.session_state:
 
 st.set_page_config(
     page_title=f"{APP_NAME} — {MAIN_TITLE}",
-    page_icon="🛡️",
+    page_icon="🔍",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -292,7 +295,7 @@ st.markdown(
 
 # 1. Permanent Notice Banner
 st.warning(
-    "⚠️ **TEST VERSION** — for internal evaluation only. "
+    "**TEST VERSION** — for internal evaluation only. "
     "OpenSanctions data is licensed CC BY-NC 4.0; commercial use requires a licence from OpenSanctions. "
     "Not to be relied upon for transaction decisions."
 )
@@ -407,27 +410,6 @@ def render_full_record_details(
     hit = hit or {}
     tier = hit.get("tier", "POTENTIAL_MATCH")
     score_val = float(hit.get("score") or 1.0)
-    p_name = html.escape(str(rec.get("primary_name") or hit.get("primary_name") or hit.get("matched_name") or "—"))
-    
-    aliases_list = rec.get("aliases") or hit.get("aliases") or []
-    if isinstance(aliases_list, list):
-        aliases_str = html.escape("; ".join(str(a) for a in aliases_list if a and str(a).strip() not in ["", "-0-"])) or "None recorded"
-    else:
-        aliases_str = html.escape(str(aliases_list)) or "None recorded"
-        
-    etype = html.escape(str(rec.get("entity_type") or hit.get("entity_type") or "Organisation"))
-    tax_id = rec.get("tax_id") or rec.get("reg_number") or rec.get("id_number") or ""
-    type_reg = f"{etype} (Tax ID / Reg: {html.escape(str(tax_id))})" if tax_id else etype
-    
-    prog = html.escape(str(hit.get("program") or rec.get("program") or rec.get("regime") or "Sanctions List"))
-    source_prog = f"{auth_name or src_id} (Program: {prog})"
-    
-    addrs = rec.get("addresses") or hit.get("addresses") or []
-    if isinstance(addrs, list):
-        addr_str = html.escape("; ".join(str(a) for a in addrs if a and str(a).strip() not in ["", "-0-"])) or "None recorded"
-    else:
-        addr_str = html.escape(str(addrs)) or "None recorded"
-        
     verif_date = hit.get("publication_date") or rec.get("publication_date") or "2026-10-27"
     
     if tier == "POTENTIAL_MATCH":
@@ -438,32 +420,61 @@ def render_full_record_details(
         badge_lbl = f"🟠 TIER 2: POSSIBLE_MATCH_REVIEW (Score: {score_val:.2f})"
     elif tier == "WEAK_SIMILARITY":
         badge_cls = "badge-yellow"
-        badge_lbl = f"🟡 TIER 3: WEAK_SIMILARITY (Score: {score_val:.2f})"
+        badge_lbl = f"ℹ️ TIER 3: WEAK_SIMILARITY (Score: {score_val:.2f})"
     else:
         badge_cls = "badge-blue"
         badge_lbl = f"ℹ️ TIER 4: SHOWN_FOR_INFORMATION (Score: {score_val:.2f})"
-        
-    card_html = f"""
+
+    # Part B: Render 13 standard sections
+    sections = build_13_sections(rec, src_id)
+    sections_html_parts = []
+    for sec_name, items in sections.items():
+        if not items or sec_name.startswith("13."):
+            continue
+        sec_header = f'''
+        <div style="margin-top:14px; margin-bottom:6px; padding-bottom:3px; border-bottom:1px solid #CBD5E1; font-weight:700; color:#0F52BA; font-size:12px; text-transform:uppercase; letter-spacing:0.5px;">
+            {html.escape(sec_name)}
+        </div>
+        '''
+        rows = []
+        for label, val in items:
+            rows.append(f'''
+            <div class="detail-row">
+                <div class="detail-label">{html.escape(label)}:</div>
+                <div class="detail-val">{html.escape(str(val))}</div>
+            </div>
+            ''')
+        sections_html_parts.append(sec_header + "".join(rows))
+
+    if direct_verify_url:
+        verify_row = f'''
+        <div style="margin-top:14px; margin-bottom:6px; padding-bottom:3px; border-bottom:1px solid #CBD5E1; font-weight:700; color:#0F52BA; font-size:12px; text-transform:uppercase; letter-spacing:0.5px;">
+            Official Publisher Verification
+        </div>
+        <div class="detail-row">
+            <div class="detail-label">Direct Verify URL:</div>
+            <div class="detail-val"><a href="{direct_verify_url}" target="_blank" style="color:#0F52BA; font-weight:600; text-decoration:none;">{html.escape(direct_verify_url)} ↗</a></div>
+        </div>
+        '''
+        sections_html_parts.append(verify_row)
+
+    body_content = "".join(sections_html_parts) if sections_html_parts else "<p style='color:#64748B;'>No structured fields found.</p>"
+
+    card_html = f'''
     <div class="full-record-modal-card">
         <div class="full-record-header">
             <span>Full Sanctions Record Details — Official Verification</span>
-            <span style="font-size:14px; opacity:0.85;">🔒 Verified Local Record</span>
+            <span style="font-size:13px; opacity:0.85;">Official Regulatory Data</span>
         </div>
         <div class="full-record-body">
-            <div style="margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <div style="margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
                 <span class="{badge_cls}">{badge_lbl}</span>
                 <span style="font-size:12px; color:#64748B;">Verification Date: <b>{verif_date}</b></span>
             </div>
-            <div class="detail-row"><div class="detail-label">Primary Listed Name:</div><div class="detail-val"><b>{p_name}</b></div></div>
-            <div class="detail-row"><div class="detail-label">Source & Program:</div><div class="detail-val">{source_prog}</div></div>
-            <div class="detail-row"><div class="detail-label">Record Identifier:</div><div class="detail-val"><code style="background:#F1F5F9; padding:2px 6px; border-radius:3px; color:#0F52BA; font-weight:600;">{html.escape(str(rec_id))}</code></div></div>
-            <div class="detail-row"><div class="detail-label">Known Aliases:</div><div class="detail-val">{aliases_str}</div></div>
-            <div class="detail-row"><div class="detail-label">Entity Type & Reg:</div><div class="detail-val">{type_reg}</div></div>
-            <div class="detail-row"><div class="detail-label">Addresses on Record:</div><div class="detail-val">{addr_str}</div></div>
-            <div class="detail-row"><div class="detail-label">Official Publisher URL:</div><div class="detail-val"><a href="{direct_verify_url or '#'}" target="_blank" style="color:#0F52BA; font-weight:600; text-decoration:none;">{direct_verify_url or 'Official Registry'} ↗</a></div></div>
+            {body_content}
         </div>
     </div>
-    """
+    '''
     st.markdown(card_html, unsafe_allow_html=True)
     
     txt_record = format_record_as_text(src_id, str(rec_id), rec)
@@ -473,7 +484,7 @@ def render_full_record_details(
     with c_btn_l:
         key_tag = f"{key_prefix}_{src_id}_{rec_id}" if key_prefix else f"{src_id}_{rec_id}"
         st.download_button(
-            "📥 Copy / Download JSON Record",
+            "Download JSON Record",
             data=json_bytes,
             file_name=f"record_{src_id}_{rec_id}.json",
             mime="application/json",
@@ -481,7 +492,7 @@ def render_full_record_details(
             use_container_width=True,
         )
     with c_btn_r:
-        with st.popover("📋 View Structured Details", use_container_width=True):
+        with st.popover("View Structured Details", use_container_width=True):
             st.code(txt_record, language="")
 
 
@@ -552,11 +563,11 @@ with st.sidebar:
     # Engine Self-Test Status
     st_res = st.session_state.get("self_test_results") or {}
     if st_res.get("has_canary_failure"):
-        st.error("🚨 **Engine Self-Test FAILED** (Canary failure)")
+        st.error("**Engine Self-Test Failed** (Canary failure)")
     else:
-        st.caption(f"🛡️ Self-test: Passed ({st_res.get('duration_ms', 0):.0f}ms)")
+        st.caption(f"Self-test: Passed ({st_res.get('duration_ms', 0):.0f}ms)")
     if st_res.get("soft_notes"):
-        with st.expander("ℹ️ Self-test notes", expanded=False):
+        with st.expander("Self-test notes", expanded=False):
             for sn in st_res["soft_notes"]:
                 st.caption(f"• {sn}")
 
@@ -570,7 +581,7 @@ with st.sidebar:
     else:
         st.caption("Active Key: _None (Free sources only)_")
 
-    if st.button("🔑 Change / clear key"):
+    if st.button("Change / clear key"):
         st.session_state.os_key_dialog_done = False
         st.rerun()
 
@@ -589,7 +600,7 @@ with st.sidebar:
             status = st_entry.get("state", "OK")
             last_v = st_entry.get("last_verified_at", "")
             note = st_entry.get("note", "")
-            badge = "🟢" if status == "OK" else ("🟠" if status == "STALE" else ("⚪" if status in ["UNAVAILABLE", "NOT_CHECKED", "MISSING"] else "🔴"))
+            badge = "✅" if status == "OK" else ("🟠" if status == "STALE" else ("⚪" if status in ["UNAVAILABLE", "NOT_CHECKED", "MISSING"] else "🔴"))
             with st.expander(f"{badge} {fname}", expanded=False):
                 caption_lines = [
                     f"**ID:** `{sid}`",
@@ -606,10 +617,10 @@ with st.sidebar:
                 # User-assisted update & manual import UI
                 v_url = s.get("verify_url") or s.get("landing_page") or ""
                 if v_url:
-                    st.link_button("🌐 Open official page", v_url, use_container_width=True)
+                    st.link_button("Open official page", v_url, use_container_width=True)
 
                 up_file = st.file_uploader(
-                    f"📥 Import downloaded file ({fname})",
+                    f"Import downloaded file ({fname})",
                     key=f"up_src_{sid}",
                     help=f"Import official download for {fname}",
                 )
@@ -628,7 +639,7 @@ with st.sidebar:
     except Exception as ex:
         st.caption(f"Error loading source states: {ex}")
 
-    if st.button("🔄 Update lists"):
+    if st.button("Update lists"):
         with st.spinner("Checking and updating all regulatory source lists..."):
             try:
                 from modules.common.source_manager import SourceManager
@@ -644,21 +655,21 @@ with st.sidebar:
     st.subheader("Data & Support")
     c_btn1, c_btn2 = st.columns(2)
     with c_btn1:
-        if st.button("📁 Reports"):
+        if st.button("Reports"):
             if sys.platform == "win32":
                 os.startfile(str(get_reports_dir()))
     with c_btn2:
-        if st.button("📁 Logs"):
+        if st.button("Logs"):
             if sys.platform == "win32":
                 os.startfile(str(get_logs_dir()))
 
     ug_pdf = PROJECT_ROOT / "USER_GUIDE.pdf"
     if ug_pdf.is_file():
-        if st.button("📖 User Guide (PDF)"):
+        if st.button("User Guide (PDF)"):
             if sys.platform == "win32":
                 os.startfile(str(ug_pdf))
 
-    with st.expander("⚙️ Settings", expanded=False):
+    with st.expander("Settings", expanded=False):
         cur_size = get_setting("display_size", "Medium")
         size_opts = ["Small", "Medium", "Large", "Extra large"]
         cur_idx = size_opts.index(cur_size) if cur_size in size_opts else 1
@@ -702,9 +713,9 @@ st.markdown(
 
 self_test = st.session_state.get("self_test_results") or {}
 if self_test.get("has_canary_failure"):
-    st.error("🚨 **ENGINE_CANARY_FAILURE: Matching engine internal inconsistency detected.** One or more core invariant tests failed. Screening calculations may be compromised.")
+    st.error("**ENGINE_CANARY_FAILURE: Matching engine internal inconsistency detected.** One or more core invariant tests failed. Screening calculations may be compromised.")
 
-st.warning("⚠️ **TEST VERSION — NOT FOR OFFICIAL REGULATORY REPORTING.** OpenSanctions data licensed CC BY-NC 4.0. Core search operates 100% offline.")
+st.warning("**TEST VERSION — NOT FOR OFFICIAL REGULATORY REPORTING.** OpenSanctions data licensed CC BY-NC 4.0. Core search operates 100% offline.")
 
 # Mode Tabs: Name check | Ownership check | Text search | Manual check
 is_raw_tab = (st.query_params.get("tab") == "raw")
@@ -712,13 +723,13 @@ is_manual_tab = (st.query_params.get("tab") == "manual")
 is_ownership_tab = (st.query_params.get("tab") == "ownership")
 
 if is_raw_tab:
-    tab_raw, tab_screened, tab_ownership, tab_manual = st.tabs(["📄 Text search", "🔍 Name check", "🏢 Ownership check", "📋 Manual check"])
+    tab_raw, tab_screened, tab_ownership, tab_manual = st.tabs(["Text search", "🔍 Name check", "Ownership check", "Manual check"])
 elif is_manual_tab:
-    tab_manual, tab_screened, tab_ownership, tab_raw = st.tabs(["📋 Manual check", "🔍 Name check", "🏢 Ownership check", "📄 Text search"])
+    tab_manual, tab_screened, tab_ownership, tab_raw = st.tabs(["Manual check", "🔍 Name check", "Ownership check", "Text search"])
 elif is_ownership_tab:
-    tab_ownership, tab_screened, tab_raw, tab_manual = st.tabs(["🏢 Ownership check", "🔍 Name check", "📄 Text search", "📋 Manual check"])
+    tab_ownership, tab_screened, tab_raw, tab_manual = st.tabs(["Ownership check", "🔍 Name check", "Text search", "Manual check"])
 else:
-    tab_screened, tab_ownership, tab_raw, tab_manual = st.tabs(["🔍 Name check", "🏢 Ownership check", "📄 Text search", "📋 Manual check"])
+    tab_screened, tab_ownership, tab_raw, tab_manual = st.tabs(["🔍 Name check", "Ownership check", "Text search", "Manual check"])
 
 
 # =========================================================================
@@ -1219,11 +1230,11 @@ with tab_screened:
             banner_text = "🔴 POTENTIAL MATCH — Match identified on official list"
             banner_type = "error"
         elif overall_tier == "POSSIBLE_MATCH_REVIEW":
-            banner_text = "⚠️ POSSIBLE MATCH / RISK FLAG — Review and verification required"
+            banner_text = "🟠 POSSIBLE MATCH / RISK FLAG — Review and verification required"
             banner_type = "warning"
         else:
             if is_non_latin:
-                banner_text = "⚠️ NO MATCH — This name contains non-Latin characters. Automatic matching is limited — also use Text search and Manual check."
+                banner_text = "ℹ️ INFO — Non-Latin characters detected. Automatic matching is limited — also use Text search and Manual check."
                 banner_type = "warning"
             else:
                 banner_text = "✅ NO MATCH — Clean on all checked sources"
@@ -1269,25 +1280,38 @@ with tab_screened:
 
         # Generate Reports & Log
         session_manual_checks = st.session_state.manual_checks_saved.get(primary_query, [])
-        pdf_path, excel_path = generate_reports(
-            search_type=search_type,
-            inputs=inputs_dict,
-            overall_banner=banner_text,
-            source_statuses=source_statuses,
-            sanctions_hits=sanctions_hits,
-            aviation_hits=aviation_hits,
-            country_risk_hits=country_risk_hits,
-            opensanctions_used=use_opensanctions,
-            all_candidates=all_screening_candidates,
-            manual_checks=session_manual_checks,
-            phonetic_enabled=PHONETIC_ENABLED,
-        )
+        pdf_path = None
+        excel_path = None
+        pdf_error = None
+        try:
+            pdf_path, excel_path = generate_reports(
+                search_type=search_type,
+                inputs=inputs_dict,
+                overall_banner=banner_text,
+                source_statuses=source_statuses,
+                sanctions_hits=sanctions_hits,
+                aviation_hits=aviation_hits,
+                country_risk_hits=country_risk_hits,
+                opensanctions_used=use_opensanctions,
+                all_candidates=all_screening_candidates,
+                manual_checks=session_manual_checks,
+                phonetic_enabled=PHONETIC_ENABLED,
+            )
+        except ReportGenerationError as rge:
+            excel_path = rge.excel_path
+            pdf_error = {
+                "message": rge.message,
+                "traceback": rge.details,
+                "inputs": inputs_dict,
+            }
+            logger.error("PDF generation failed: %s", rge.message)
 
+        report_file_name = pdf_path.name if pdf_path else (excel_path.name if excel_path else "FAILED")
         log_search(
             search_type=search_type,
             inputs=inputs_dict,
             source_results=source_statuses,
-            report_file_name=pdf_path.name,
+            report_file_name=report_file_name,
             opensanctions_used=use_opensanctions,
             query_type=w_query_type,
             sources_checked=[s["id"] for s in source_statuses if s.get("status") != "NOT_RUN"],
@@ -1312,8 +1336,9 @@ with tab_screened:
             "per_list_data": per_list_data,
             "aviation_hits": aviation_hits,
             "country_risk_hits": country_risk_hits,
-            "pdf_path": str(pdf_path),
-            "excel_path": str(excel_path),
+            "pdf_path": str(pdf_path) if pdf_path else None,
+            "excel_path": str(excel_path) if excel_path else None,
+            "pdf_error": pdf_error,
         }
 
     # Render Results in Tab 1
@@ -1331,32 +1356,40 @@ with tab_screened:
             st.info(f"### {res['banner_text']}")
 
         if not PHONETIC_ENABLED:
-            st.warning("⚠️ **Sound-alike matching OFF** — Screening conducted with phonetic expansion disabled.")
+            st.warning("**Sound-alike matching OFF** — Screening conducted with phonetic expansion disabled.")
 
         if res["search_type"] == "Person" and "🔴" in res["banner_text"] and not (res["dob_entered"] or res["nat_entered"]):
-            st.info("💡 **Add DOB / nationality to refine** this person search and clear potential name conflicts.")
+            st.info("**Add DOB / nationality to refine** this person search and clear potential name conflicts.")
 
         if res.get("is_non_latin") and res.get("banner_type") != "warning":
-            st.warning(f"⚠️ **Non-Latin Input:** {res.get('non_latin_warning')}")
+            st.warning(f"**Non-Latin Input:** {res.get('non_latin_warning')}")
         if res.get("searched_as"):
-            st.info(f"ℹ️ **Transliteration:** {res.get('searched_as')}")
+            st.info(f"**Transliteration:** {res.get('searched_as')}")
+
+        # PDF Error Fallback Banner & Traceback (Part A6)
+        if res.get("pdf_error"):
+            st.error("PDF report generation failed. An Excel report is available below. Copy the technical details below and send them to IT.")
+            with st.expander("Technical details for IT (click to copy)", expanded=False):
+                err_data = res["pdf_error"]
+                tb_txt = f"Inputs:\n{json.dumps(err_data.get('inputs', {}), indent=2)}\n\nError:\n{err_data.get('message', '')}\n\nTraceback:\n{err_data.get('traceback', '')}"
+                st.code(tb_txt, language="")
 
         # Download Reports Row
         col_d1, col_d2, _ = st.columns([1, 1, 3])
         with col_d1:
-            if os.path.isfile(res["pdf_path"]):
+            if res.get("pdf_path") and os.path.isfile(res["pdf_path"]):
                 with open(res["pdf_path"], "rb") as f:
                     st.download_button(
-                        "📥 Download PDF Report",
+                        "Download PDF Report",
                         data=f.read(),
                         file_name=Path(res["pdf_path"]).name,
                         mime="application/pdf",
                     )
         with col_d2:
-            if os.path.isfile(res["excel_path"]):
+            if res.get("excel_path") and os.path.isfile(res["excel_path"]):
                 with open(res["excel_path"], "rb") as f:
                     st.download_button(
-                        "📥 Download Excel Report",
+                        "Download Excel Report",
                         data=f.read(),
                         file_name=Path(res["excel_path"]).name,
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -1458,7 +1491,7 @@ with tab_screened:
                         if s == "MATCH":
                             return "<span style='color:#065F46; font-weight:700;'>MATCH ✅</span>"
                         elif s == "CONFLICT":
-                            return "<span style='color:#DC2626; font-weight:700;'>CONFLICT ⚠️</span>"
+                            return "<span style='color:#DC2626; font-weight:700;'>CONFLICT [ALERT]</span>"
                         return "<span style='color:#6B7280;'>Not provided</span>"
 
                     st.markdown(
@@ -1473,7 +1506,7 @@ with tab_screened:
                 # Line 3: Verify and copy buttons (wrap)
                 btn_c1, btn_c2, btn_c3, _ = st.columns([2.5, 1.5, 1.5, 2.5])
                 with btn_c1:
-                    st.link_button(f"🔗 Verify on {auth_name}", direct_verify_url)
+                    st.link_button(f"Verify on {auth_name}", direct_verify_url)
                 with btn_c2:
                     st.code(matched_name, language="")
                     st.caption("Copy matched name")
@@ -1482,7 +1515,7 @@ with tab_screened:
                     st.caption("Copy record ID")
 
                 # B4: Full record expander (Modal Style 03_show_full_record.png)
-                with st.expander("📋 Show full record", expanded=False):
+                with st.expander("Show full record", expanded=False):
                     rec = get_record(src_id, rec_id)
                     if rec:
                         render_full_record_details(src_id, rec_id, rec, h, auth_name, direct_verify_url, key_prefix="scr")
@@ -1507,7 +1540,7 @@ with tab_screened:
                 render_sanctions_hit_card(h, is_soundalike=False)
 
             if soundalike_hits:
-                with st.expander(f"🔊 Sound-alike matches ({len(soundalike_hits)})", expanded=True):
+                with st.expander(f"Sound-alike matches ({len(soundalike_hits)})", expanded=True):
                     st.caption("Sound-alike candidates match via Double Metaphone or variant group rules. Review spelling differences.")
                     for h in soundalike_hits:
                         render_sanctions_hit_card(h, is_soundalike=True)
@@ -1521,7 +1554,7 @@ with tab_screened:
             below_cands = [c for c in all_cands if c.get("tier") == "BELOW_THRESHOLD"]
             if below_cands:
                 with st.expander(
-                    f"ℹ️ Show candidates below threshold ({len(below_cands)}) — [{list_id}]",
+                    f"Show candidates below threshold ({len(below_cands)}) — [{list_id}]",
                     expanded=(st.query_params.get("expand_info") == "true"),
                 ):
                     st.caption("Candidate matches below threshold are shown for information only. They are not matches.")
@@ -1562,7 +1595,7 @@ with tab_screened:
                         f"</div>",
                         unsafe_allow_html=True,
                     )
-                    st.link_button("🔗 Verify on official BIS document", av_info.get("verify_url", "https://www.bis.gov/"))
+                    st.link_button("Verify on official BIS document", av_info.get("verify_url", "https://www.bis.gov/"))
                 else:
                     eu_av = source_dict.get("eu_air_safety", {})
                     st.markdown(
@@ -1572,7 +1605,7 @@ with tab_screened:
                         f"</div>",
                         unsafe_allow_html=True,
                     )
-                    st.link_button("🔗 Verify on official Aviation authority", eu_av.get("verify_url", "https://transport.ec.europa.eu/"))
+                    st.link_button("Verify on official Aviation authority", eu_av.get("verify_url", "https://transport.ec.europa.eu/"))
         else:
             st.write("✅ No aviation safety bans or export-control restrictions found.")
 
@@ -1588,7 +1621,7 @@ with tab_screened:
                     f"</div>",
                     unsafe_allow_html=True,
                 )
-                st.link_button("🔗 Verify on official FATF website", fatf_info.get("verify_url", "https://www.fatf-gafi.org/"))
+                st.link_button("Verify on official FATF website", fatf_info.get("verify_url", "https://www.fatf-gafi.org/"))
         else:
             st.write("✅ No elevated FATF country risk flags.")
 
@@ -1597,7 +1630,7 @@ with tab_screened:
         past_checks = get_manual_checks_for_entity(history_query) if history_query else []
         if past_checks:
             st.divider()
-            with st.expander(f"📋 Prior Manual Verification History ({len(past_checks)} recorded)", expanded=True):
+            with st.expander(f"Prior Manual Verification History ({len(past_checks)} recorded)", expanded=True):
 
                 st.caption("Historical analyst check decisions for this counterparty from screening audit trail:")
                 for chk in past_checks:
@@ -1621,7 +1654,7 @@ with tab_ownership:
 # =========================================================================
 with tab_raw:
     st.markdown("### Text Search")
-    st.info("📌 **Text search — results are keyword occurrences across official records. Review each record.**")
+    st.info("**Text search** — results are keyword occurrences across official records. Review each record.**")
 
     raw_engine = RawSearchEngine()
     all_raw_sources = [
@@ -1656,7 +1689,7 @@ with tab_raw:
             fold_accents = st.checkbox("Accent & case folding", value=True)
 
         # Dropdown menu with checkboxes for sources
-        with st.popover("📂 Regulatory Sources to Search ▾", use_container_width=True):
+        with st.popover("Regulatory Sources to Search ▾", use_container_width=True):
             st.markdown("**Select Sources to Search**")
             st.caption("Toggle checkboxes to include or exclude specific regulatory lists:")
             col_s1, col_s2 = st.columns(2)
@@ -1676,7 +1709,7 @@ with tab_raw:
         if not selected_raw_sources:
             selected_raw_sources = all_raw_sources
 
-        raw_submitted = st.form_submit_button("🔎 Search Records", type="primary")
+        raw_submitted = st.form_submit_button("🔍 Search Records", type="primary")
 
     if raw_submitted or (st.query_params.get("raw_autorun") == "true" and raw_q.strip()):
         if not raw_q.strip():
@@ -1729,25 +1762,33 @@ with tab_raw:
         st.markdown(f"**Query:** `{rr['query']}` | **Matches:** `{rr['total_matches']}` | **Time:** `{rr['execution_time_ms']:.1f}ms`")
 
         if rr.get("limit_reached"):
-            st.warning("⚠️ **Showing top 200 — more may exist; refine the search.**")
+            st.warning("**Showing top 200** — more may exist; refine the search.")
+
+        # PDF Error Fallback Banner & Traceback (Part A6)
+        if rr.get("pdf_error"):
+            st.error("PDF report generation failed. An Excel report is available below. Copy the technical details below and send them to IT.")
+            with st.expander("Technical details for IT (click to copy)", expanded=False):
+                err_data = rr["pdf_error"]
+                tb_txt = f"Query:\n{err_data.get('query', '')}\n\nError:\n{err_data.get('message', '')}\n\nTraceback:\n{err_data.get('traceback', '')}"
+                st.code(tb_txt, language="")
 
         # Download Report Buttons
         r_d1, r_d2, _ = st.columns([1, 1, 3])
         with r_d1:
-            if os.path.isfile(rr.get("pdf_path", "")):
+            if rr.get("pdf_path") and os.path.isfile(rr["pdf_path"]):
                 with open(rr["pdf_path"], "rb") as f:
                     st.download_button(
-                        "📥 Download Text Search PDF",
+                        "Download Text Search PDF",
                         data=f.read(),
                         file_name=Path(rr["pdf_path"]).name,
                         mime="application/pdf",
                         key="raw_pdf_dl",
                     )
         with r_d2:
-            if os.path.isfile(rr.get("excel_path", "")):
+            if rr.get("excel_path") and os.path.isfile(rr["excel_path"]):
                 with open(rr["excel_path"], "rb") as f:
                     st.download_button(
-                        "📥 Download Text Search Excel",
+                        "Download Text Search Excel",
                         data=f.read(),
                         file_name=Path(rr["excel_path"]).name,
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -1767,10 +1808,10 @@ with tab_raw:
                         st.markdown(f"> {item['text_extract']}", unsafe_allow_html=True)
                         st.caption(f"List Date: {item['list_date']}")
                     with r_c3:
-                        st.link_button("🔗 Verify on official source", item["verify_url"])
+                        st.link_button("Verify on official source", item["verify_url"])
                         if not item["has_record_link"]:
                             st.code(item["primary_name"], language="")
-                    with st.expander("📋 Show full record", expanded=False):
+                    with st.expander("Show full record", expanded=False):
                         rec = get_record(item["source"], item["record_id"])
                         if rec:
                             raw_hit = {
@@ -1811,7 +1852,7 @@ with tab_manual:
     if clean_subj:
         recent_checks = get_manual_checks_for_entity(clean_subj, limit=5)
         if recent_checks:
-            with st.expander(f"🕒 Recent manual checks for '{clean_subj}' ({len(recent_checks)} recorded)", expanded=False):
+            with st.expander(f"Recent manual checks for '{clean_subj}' ({len(recent_checks)} recorded)", expanded=False):
                 for rc in recent_checks:
                     st.markdown(f"• **{rc['source']}** — Result: `{rc['result']}` | User: `{rc.get('user', '—')}` | Date: `{rc['timestamp'][:19]}` | Note: *{rc['comment']}*")
 
@@ -1843,11 +1884,11 @@ with tab_manual:
         v_url = cfg.get("verify_url") or cfg.get("landing_page") or "https://sanctionssearch.ofac.treas.gov/"
         p_date = cfg.get("publication_date", "current")
 
-        with st.expander(f"🏛️ {pub['name']} — {pub['authority']}", expanded=False):
+        with st.expander(f"{pub['name']} — {pub['authority']}", expanded=False):
             st.markdown(f"**Authority:** {pub['authority']}")
             st.markdown(f"**Instructions:** {pub['inst']}")
             st.caption(f"Our dataset version: {p_date} (official site is real-time)")
-            st.link_button("🌐 Open official search portal", v_url)
+            st.link_button("Open official search portal", v_url)
 
             card_c1, card_c2 = st.columns([1, 2])
             with card_c1:
@@ -1865,7 +1906,7 @@ with tab_manual:
                     height=80,
                 )
 
-            if st.button(f"💾 Save {pub['name']} Check", key=f"save_btn_{sid}"):
+            if st.button(f"Save {pub['name']} Check", key=f"save_btn_{sid}"):
                 if not clean_subj:
                     st.error("Please enter Subject Name at the top before saving.")
                 else:
@@ -1898,7 +1939,7 @@ with tab_manual:
             }
 
     st.markdown("---")
-    if st.button("💾 Save All Completed Checks", type="primary"):
+    if st.button("Save All Completed Checks", type="primary"):
         if not clean_subj:
             st.error("Please provide the Subject Name at the top before saving manual check results.")
         else:
@@ -1922,18 +1963,27 @@ with tab_manual:
             # If screened results exist for the same name, regenerate reports with manual check included
             if st.session_state.last_results and st.session_state.last_results.get("primary_query") == clean_subj:
                 res = st.session_state.last_results
-                pdf_p, excel_p = generate_reports(
-                    search_type=res["search_type"],
-                    inputs={"name": clean_subj},
-                    overall_banner=res["banner_text"],
-                    source_statuses=res["source_statuses"],
-                    sanctions_hits=res["sanctions_hits"],
-                    aviation_hits=res["aviation_hits"],
-                    country_risk_hits=res["country_risk_hits"],
-                    manual_checks=st.session_state.manual_checks_saved[clean_subj],
-                )
-                res["pdf_path"] = str(pdf_p)
-                res["excel_path"] = str(excel_p)
+                try:
+                    pdf_p, excel_p = generate_reports(
+                        search_type=res["search_type"],
+                        inputs={"name": clean_subj},
+                        overall_banner=res["banner_text"],
+                        source_statuses=res["source_statuses"],
+                        sanctions_hits=res["sanctions_hits"],
+                        aviation_hits=res["aviation_hits"],
+                        country_risk_hits=res["country_risk_hits"],
+                        manual_checks=st.session_state.manual_checks_saved[clean_subj],
+                    )
+                    res["pdf_path"] = str(pdf_p)
+                    res["excel_path"] = str(excel_p)
+                except ReportGenerationError as rge:
+                    res["pdf_path"] = None
+                    res["excel_path"] = str(rge.excel_path)
+                    res["pdf_error"] = {
+                        "message": rge.message,
+                        "traceback": rge.details,
+                        "inputs": {"name": clean_subj},
+                    }
                 st.success(f"Saved {saved_count} manual check findings to SQLite audit log and updated session report!")
             else:
                 st.success(f"Saved {saved_count} manual check findings to SQLite audit log (`mode = manual`).")

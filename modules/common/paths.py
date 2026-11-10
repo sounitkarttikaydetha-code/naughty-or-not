@@ -65,22 +65,55 @@ def get_lists_dir() -> Path:
 
 def get_logs_dir() -> Path:
     """Directory holding append-only audit database and logs."""
+    override = os.environ.get("NAUGHTY_LOGS_DIR")
+    if override:
+        p = Path(override)
+        try:
+            p.mkdir(parents=True, exist_ok=True)
+        except OSError:
+            pass
+        return p
     p = get_app_data_dir() / "logs"
-    p.mkdir(parents=True, exist_ok=True)
+    try:
+        p.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        pass
     return p
 
 
 def get_reports_dir() -> Path:
     """Directory holding generated PDF and Excel reports."""
+    override = os.environ.get("NAUGHTY_REPORTS_DIR")
+    if override:
+        p = Path(override)
+        try:
+            p.mkdir(parents=True, exist_ok=True)
+        except OSError:
+            pass
+        return p
     p = get_app_data_dir() / "reports"
-    p.mkdir(parents=True, exist_ok=True)
+    try:
+        p.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        pass
     return p
 
 
 def get_cache_dir() -> Path:
     """Directory holding binary index caches."""
+    override = os.environ.get("NAUGHTY_CACHE_DIR")
+    if override:
+        p = Path(override)
+        try:
+            p.mkdir(parents=True, exist_ok=True)
+        except OSError:
+            pass
+        return p
     p = get_app_data_dir() / "cache"
-    p.mkdir(parents=True, exist_ok=True)
+    try:
+        p.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        pass
     return p
 
 

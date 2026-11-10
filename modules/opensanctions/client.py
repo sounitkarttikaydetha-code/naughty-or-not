@@ -50,7 +50,20 @@ USAGE_LOG_PATH = _get_usage_log_path()
 
 
 def get_api_key() -> Optional[str]:
-    """Retrieve OPENSANCTIONS_API_KEY from session key manager, environment or .env file."""
+    """
+    Retrieve OPENSANCTIONS_API_KEY.
+    In server mode (DEPLOYMENT_MODE=server):
+    - OpenSanctions is OFF unless explicitly enabled via ENABLE_OPENSANCTIONS=true
+    - Key comes strictly from OPENSANCTIONS_API_KEY environment variable (no credential manager/no .env)
+    """
+    mode = os.environ.get("DEPLOYMENT_MODE", "desktop").lower()
+    if mode == "server":
+        enabled = os.environ.get("ENABLE_OPENSANCTIONS", "false").lower() in ("true", "1", "yes")
+        if not enabled:
+            return None
+        key = os.getenv("OPENSANCTIONS_API_KEY")
+        return key.strip() if key and key.strip() else None
+
     try:
         from modules.opensanctions.key_manager import get_session_key
         sk = get_session_key()

@@ -54,3 +54,40 @@ Once completed, the main screening interface appears immediately.
 ## 4. Deployment Modes: Installer vs. Portable Mode
 - **Production Compliance Screening (Installer):** For regulatory compliance and audit readiness, deploy using the per-user Windows Installer (`NaughtyOrNot_Setup_v1.0.4.exe`). It installs to `%LOCALAPPDATA%\Programs\NaughtyOrNot` and retains audit logs in `%LOCALAPPDATA%\NaughtyOrNot\logs\screening.db` to satisfy long-term compliance record retention mandates.
 - **Personal Evaluation (Portable Mode):** The zero-install portable `.zip` (`NaughtyOrNot_v1.0.4_Portable.zip`) is provided strictly for personal evaluation, temporary testing, and offline trials. It can be unpacked into any user folder without installation. Placing a `.portable` marker file inside the application directory directs logs and cache to a local `data/` folder instead of `%LOCALAPPDATA%`.
+
+
+---
+
+## 5. Comprehensive Record Exposure & 13 Standard Sections (v1.2.0)
+
+When an entity matches a regulatory list, Sanction checK presents complete source record details organized across 13 standard sections:
+1. **Header / Identity:** Source authority, primary name, entity type, list publication date, status badge.
+2. **Aliases & Alternative Names:** Direct and alternative spellings, transliterations, weak aliases.
+3. **Identifiers:** Passports, National IDs, Tax Registration numbers, SOLAS IMO numbers.
+4. **Addresses & Locations:** Registered and physical street addresses, cities, countries.
+5. **Dates & Places of Birth / Incorporation:** DOBs, POBs, entity incorporation details.
+6. **Nationalities & Citizenships:** Current and prior citizenships, jurisdictions of incorporation.
+7. **Sanctions Programs & Designations:** Program tags (e.g. `RUSSIA-EO14024`, `UK-SAMLA-2018`).
+8. **Legal Basis & Authority References:** Statutory instruments, gazette citations, council regulations.
+9. **Positions, Titles & Affiliations:** Board roles, military ranks, public offices.
+10. **Vessel & Aircraft Details:** IMO number, MMSI, call sign, gross tonnage, flag, manufacturer serial number (MSN).
+11. **Remarks, Reasons & Regulatory Statements:** Full narrative explanation published by regulator.
+12. **Other fields (as published):** Dynamic catch-all for any additional raw publisher attributes.
+13. **Verification & Audit:** Official regulator verification URL, record cryptographic hash.
+
+### Appendices in Generated Reports
+- **PDF Report Appendix F:** Detailed multi-column appendix ("Full records for matches above threshold") containing all populated fields across the 13 standard sections.
+- **Excel Report "Full records" Sheet:** A dedicated workbook sheet providing a structured column view of all match details for enterprise data ingestion.
+
+---
+
+## 6. Accessible Functional Status Markers
+
+Sanction checK employs an unambiguous status marker taxonomy meeting WCAG 2.1 Level AA contrast guidelines (minimum 4.68:1 contrast ratio). Symbols are strictly paired with explicit text words:
+- `🔴 LIKELY` (Score >= 0.80): High match requiring formal escalation.
+- `🟠 POSSIBLE` (Score 0.70 — 0.79): Moderate match requiring analyst review.
+- `ℹ️ INFO` (Score 0.50 — 0.69): Sub-threshold candidate shown for complete transparency.
+- `✅ CLEAR`: No matching entries identified on screened registers.
+- `⚪ NOT CHECKED`: Source list unavailable or offline during screening run.
+- `✈️ SAFETY`: Aviation safety restriction identified (EU ASL, FAA IASA, BIS Aircraft).
+- `📦 EXPORT CONTROL`: Export control restriction identified (US CSL, BIS TDO).

@@ -235,7 +235,7 @@ def fetch_publisher_live(source_id: str, spec: Dict[str, Any]) -> Dict[str, Any]
                 res["file_read"] = f"HM Treasury Advisory Notice (updated {pub_up})"
 
         elif source_id == "bis_tdo":
-            url = "https://www.bis.doc.gov/index.php/enforcement/oee/export-violations"
+            url = "https://www.bis.gov/enforcement/export-violations"
             res["url_tried"] = url
             req = urllib.request.Request(url, headers=req_headers)
             with urllib.request.urlopen(req, timeout=10) as resp:
@@ -294,11 +294,11 @@ def run_live_audit() -> Tuple[List[Dict[str, Any]], List[str]]:
     anomalies = []
 
     LOCAL_COPY_DATES = {
-        "us_ofac": "2026-10-21",
-        "us_csl": "2026-10-27",
-        "uk_csl": "2026-10-27",
+        "us_ofac": "2026-11-09",
+        "us_csl": "2026-11-10",
+        "uk_csl": "2026-11-03",
         "eu_csl": "2026-10-23",
-        "un_csl": "2026-10-27",
+        "un_csl": "2026-11-10",
         "in_mha_first_schedule": "2026-10-21",
         "in_mha_fourth_schedule": "2026-10-27",
         "in_mha_unlawful_assoc": "2026-10-27",
@@ -335,6 +335,13 @@ def run_live_audit() -> Tuple[List[Dict[str, Any]], List[str]]:
         elif pub_date == "Unverified":
             status_disp = "FAIL: Publisher date unverified"
             anomalies.append(f"{s_id}: Publisher date could not be verified")
+        elif s_id == "eu_high_risk_third_countries":
+            status_disp = "Reference only — no data loaded"
+        elif s_id == "fatf_jurisdictions":
+            if now_utc > datetime(2026, 10, 30, 23, 59, 59, tzinfo=timezone.utc):
+                status_disp = "Update due (Oct 2026 plenary concluded)"
+            else:
+                status_disp = "OK (via HM Treasury notice)"
         elif pub_date > app_copy_date:
             st, msg = sm.refresh_source(s_id)
             if st in [STATE_OK, STATE_ADDRESS_CHANGED]:
@@ -347,13 +354,8 @@ def run_live_audit() -> Tuple[List[Dict[str, Any]], List[str]]:
                 anomalies.append(f"{s_id}: Refresh failed: {msg}")
         elif pub_date == app_copy_date or (s_id in ["eu_csl", "bis_tdo"] and pub_date <= app_copy_date):
             status_disp = "OK"
-        elif s_id == "fatf_jurisdictions":
-            if now_utc > datetime(2026, 10, 30, 23, 59, 59, tzinfo=timezone.utc):
-                status_disp = "Update due (Oct 2026 plenary concluded)"
-            else:
-                status_disp = "OK (via HM Treasury notice)"
         else:
-            status_disp = "OK"
+            status_disp = "OK" 
 
         current_state.update({
             "publication_date": app_copy_date,
@@ -408,11 +410,18 @@ def run_live_audit() -> Tuple[List[Dict[str, Any]], List[str]]:
         table_rows.append(row)
 
     save_sources_state(sm.state)
+    if any(r["updated_in_run"] == "Yes" for r in table_rows):
+        try:
+            from modules.raw_search.indexer import build_full_raw_index
+            build_full_raw_index()
+        except Exception:
+            pass
     return table_rows, anomalies
 
 
 def format_markdown_table(rows: List[Dict[str, Any]]) -> str:
-    downloaded_rows = [r for r in rows if r["source_id"] != "os_bulk"]
+    downloaded_rows = [r for r in rows if r["source_id"] not in ["os_bulk", "eu_high_risk_third_countries"]]
+    advisory_rows = [r for r in rows if r["source_id"] == "eu_high_risk_third_countries"]
     api_rows = [r for r in rows if r["source_id"] == "os_bulk"]
 
     lines = [
@@ -424,8 +433,15 @@ def format_markdown_table(rows: List[Dict[str, Any]]) -> str:
 
     for r in downloaded_rows:
         st = r["status"]
-        if "OK" in st:
+        if "OK" in st or "Update due" in st:
             current_count += 1
+        lines.append(
+            f"| **{r['source_name']}** | {r['publisher_date']} | {r['app_copy_date']} | "
+            f"{r['data_age']} | {r['last_checked']} | `{r['discovered_link']}` | "
+            f"{r['http_status']} | `{r['file_read']}` | {r['index_built_hash']} | **{r['hash_match']}** | **{r['status']}** |"
+        )
+
+    for r in advisory_rows:
         lines.append(
             f"| **{r['source_name']}** | {r['publisher_date']} | {r['app_copy_date']} | "
             f"{r['data_age']} | {r['last_checked']} | `{r['discovered_link']}` | "

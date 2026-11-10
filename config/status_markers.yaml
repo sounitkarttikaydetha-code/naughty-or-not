@@ -1,0 +1,89 @@
+# Status Markers Configuration (Part C2)
+# Defines functional status indicators paired with explicit text.
+# Meaning must never depend on color or emoji rendering alone.
+
+markers:
+  LIKELY:
+    symbol: "🔴"
+    label: "LIKELY"
+    full_text: "🔴 LIKELY"
+    description: "High confidence potential match requiring mandatory verification and escalation."
+    hex_color: "#B71C1C"
+    bg_color: "#FFEBEE"
+    pdf_tag: "[RED] LIKELY"
+    excel_fill: "FFCDD2"
+
+  POSSIBLE:
+    symbol: "🟠"
+    label: "POSSIBLE"
+    full_text: "🟠 POSSIBLE"
+    description: "Possible match or sound-alike similarity requiring manual compliance review."
+    hex_color: "#BF360C"
+    bg_color: "#FFF3E0"
+    pdf_tag: "[AMBER] POSSIBLE"
+    excel_fill: "FFE0B2"
+
+  INFO:
+    symbol: "ℹ️"
+    label: "INFO"
+    full_text: "ℹ️ INFO"
+    description: "Informational result, advisory notice, or low-scoring weak similarity."
+    hex_color: "#0D47A1"
+    bg_color: "#E3F2FD"
+    pdf_tag: "[INFO] INFO"
+    excel_fill: "BBDEFB"
+
+  CLEAR:
+    symbol: "✅"
+    label: "CLEAR"
+    full_text: "✅ CLEAR"
+    description: "No matching sanctions entries detected in screened sources."
+    hex_color: "#1B5E20"
+    bg_color: "#E8F5E9"
+    pdf_tag: "[CLEAR] CLEAR"
+    excel_fill: "C8E6C9"
+
+  NOT_CHECKED:
+    symbol: "⚪"
+    label: "NOT CHECKED"
+    full_text: "⚪ NOT CHECKED"
+    description: "Source was not queried for this search type."
+    hex_color: "#546E7A"
+    bg_color: "#ECEFF1"
+    pdf_tag: "[NOT CHECKED] NOT CHECKED"
+    excel_fill: "CFD8DC"
+
+  SAFETY:
+    symbol: "✈️"
+    label: "SAFETY"
+    full_text: "✈️ SAFETY"
+    description: "Aviation safety finding or carrier operating ban."
+    hex_color: "#B71C1C"
+    bg_color: "#FFEBEE"
+    pdf_tag: "[SAFETY] SAFETY"
+    excel_fill: "FFCDD2"
+
+  EXPORT_CONTROL:
+    symbol: "📦"
+    label: "EXPORT CONTROL"
+    full_text: "📦 EXPORT CONTROL"
+    description: "Export control listing or denied persons restriction."
+    hex_color: "#BF360C"
+    bg_color: "#FFF3E0"
+    pdf_tag: "[EXPORT CONTROL] EXPORT CONTROL"
+    excel_fill: "FFE0B2"
+
+  SEARCH:
+    symbol: "🔍"
+    label: "Search"
+    full_text: "🔍 Search"
+    description: "Search control action."
+    hex_color: "#0F52BA"
+    bg_color: "#F1F5F9"
+    pdf_tag: "[SEARCH] Search"
+    excel_fill: "FFFFFF"
+
+# Signature locations under Hard Rule 9 (exempt from emoji removal)
+signature:
+  symbols: ["📸", "🕵️"]
+  sha256: "5055d04ad71e3e50a14ae794a87a23b6aef6b93aef07951a47ab5a9cb27f60a2"

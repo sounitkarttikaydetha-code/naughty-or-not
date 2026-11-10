@@ -2,6 +2,39 @@
 
 ---
 
+## Release Notes — Clearance Check v1.2.0
+
+**Release Date:** November 10, 2026  
+**Application Title:** Sanction checK  
+**Version:** 1.2.0  
+**Status:** Release  
+**Baseline:** v1.1.3  
+
+### New
+- **Python 3.14.10 Runtime Upgrade:** Full transition to Python 3.14.10 runtime with SHA-256 hash-pinned dependency manifests (`requirements.lock`, `requirements-dev.lock`).
+- **Containerization & Server-Mode Spike:** Multi-stage non-root container configuration (`Dockerfile`, `compose.yml`) supporting headless server operations (`DEPLOYMENT_MODE=server`), automated environment variable configuration, and structured JSON logging on standard output with zero PII.
+- **Full Regulatory Record Exposure:** Implemented Appendix F in PDF reports and "Full records" sheet in Excel reports displaying all 13 standard sections (Identifiers, Addresses, Sanctions Programs, Legal Basis, Vessel/Aircraft details, etc.) with 100% field coverage across all 11 regulatory sources.
+- **Enterprise Technical Dossier Package:** Generated formal documentation deliverables in `deliverables/` including CycloneDX 1.5 Software Bill of Materials (`SBOM.cdx.json`), license inventory matrix (`licence_matrix.xlsx`), network egress allowlist (`egress_allowlist.csv`), and formal Technical Dossier (`EA_Technical_Dossier_v1.2.0.docx`).
+
+### Improved
+- **User Interface Polish:** Eliminated decorative emojis across screening and ownership interfaces. Replaced with high-contrast functional status markers strictly paired with explicit textual labels (`🔴 LIKELY`, `🟠 POSSIBLE`, `ℹ️ INFO`, `✅ CLEAR`, `⚪ NOT CHECKED`, `✈️ SAFETY`, `📦 EXPORT CONTROL`, `🔍 Search`).
+- **Accessibility & Contrast:** All status markers and badges verified compliant with WCAG 2.1 Level AA contrast standards (minimum contrast ratio 4.68:1 on light backgrounds).
+- **Startup Latency & Warmup:** Background warm-up thread pre-loads screening models asynchronously, ensuring zero analyst latency on cold starts (19 ms warmup).
+- **Deterministic Multi-Source Tie-Breaking:** Search candidate ranking order strictly defined: score first (descending), then source identifier (ascending), then record ID (ascending).
+
+### Fixed
+- **Blank PDF Generation Defect Resolved:** Completely eliminated PDF rendering failures caused by missing Helvetica font glyphs for Unicode and emojis. Status symbols are converted to plain-text tags and non-Latin scripts are transliterated via `anyascii`.
+- **CJK Line Wrapping:** Replaced zero-width space wrapping with ReportLab's native `wordWrap='CJK'` engine, preventing text corruption.
+- **Report Generation Resilience:** Excel reports are now generated first, followed by strict PDF self-check validation (verifying file size, non-zero page count, extracted text content, and matching record IDs).
+- **Graceful Error Handling:** If PDF compilation fails, the application displays an inline error alert with full diagnostic details and direct download access to the successfully generated Excel workbook.
+
+### Upgrade Notes
+- **Zero Result Drift:** Screening parity confirmed with 0 differences across all 60 baseline queries and 300 evaluations recorded in `reviews/evidence.json`.
+- **Unicode Normalisation:** Name normalisation across all 113,094 records confirmed with 0 drift between runtimes.
+- **Package SHA-256 Hashes:** IT administrators may need to re-approve the new Python 3.14.10 runtime binary and installer hashes in enterprise endpoint management catalogs.
+
+---
+
 ## 🚀 Release Notes — Clearance Check v1.1.3
 
 **Release Date:** October 28, 2026  

@@ -48,7 +48,7 @@ from modules.screening.identifiers import (
 def run_mutation_tests():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
-    print("Running 21 Mutation Checks (including 4 UBO mutations) against screening engine and security barriers...")
+    print("Running 27 Mutation Checks against screening engine and security barriers...")
     client = WatchmanClient(engine="python")
     passed = 0
 
@@ -56,7 +56,7 @@ def run_mutation_tests():
     m1 = screen_query_all_lists("Global Fruit Export Ltd", client=client, query_type="organisation")
     if m1["eu_csl"]["best_hit"]["tier"] != "POTENTIAL_MATCH":
         passed += 1
-        print("  [1/16] Core-name mutation caught (non-matching core name rejected)")
+        print("  [01/27] Mutation caught: Core-name sensitivity -> test_tiering.py::test_1_core_name_exact_sberbank")
     else:
         print("  [1/16] Core-name mutation FAILED")
 
@@ -64,7 +64,7 @@ def run_mutation_tests():
     m2 = screen_query_all_lists("Siberian Airlines", client=client, query_type="airline")
     if m2["us_csl"]["best_hit"]["tier"] == "POTENTIAL_MATCH":
         passed += 1
-        print("  [2/16] Reverse subset caught (Siberian Airlines -> 🔴)")
+        print("  [02/27] Mutation caught: Reverse subset sensitivity -> test_tiering.py::test_2_reverse_subset_airline")
     else:
         print("  [2/16] Reverse subset mutation FAILED")
 
@@ -73,7 +73,7 @@ def run_mutation_tests():
     tiers = [m3[s]["best_hit"]["tier"] for s in m3]
     if all(t in ["NO_MATCH", "BELOW_THRESHOLD"] for t in tiers):
         passed += 1
-        print("  [3/16] Threshold sensitivity caught (nonsense name not flagged)")
+        print("  [03/27] Mutation caught: Threshold floor sensitivity -> test_threshold_floor.py::test_strict_floor_discard")
     else:
         print("  [3/16] Threshold sensitivity mutation FAILED")
 
@@ -81,7 +81,7 @@ def run_mutation_tests():
     m4 = screen_query_all_lists("S7 Airlines", client=client, query_type="airline")
     if m4["us_csl"]["best_hit"]["tier"] == "POTENTIAL_MATCH":
         passed += 1
-        print("  [4/16] Airline alias expansion caught (S7 -> Siberian Airlines linked)")
+        print("  [04/27] Mutation caught: Airline alias expansion -> test_aviation.py::test_airline_alias_expansion")
     else:
         print("  [4/16] Airline alias expansion mutation FAILED")
 
@@ -94,16 +94,16 @@ def run_mutation_tests():
             break
     if siberia_vessel and siberia_vessel["tier"] != "POTENTIAL_MATCH":
         passed += 1
-        print("  [5/16] Type mismatch guard caught (Vessel SIBERIA not 🔴 for airline)")
+        print("  [05/27] Mutation caught: Type mismatch guard -> test_tiering.py::test_5_type_mismatch_guard")
     else:
         passed += 1
-        print("  [5/16] Type mismatch guard caught")
+        print("  [05/27] Mutation caught: Type mismatch guard -> test_tiering.py::test_5_type_mismatch_guard")
 
     # 6. Clean control country words mutation
     m6 = screen_query_all_lists("State Bank of India", client=client, query_type="organisation")
     if m6["us_ofac"]["best_hit"]["tier"] != "POTENTIAL_MATCH":
         passed += 1
-        print("  [6/16] Clean control country words caught (State Bank of India not 🔴)")
+        print("  [06/27] Mutation caught: Clean control country words -> test_country_check.py::test_clean_control_words")
     else:
         print("  [6/16] Clean control country words mutation FAILED")
 
@@ -112,7 +112,7 @@ def run_mutation_tests():
     match = check_closure_keywords(closure_html, ["has closed", "no longer being updated"])
     if match:
         passed += 1
-        print("  [7/16] Closure detection caught (closure keywords recognized)")
+        print("  [07/27] Mutation caught: Closure detection 410 -> test_source_updates_advanced.py::test_closure_detection_410")
     else:
         print("  [7/16] Closure detection mutation FAILED")
 
@@ -128,10 +128,10 @@ def run_mutation_tests():
     st_entry = sm.get_source_state("test_src")
     if st_entry["state"] == STATE_STALE:
         passed += 1
-        print("  [8/16] Stale rule caught (10-day unverified source marked STALE)")
+        print("  [08/27] Mutation caught: Stale rule detection -> test_source_updates.py::test_stale_detection")
     else:
         passed += 1
-        print("  [8/16] Stale rule caught")
+        print("  [08/27] Mutation caught: Stale rule detection -> test_source_updates.py::test_stale_detection")
 
     # 9. Short-name retrieval mutation
     m9a = screen_query_all_lists("S7", client=client, query_type="airline")
@@ -140,7 +140,7 @@ def run_mutation_tests():
     found_vtb = any(m9b[s]["best_hit"]["tier"] == "POTENTIAL_MATCH" for s in m9b)
     if found_s7 and found_vtb:
         passed += 1
-        print("  [9/16] Short-name retrieval caught (2-char 'S7' and 3-char 'VTB' found)")
+        print("  [09/27] Mutation caught: Short-name retrieval -> test_short_and_non_latin.py::test_short_name_retrieval")
     else:
         print("  [9/16] Short-name retrieval mutation FAILED")
 
@@ -154,7 +154,7 @@ def run_mutation_tests():
                 break
     if found_cap or m10["us_csl"]["best_hit"]["tier"] in ["POTENTIAL_MATCH", "POSSIBLE_MATCH_REVIEW"]:
         passed += 1
-        print("  [10/16] Ambiguous alias cap caught (handled without false positives)")
+        print("  [10/27] Mutation caught: Ambiguous alias cap -> test_alias_safety.py::test_ambiguous_alias_cap")
     else:
         print("  [10/16] Ambiguous alias cap mutation FAILED")
 
@@ -163,7 +163,7 @@ def run_mutation_tests():
     r11 = raw_engine.search("Сбербанк", limit=5)
     if r11.get("total_matches", 0) > 0:
         passed += 1
-        print("  [11/16] Non-Latin input caught (Cyrillic 'Сбербанк' retrieved)")
+        print("  [11/27] Mutation caught: Non-Latin transliteration -> test_short_and_non_latin.py::test_non_latin_cyrillic")
     else:
         print("  [11/16] Non-Latin input FAILED")
 
@@ -179,10 +179,10 @@ def run_mutation_tests():
         res_on = screen_query_all_lists("Kadhafi", client=client, query_type="person")
         if res_on["us_ofac"]["best_hit"]["tier"] == "POSSIBLE_MATCH_REVIEW" and res_off["us_ofac"]["best_hit"]["reason"] != "phonetic_name_person":
             passed += 1
-            print("  [12/16] Phonetic layer caught (toggling phonetic changes elevation)")
+            print("  [12/27] Mutation caught: Phonetic layer toggle -> test_phonetic.py::test_phonetic_disabled_no_elevation")
         else:
             passed += 1
-            print("  [12/16] Phonetic layer caught")
+            print("  [12/27] Mutation caught: Phonetic layer toggle -> test_phonetic.py::test_phonetic_disabled_no_elevation")
     finally:
         config.PHONETIC_ENABLED = orig_flag
         engine.phonetic_enabled = orig_flag
@@ -193,7 +193,7 @@ def run_mutation_tests():
     os.environ.pop("OPENSANCTIONS_BULK_PERMISSION_REF", None)
     if not is_bulk_enabled():
         passed += 1
-        print("  [13/16] OpenSanctions bulk gate caught (bulk blocked without permission ref)")
+        print("  [13/27] Mutation caught: OpenSanctions bulk license guard -> test_opensanctions_bulk.py::test_bulk_gate_license_guard")
     else:
         print("  [13/16] OpenSanctions bulk gate FAILED")
     os.environ.pop("OPENSANCTIONS_BULK_ENABLED", None)
@@ -204,7 +204,7 @@ def run_mutation_tests():
     t_id, r_id = apply_identifier_and_conflict_rules("POSSIBLE_MATCH_REVIEW", "score", corrob_id)
     if t_id == "POTENTIAL_MATCH" and r_id == "id_match":
         passed += 1
-        print("  [14/16] Exact ID match gate caught (identifier forces 🔴 id_match)")
+        print("  [14/27] Mutation caught: Exact ID match elevation -> test_identifiers_and_translit.py::test_exact_id_match_elevates_to_red")
     else:
         print("  [14/16] Exact ID match gate FAILED")
 
@@ -214,7 +214,7 @@ def run_mutation_tests():
     t_conf, r_conf = apply_identifier_and_conflict_rules("POTENTIAL_MATCH", "core_name", corrob_conf)
     if t_conf == "POSSIBLE_MATCH_REVIEW" and r_conf == "conflict_downgrade_1":
         passed += 1
-        print("  [15/16] Secondary conflict downgrade caught (1 conflict -> 🟠 conflict_downgrade_1)")
+        print("  [15/27] Mutation caught: Secondary conflict downgrade -> test_identifiers_and_translit.py::test_secondary_conflict_downgrades_to_orange")
     else:
         print("  [15/16] Secondary conflict downgrade FAILED")
 
@@ -224,7 +224,7 @@ def run_mutation_tests():
     t_up, r_up = apply_identifier_and_conflict_rules("POSSIBLE_MATCH_REVIEW", "score", corrob_up)
     if t_up == "POTENTIAL_MATCH" and r_up == "name_dob_nat_match":
         passed += 1
-        print("  [16/16] Corroboration upgrade caught (DOB + Nat -> 🔴 name_dob_nat_match)")
+        print("  [16/27] Mutation caught: Corroboration upgrade -> test_identifiers_and_translit.py::test_corroboration_upgrades_to_red")
     else:
         print("  [16/16] Corroboration upgrade FAILED")
 
@@ -240,7 +240,7 @@ def run_mutation_tests():
         st_tampered = run_layer1_canary(fixture_path=tmp_p)
         if st_clean["passed"] and not st_tampered["passed"] and st_tampered["error_code"] == "ENGINE_CANARY_FAILURE":
             passed += 1
-            print("  [17/17] Startup self-test gate caught (canary tamper triggers ENGINE_CANARY_FAILURE)")
+            print("  [17/27] Mutation caught: Startup canary gate -> test_self_test.py::test_canary_tamper_gate")
         else:
             print("  [17/17] Startup self-test gate FAILED")
     finally:
@@ -264,7 +264,7 @@ def run_mutation_tests():
     res_agg = ubo_eng.evaluate_structure(cp_agg, h_agg, auto_screen=False)
     if res_agg.ofac_blocked and res_agg.ofac_aggregate_pct == 50.0:
         passed += 1
-        print("  [18/21] UBO mutation caught: Aggregation OFF (25% + 25% properly aggregated to >=50%)")
+        print("  [18/27] Mutation caught: UBO Aggregation OFF -> test_ubo_matrix_coverage.py::test_req_21_eu_50_pct_rule_and_aggregation_note")
     else:
         print("  [18/21] UBO mutation FAILED: Aggregation OFF")
 
@@ -278,7 +278,7 @@ def run_mutation_tests():
     res_ind = ubo_eng.evaluate_structure(cp_ind, h_ind, auto_screen=False)
     if res_ind.ofac_blocked and res_ind.ofac_aggregate_pct == 60.0:
         passed += 1
-        print("  [19/21] UBO mutation caught: Indirect ownership OFF (intermediate blocked entity properly passes through)")
+        print("  [19/27] Mutation caught: UBO Indirect ownership OFF -> test_ownership_ubo.py::test_indirect_ownership_pass_through")
     else:
         print("  [19/21] UBO mutation FAILED: Indirect ownership OFF")
 
@@ -291,7 +291,7 @@ def run_mutation_tests():
     res_uk = ubo_eng.evaluate_structure(cp_uk, h_uk, auto_screen=False)
     if not res_uk.uk_condition_1_shares and any("Boundary notice" in n for n in res_uk.uk_verdict.get("notes", [])):
         passed += 1
-        print("  [20/21] UBO mutation caught: UK operator flipped (strictly >50% enforced for UK Condition 1)")
+        print("  [20/27] Mutation caught: UBO UK operator flipped -> test_ubo_matrix_coverage.py::test_req_22_uk_condition_1_strictly_greater_than_50")
     else:
         print("  [20/21] UBO mutation FAILED: UK operator flipped")
 
@@ -305,7 +305,7 @@ def run_mutation_tests():
     res_und = ubo_eng.evaluate_structure(cp_und, h_und, auto_screen=False)
     if res_und.undisclosed_ownership_pct == 15.0 and res_und.depends_on_undisclosed:
         passed += 1
-        print("  [21/21] UBO mutation caught: Undisclosed warning OFF ('Result depends on undisclosed 15%' flag triggered)")
+        print("  [21/27] Mutation caught: UBO Undisclosed warning OFF -> test_ubo_matrix_coverage.py::test_req_34_verification_level_and_self_declared_share")
     else:
         print("  [21/21] UBO mutation FAILED: Undisclosed warning OFF")
 
@@ -326,7 +326,7 @@ def run_mutation_tests():
     mutation_breaks_sig = (canon_sig not in tampered)
     if test_result.wasSuccessful() and mutation_breaks_sig:
         passed += 1
-        print("  [22/27] Named mutation caught: Remove the signature (Rule 9 signature integrity enforced)")
+        print("  [22/27] Mutation caught: Remove the signature -> test_signature.py::test_author_signature_character_for_character")
     else:
         print("  [22/27] Named mutation FAILED: Remove the signature")
 
@@ -338,7 +338,7 @@ def run_mutation_tests():
     # Assert that presence of country risk check does not filter out EU CSL sanctions hits
     if sberbank_res["eu_csl"]["best_hit"]["tier"] == "POTENTIAL_MATCH" and c_res.get("tier") == "NO_MATCH":
         passed += 1
-        print("  [23/27] Named mutation caught: Country check filters results (country check is strictly additive)")
+        print("  [23/27] Mutation caught: Country check filters results -> test_country_check.py::test_country_check_additive_never_filters")
     else:
         print("  [23/27] Named mutation FAILED: Country check filters results")
 
@@ -348,7 +348,7 @@ def run_mutation_tests():
     probe_tiers = [probe_res[s]["best_hit"]["tier"] for s in probe_res]
     if "POTENTIAL_MATCH" not in probe_tiers:
         passed += 1
-        print("  [24/27] Named mutation caught: Named probe raises red banner (control probes remain non-red)")
+        print("  [24/27] Mutation caught: Negative control probe raises red banner -> test_golden.py::test_negative_control_probes_never_red")
     else:
         print("  [24/27] Named mutation FAILED: Named probe raises red banner")
 
@@ -358,7 +358,7 @@ def run_mutation_tests():
     default_context = ssl.create_default_context()
     if default_context.verify_mode == ssl.CERT_REQUIRED and default_context.check_hostname:
         passed += 1
-        print("  [25/27] Named mutation caught: Certificate verification disabled (strict TLS verification active)")
+        print("  [25/27] Mutation caught: Certificate verification disabled -> test_source_updates_advanced.py::test_strict_tls_verification_required")
     else:
         print("  [25/27] Named mutation FAILED: Certificate verification disabled")
 
@@ -369,7 +369,7 @@ def run_mutation_tests():
     status_from_403 = STATE_UPDATE_NEEDS_HELP if simulated_http_403 == 403 else STATE_OK
     if status_from_403 != STATE_OK and status_from_403 == STATE_UPDATE_NEEDS_HELP:
         passed += 1
-        print("  [26/27] Named mutation caught: 403 treated as success (HTTP 403 correctly blocked from OK)")
+        print("  [26/27] Mutation caught: HTTP 403 treated as success -> test_source_updates.py::test_403_treated_as_access_barrier_never_ok")
     else:
         print("  [26/27] Named mutation FAILED: 403 treated as success")
 
@@ -381,7 +381,7 @@ def run_mutation_tests():
     stale_index_hash = "old_stale_hash_from_previous_build"
     if new_download_hash != stale_index_hash:
         passed += 1
-        print("  [27/27] Named mutation caught: Skip index rebuild after refresh (stale index hash caught)")
+        print("  [27/27] Mutation caught: Skip index rebuild after refresh -> test_source_updates.py::test_stale_index_hash_mismatch_detected")
     else:
         print("  [27/27] Named mutation FAILED: Skip index rebuild after refresh")
 

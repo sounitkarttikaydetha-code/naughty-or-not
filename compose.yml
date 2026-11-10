@@ -1,0 +1,39 @@
+services:
+  sanction-check:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: sanction-check:1.2.0
+    container_name: sanction-check-spike
+    restart: unless-stopped
+    read_only: true
+    user: "10001:10001"
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - "8501:8501"
+    environment:
+      - DEPLOYMENT_MODE=server
+      - LOG_STRUCTURED_JSON=1
+      - OPENSANCTIONS_API_KEY=${OPENSANCTIONS_API_KEY:-}
+      - ENABLE_OPENSANCTIONS=${ENABLE_OPENSANCTIONS:-false}
+    volumes:
+      - sanction_data:/app/data
+      - sanction_logs:/app/logs
+      - sanction_reports:/app/reports
+      - sanction_cache:/app/cache
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=128m
+      - /home/appuser/.streamlit:rw,noexec,nosuid,size=32m
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8501/_stcore/health').read()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  sanction_data:
+  sanction_logs:
+  sanction_reports:
+  sanction_cache:

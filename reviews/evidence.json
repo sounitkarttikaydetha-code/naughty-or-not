@@ -1,0 +1,229 @@
+{
+  "version": "1.2.0",
+  "release_tag": "v1.2.0",
+  "python_runtime": {
+    "version": "3.14.10",
+    "status": "Active bugfix release (latest Windows binary release)",
+    "eol_date": "October 2030",
+    "eMudhra_ca_distrust_status": "Not affected (clean certificate chains across all 11 sources)",
+    "normalisation_drift_records_count": 0
+  },
+  "baseline_diff": {
+    "total_queries_checked": 60,
+    "total_evaluations": 300,
+    "tier_differences": 0,
+    "record_id_differences": 0,
+    "score_differences": 0,
+    "reason_differences": 0,
+    "phonetic_differences": 0,
+    "status": "ZERO_DIFF"
+  },
+  "author_signature": {
+    "rule": "Hard Rule 9",
+    "sha256": "5055d04ad71e3e50a14ae794a87a23b6aef6b93aef07951a47ab5a9cb27f60a2",
+    "locations_verified": 7,
+    "status": "MATCH"
+  },
+  "security_scans": {
+    "pip_audit_vulnerabilities": 0,
+    "bandit_static_analysis": {
+      "lines_of_code": 14781,
+      "high_severity": 0,
+      "medium_severity": 16,
+      "low_severity": 59
+    },
+    "secret_scan_findings": 0,
+    "container_image_scan": "Not measured (Docker daemon requires Windows Service Administrator elevation)"
+  },
+  "part_b_field_coverage": {
+    "total_fields_checked": 200,
+    "sources_checked": 11,
+    "failing_fields": 0,
+    "coverage_percent": 100.0,
+    "drift_proofing_status": "Verified (unmapped columns auto-route to Section 12)"
+  },
+  "part_a_pdf_verification": {
+    "report_types_tested": 8,
+    "missing_glyphs_count": 0,
+    "blank_pages_count": 0,
+    "self_check_catch_rate": "100%",
+    "fallback_behavior": "Verified (Excel generated first, error banner & traceback presented)"
+  },
+  "part_c_ui_polish": {
+    "status_markers_paired_with_words": "100% paired",
+    "wcag_aa_contrast_ratio_min": 4.68,
+    "decorative_emojis_in_ui": 0
+  },
+  "part_e_benchmarks": {
+    "memory": {
+      "idle_rss_mb": 30.45,
+      "peak_rss_mb": 269.08,
+      "final_rss_mb": 269.08
+    },
+    "startup": {
+      "with_cache_ms": {
+        "min": 0.0,
+        "median": 0.0,
+        "max": 493.87,
+        "runs": [
+          493.87,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "initial_client_load_ms": {
+        "min": 0.0,
+        "median": 0.01,
+        "max": 0.03,
+        "runs": [
+          0.03,
+          0.01,
+          0.01,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    "search_latencies": {
+      "clean_organisation": {
+        "cold_ms": {
+          "min": 523.58,
+          "median": 559.46,
+          "max": 710.24,
+          "runs": [
+            710.24,
+            523.58,
+            538.01,
+            559.46,
+            566.33
+          ]
+        },
+        "warm_ms": {
+          "min": 553.29,
+          "median": 560.21,
+          "max": 568.73,
+          "runs": [
+            553.29,
+            564.62,
+            568.73,
+            559.17,
+            560.21
+          ]
+        }
+      },
+      "airline_alias_expansion": {
+        "cold_ms": {
+          "min": 145.55,
+          "median": 147.56,
+          "max": 208.08,
+          "runs": [
+            208.08,
+            145.55,
+            147.56,
+            148.1,
+            146.7
+          ]
+        },
+        "warm_ms": {
+          "min": 142.47,
+          "median": 145.77,
+          "max": 174.17,
+          "runs": [
+            142.47,
+            145.77,
+            174.17,
+            148.92,
+            145.48
+          ]
+        }
+      },
+      "person_search": {
+        "cold_ms": {
+          "min": 23.43,
+          "median": 23.55,
+          "max": 28.25,
+          "runs": [
+            28.25,
+            23.61,
+            23.44,
+            23.55,
+            23.43
+          ]
+        },
+        "warm_ms": {
+          "min": 23.15,
+          "median": 23.7,
+          "max": 24.29,
+          "runs": [
+            23.15,
+            23.7,
+            24.29,
+            23.85,
+            23.32
+          ]
+        }
+      }
+    },
+    "concurrency": {
+      "concurrency_1": {
+        "concurrency_level": 1,
+        "total_requests": 50,
+        "elapsed_seconds": 4.673,
+        "qps": 10.7,
+        "median_latency_ms": 57.27,
+        "p95_latency_ms": 279.88,
+        "min_latency_ms": 23.8,
+        "max_latency_ms": 351.9,
+        "mem_before_mb": 251.8,
+        "mem_after_mb": 272.2,
+        "peak_mem_mb": 272.2,
+        "cpu_utilization_pct": 100.0
+      },
+      "concurrency_10": {
+        "concurrency_level": 10,
+        "total_requests": 50,
+        "elapsed_seconds": 4.587,
+        "qps": 10.9,
+        "median_latency_ms": 397.41,
+        "p95_latency_ms": 2247.18,
+        "min_latency_ms": 24.52,
+        "max_latency_ms": 3578.97,
+        "mem_before_mb": 272.2,
+        "mem_after_mb": 274.2,
+        "peak_mem_mb": 274.2,
+        "cpu_utilization_pct": 99.5
+      },
+      "concurrency_25": {
+        "concurrency_level": 25,
+        "total_requests": 50,
+        "elapsed_seconds": 4.451,
+        "qps": 11.23,
+        "median_latency_ms": 345.94,
+        "p95_latency_ms": 2317.04,
+        "min_latency_ms": 23.69,
+        "max_latency_ms": 3119.23,
+        "mem_before_mb": 274.2,
+        "mem_after_mb": 274.3,
+        "peak_mem_mb": 274.3,
+        "cpu_utilization_pct": 110.6
+      },
+      "concurrency_50": {
+        "concurrency_level": 50,
+        "total_requests": 100,
+        "elapsed_seconds": 9.002,
+        "qps": 11.11,
+        "median_latency_ms": 451.67,
+        "p95_latency_ms": 3607.01,
+        "min_latency_ms": 23.29,
+        "max_latency_ms": 4955.67,
+        "mem_before_mb": 274.3,
+        "mem_after_mb": 273.7,
+        "peak_mem_mb": 274.3,
+        "cpu_utilization_pct": 100.3
+      }
+    },
+    "container_image_size": "Not measured"
+  }
+}

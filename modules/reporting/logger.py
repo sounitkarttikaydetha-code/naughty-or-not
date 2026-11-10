@@ -48,6 +48,43 @@ def _get_base_data_dir() -> Path:
 BASE_DATA_DIR = _get_base_data_dir()
 LOGS_DIR = BASE_DATA_DIR / "logs"
 DB_PATH = LOGS_DIR / "screening.db"
+
+def emit_structured_stdout_log(
+    event: str,
+    details: Optional[Dict[str, Any]] = None,
+    level: str = "INFO",
+) -> None:
+    """
+    Emit structured JSON log line to stdout for container log forwarding and SIEM services (Part E3).
+    Active when LOG_STRUCTURED_JSON=1 or DEPLOYMENT_MODE=server.
+    Adheres to privacy constraints: zero personal data or query names in log message.
+    """
+    if not (os.environ.get("LOG_STRUCTURED_JSON") == "1" or os.environ.get("DEPLOYMENT_MODE", "").lower() == "server"):
+        return
+
+    try:
+        user = getpass.getuser()
+    except Exception:
+        user = "unknown"
+    mode = os.environ.get("DEPLOYMENT_MODE", "desktop").lower()
+    user_hash = hashlib.sha256(user.encode("utf-8")).hexdigest()[:12]
+
+    payload = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "level": level,
+        "event": event,
+        "mode": mode,
+        "user_id": user_hash,
+    }
+    if details:
+        payload.update(details)
+
+    try:
+        sys.stdout.write(json.dumps(payload, ensure_ascii=False) + "\n")
+        sys.stdout.flush()
+    except Exception:
+        pass
+
 APP_VERSION = "1.1.3"
 
 

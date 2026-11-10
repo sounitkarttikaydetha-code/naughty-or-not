@@ -1,0 +1,116 @@
+{
+  "timestamp": "2026-11-10T09:46:26Z",
+  "python_version": "3.14.10 (tags/v3.14.10:b703b2c, Oct 25 2026, 17:36:52) [MSC v.1944 64 bit (AMD64)]",
+  "memory_mb": {
+    "idle_rss_mb": 30.45,
+    "peak_rss_mb": 269.08,
+    "final_rss_mb": 269.08
+  },
+  "startup_to_ready_index": {
+    "with_cache_ms": {
+      "min": 0.0,
+      "median": 0.0,
+      "max": 493.87,
+      "runs": [
+        493.87,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "initial_client_load_ms": {
+      "min": 0.0,
+      "median": 0.01,
+      "max": 0.03,
+      "runs": [
+        0.03,
+        0.01,
+        0.01,
+        0.0,
+        0.0
+      ]
+    }
+  },
+  "searches": {
+    "clean_organisation": {
+      "cold_ms": {
+        "min": 523.58,
+        "median": 559.46,
+        "max": 710.24,
+        "runs": [
+          710.24,
+          523.58,
+          538.01,
+          559.46,
+          566.33
+        ]
+      },
+      "warm_ms": {
+        "min": 553.29,
+        "median": 560.21,
+        "max": 568.73,
+        "runs": [
+          553.29,
+          564.62,
+          568.73,
+          559.17,
+          560.21
+        ]
+      }
+    },
+    "airline_alias_expansion": {
+      "cold_ms": {
+        "min": 145.55,
+        "median": 147.56,
+        "max": 208.08,
+        "runs": [
+          208.08,
+          145.55,
+          147.56,
+          148.1,
+          146.7
+        ]
+      },
+      "warm_ms": {
+        "min": 142.47,
+        "median": 145.77,
+        "max": 174.17,
+        "runs": [
+          142.47,
+          145.77,
+          174.17,
+          148.92,
+          145.48
+        ]
+      }
+    },
+    "person_search": {
+      "cold_ms": {
+        "min": 23.43,
+        "median": 23.55,
+        "max": 28.25,
+        "runs": [
+          28.25,
+          23.61,
+          23.44,
+          23.55,
+          23.43
+        ]
+      },
+      "warm_ms": {
+        "min": 23.15,
+        "median": 23.7,
+        "max": 24.29,
+        "runs": [
+          23.15,
+          23.7,
+          24.29,
+          23.85,
+          23.32
+        ]
+      }
+    }
+  },
+  "container_image_size": "Not measured (Docker daemon requires Windows Service Administrator elevation)"
+}

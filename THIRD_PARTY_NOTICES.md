@@ -1,4 +1,4 @@
-# Third-Party Notices — Clearance Check v1.1.0
+# Third-Party Notices — Clearance Check v1.2.0
 
 This software incorporates open-source libraries, fonts, and logic derived from third-party open-source projects. All trademarks, service marks, and trade names are the property of their respective owners.
 

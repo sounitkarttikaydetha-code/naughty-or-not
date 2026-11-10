@@ -94,6 +94,7 @@ a = Analysis(
         'webview.platforms.qt',
         'reportlab.fonts.DarkGarden',
         'reportlab.fonts.DarkGardenMK',
+        'watchdog',
     ],
     noarchive=False,
 )

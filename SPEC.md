@@ -1,8 +1,8 @@
-# Clearance Check — Product & Technical Specification (v1.1.1)
+# Clearance Check — Product & Technical Specification (v1.2.0)
 
 **Application Name:** Clearance Check  
 **Main Screen Title:** Sanction checK  
-**Version:** 1.1.1  
+**Version:** 1.2.0  
 **Status:** Pilot — test version  
 **Distribution:** Windows 10/11 x64 Standalone Desktop Application (Zero Admin Rights)  
 
@@ -140,3 +140,29 @@ The application operates as a computational compliance screening aid. It flags p
   - `logs/screening.db`: SQLite database with WAL journaling (append-only audit trails).
   - `reports/`: PDF and Excel compliance exports.
 - **Optional OpenSanctions API:** Disabled by default; activated only by explicit user opt-in with local API key storage.
+
+
+### 2.5 Full Record Exposure & Appendix F (v1.2.0)
+- All entity screening matches above threshold (>= 0.70) expose complete source attributes organized into 13 canonical sections:
+  1. Header / Identity
+  2. Aliases & Alternative Names
+  3. Identifiers
+  4. Addresses & Locations
+  5. Dates & Places of Birth / Incorporation
+  6. Nationalities & Citizenships
+  7. Sanctions Programs & Designations
+  8. Legal Basis & Authority References
+  9. Positions, Titles & Affiliations
+  10. Vessel & Aircraft Details
+  11. Remarks, Reasons & Regulatory Statements
+  12. Other fields (as published)
+  13. Verification & Audit
+- Both PDF (Appendix F) and Excel ("Full records" worksheet) reports include complete record details with zero field truncation or omissions.
+
+### 2.6 Server & Headless Deployment Readiness (v1.2.0)
+- Support for containerized server deployments via `DEPLOYMENT_MODE=server` environment flag:
+  - Bypasses `%LOCALAPPDATA%` and Windows Credential Manager dependencies.
+  - Configurable data root via `BASE_DATA_DIR` and network binding via `PORT`.
+  - Non-root UID 10001 execution in read-only filesystem containers.
+  - Standard JSON formatted event logging on stdout with strict zero PII exposure.
+  - OpenSanctions external API strictly disabled by default (`ENABLE_OPENSANCTIONS=false`).

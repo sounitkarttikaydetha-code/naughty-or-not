@@ -419,13 +419,13 @@ sources:
 
 - id: bis_tdo
   authority: US BIS, Export Violations (Temporary Denial Orders)
-  landing_page: https://www.bis.doc.gov/index.php/enforcement/oee/export-violations
-  file_url_resolved: https://www.bis.doc.gov/index.php/enforcement/oee/export-violations
+  landing_page: https://www.bis.gov/enforcement/export-violations
+  file_url_resolved: https://www.bis.gov/enforcement/export-violations
   publication_date: '2026-10-02'
   last_checked: '2026-10-27'
   sha256: none
   parser: reference_cross_check
-  verify_url: https://www.bis.doc.gov/index.php/enforcement/oee/export-violations
+  verify_url: https://www.bis.gov/enforcement/export-violations
   record_url_template: ''
   status: OK
 
