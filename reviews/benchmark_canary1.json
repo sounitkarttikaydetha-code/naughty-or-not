@@ -1,0 +1,79 @@
+{
+  "version": "2.0.1-canary.1",
+  "workers": 4,
+  "startup_seconds": 4.37,
+  "initial_memory_mb": 685.49,
+  "peak_memory_mb": 1883.81,
+  "concurrency_results": {
+    "1": {
+      "users": 1,
+      "total_requests": 6,
+      "success_count": 6,
+      "error_count": 0,
+      "elapsed_seconds": 8.04,
+      "throughput_rps": 0.75,
+      "latencies_ms": {
+        "avg": 1339.59,
+        "min": 137.05,
+        "p50": 684.47,
+        "p95": 4089.3,
+        "p99": 4089.3,
+        "max": 4089.3
+      }
+    },
+    "10": {
+      "users": 10,
+      "total_requests": 60,
+      "success_count": 60,
+      "error_count": 0,
+      "elapsed_seconds": 11.31,
+      "throughput_rps": 5.3,
+      "latencies_ms": {
+        "avg": 1671.52,
+        "min": 132.56,
+        "p50": 1125.33,
+        "p95": 4143.27,
+        "p99": 5366.15,
+        "max": 5413.37
+      }
+    },
+    "25": {
+      "users": 25,
+      "total_requests": 100,
+      "success_count": 100,
+      "error_count": 0,
+      "elapsed_seconds": 15.77,
+      "throughput_rps": 6.34,
+      "latencies_ms": {
+        "avg": 3629.85,
+        "min": 582.86,
+        "p50": 3672.13,
+        "p95": 5771.58,
+        "p99": 6209.7,
+        "max": 6837.57
+      }
+    },
+    "50": {
+      "users": 50,
+      "total_requests": 200,
+      "success_count": 200,
+      "error_count": 0,
+      "elapsed_seconds": 28.17,
+      "throughput_rps": 7.1,
+      "latencies_ms": {
+        "avg": 6434.76,
+        "min": 398.87,
+        "p50": 5819.9,
+        "p95": 11586.52,
+        "p99": 12153.04,
+        "max": 12778.38
+      }
+    }
+  },
+  "comparison_v120": {
+    "v1_2_0_concurrency_limit": "1 at a time (Streamlit lock)",
+    "v1_2_0_queue_bottleneck": "Requests queued sequentially (N * ~1.2s)",
+    "v2_canary_multi_worker": "4 parallel workers with non-blocking ASGI",
+    "bottleneck_removed": true
+  }
+}

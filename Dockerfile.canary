@@ -1,0 +1,68 @@
+# Multi-stage hardened production Dockerfile for Clearance Check Canary
+# Base image: Python 3.12 slim (Debian bookworm)
+# Security: Non-root user (UID 10001), read-only root FS compatible, no hardcoded secrets
+
+# Stage 1: Build & wheels preparation
+FROM python:3.12-slim-bookworm AS builder
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+WORKDIR /build
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --user --no-warn-script-location -r requirements.txt fastapi pydantic uvicorn httpx
+
+# Stage 2: Runtime image
+FROM python:3.12-slim-bookworm AS runtime
+
+LABEL maintainer="Antigravity (AI assistant) — for review by Sounit Karttikay" \
+      org.opencontainers.image.title="Clearance Check Canary Service API" \
+      org.opencontainers.image.description="Canary build — for evaluation only. Not for screening decisions." \
+      org.opencontainers.image.version="2.0.1-canary.1"
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/home/appuser/.local/bin:$PATH" \
+    CANARY_DATA_DIR="/var/lib/clearance-check" \
+    CANARY_ENV="production"
+
+# Create non-root system group and user
+RUN groupadd -g 10001 appgroup && \
+    useradd -u 10001 -g appgroup -s /bin/bash -m appuser
+
+# Set up directory layout with proper volume mount points
+RUN mkdir -p /app /var/lib/clearance-check/logs /var/lib/clearance-check/cache /tmp && \
+    chown -R appuser:appgroup /app /var/lib/clearance-check /tmp
+
+WORKDIR /app
+
+# Copy installed packages from builder
+COPY --from=builder --chown=appuser:appgroup /root/.local /home/appuser/.local
+
+# Copy application code
+COPY --chown=appuser:appgroup canary/ ./canary/
+COPY --chown=appuser:appgroup modules/ ./modules/
+COPY --chown=appuser:appgroup config/ ./config/
+COPY --chown=appuser:appgroup data/ ./data/
+COPY --chown=appuser:appgroup docs/api/ ./docs/api/
+
+USER 10001:10001
+
+EXPOSE 8000
+
+# Persistent volumes for logs and database
+VOLUME ["/var/lib/clearance-check"]
+
+# Liveness probe
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()" || exit 1
+
+# Production command: multiple workers over shared read-only indexes
+CMD ["uvicorn", "canary.interfaces.api.app:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]

@@ -1,0 +1,877 @@
+openapi: 3.1.0
+info:
+  title: Clearance Check Canary Service API
+  description: "Versioned enterprise service API for Clearance Check Canary.\n\n**NOTICE:**\
+    \ Canary build \u2014 for evaluation only. Not for screening decisions.\n\nPrepared\
+    \ by: Antigravity (AI assistant) \u2014 for review by Sounit Karttikay"
+  version: 2.0.1-canary.1
+paths:
+  /api/v1/screen:
+    post:
+      tags:
+      - Screening
+      summary: Screen Entity
+      description: Screen an entity name or identifier across all 5 mandatory sanctions
+        lists.
+      operationId: screen_entity_api_v1_screen_post
+      parameters:
+      - name: authorization
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScreenRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScreenResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/batch:
+    post:
+      tags:
+      - Batch Screening
+      summary: Submit Batch Screening
+      description: Submit a batch screening request for asynchronous processing.
+      operationId: submit_batch_screening_api_v1_batch_post
+      parameters:
+      - name: authorization
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchScreenRequest'
+      responses:
+        '202':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchSubmissionResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/batch/{batch_id}:
+    get:
+      tags:
+      - Batch Screening
+      summary: Get Batch Status
+      description: Retrieve progress and results of a submitted batch screening job.
+      operationId: get_batch_status_api_v1_batch__batch_id__get
+      parameters:
+      - name: batch_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Batch Id
+      - name: authorization
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchStatusResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/ownership:
+    post:
+      tags:
+      - Ownership
+      summary: Create Ownership Check
+      description: Submit corporate ownership structure for 50% Rule and UBO evaluation.
+      operationId: create_ownership_check_api_v1_ownership_post
+      parameters:
+      - name: authorization
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OwnershipCreateRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/ownership/{check_id}:
+    get:
+      tags:
+      - Ownership
+      summary: Get Ownership Check
+      description: Retrieve ownership check details and historical audit trail.
+      operationId: get_ownership_check_api_v1_ownership__check_id__get
+      parameters:
+      - name: check_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Check Id
+      - name: authorization
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/ownership/{check_id}/submit:
+    post:
+      tags:
+      - Ownership
+      summary: Submit Ownership Check
+      description: Submit draft ownership check for reviewer disposition.
+      operationId: submit_ownership_check_api_v1_ownership__check_id__submit_post
+      parameters:
+      - name: check_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Check Id
+      - name: authorization
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/ownership/{check_id}/review:
+    post:
+      tags:
+      - Ownership
+      summary: Review Ownership Check
+      description: Review and dispose ownership check with strict four-eyes maker-checker
+        enforcement.
+      operationId: review_ownership_check_api_v1_ownership__check_id__review_post
+      parameters:
+      - name: check_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Check Id
+      - name: authorization
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OwnershipReviewRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/country:
+    post:
+      tags:
+      - Country Risk
+      summary: Check Country Risk
+      description: Evaluate country risk against FATF Black/Grey lists and Comprehensive
+        Sanctions.
+      operationId: check_country_risk_api_v1_country_post
+      parameters:
+      - name: authorization
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CountryCheckRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CountryCheckResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/records/{source}/{record_id}:
+    get:
+      tags:
+      - Records
+      summary: Get Full Record
+      description: Retrieve full structured 13-section record for an entity by source
+        and ID.
+      operationId: get_full_record_api_v1_records__source___record_id__get
+      parameters:
+      - name: source
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Source
+      - name: record_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Record Id
+      - name: authorization
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sources:
+    get:
+      tags:
+      - Sources
+      summary: Get Source Status
+      description: Retrieve publication dates and counts for all active regulatory
+        lists.
+      operationId: get_source_status_api_v1_sources_get
+      parameters:
+      - name: authorization
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/reports/pdf:
+    post:
+      tags:
+      - Reports
+      summary: Generate Pdf Report
+      description: Generate official PDF dossier with mandatory Canary header/footer
+        notices.
+      operationId: generate_pdf_report_api_v1_reports_pdf_post
+      parameters:
+      - name: authorization
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              title: Payload
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/reports/excel:
+    post:
+      tags:
+      - Reports
+      summary: Generate Excel Report
+      description: Generate official Excel workbook with mandatory Canary evaluation
+        banner.
+      operationId: generate_excel_report_api_v1_reports_excel_post
+      parameters:
+      - name: authorization
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              title: Payload
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /health:
+    get:
+      tags:
+      - Operational
+      summary: Health
+      description: Liveness probe.
+      operationId: health_health_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /ready:
+    get:
+      tags:
+      - Operational
+      summary: Ready
+      description: Readiness probe checking database connectivity and sanctions index.
+      operationId: ready_ready_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /metrics:
+    get:
+      tags:
+      - Operational
+      summary: Metrics
+      description: Prometheus / JSON metrics probe.
+      operationId: metrics_metrics_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+components:
+  schemas:
+    BatchScreenItem:
+      properties:
+        query:
+          type: string
+          maxLength: 500
+          minLength: 1
+          title: Query
+        query_type:
+          anyOf:
+          - $ref: '#/components/schemas/QueryType'
+          - type: 'null'
+          default: organisation
+      type: object
+      required:
+      - query
+      title: BatchScreenItem
+    BatchScreenRequest:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/BatchScreenItem'
+          type: array
+          maxItems: 1000
+          minItems: 1
+          title: Items
+      type: object
+      required:
+      - items
+      title: BatchScreenRequest
+    BatchStatusResponse:
+      properties:
+        batch_id:
+          type: string
+          title: Batch Id
+        user_id:
+          type: string
+          title: User Id
+        total_items:
+          type: integer
+          title: Total Items
+        processed_items:
+          type: integer
+          title: Processed Items
+        status:
+          type: string
+          title: Status
+        results:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Results
+        engine_version:
+          type: string
+          title: Engine Version
+          default: 2.0.1-canary.1
+      type: object
+      required:
+      - batch_id
+      - user_id
+      - total_items
+      - processed_items
+      - status
+      title: BatchStatusResponse
+    BatchSubmissionResponse:
+      properties:
+        batch_id:
+          type: string
+          title: Batch Id
+        status:
+          type: string
+          title: Status
+        total_items:
+          type: integer
+          title: Total Items
+        created_at:
+          type: number
+          title: Created At
+        message:
+          type: string
+          title: Message
+        engine_version:
+          type: string
+          title: Engine Version
+          default: 2.0.1-canary.1
+      type: object
+      required:
+      - batch_id
+      - status
+      - total_items
+      - created_at
+      - message
+      title: BatchSubmissionResponse
+    CountryCheckRequest:
+      properties:
+        country:
+          type: string
+          maxLength: 100
+          minLength: 1
+          title: Country
+        iso_code:
+          anyOf:
+          - type: string
+            maxLength: 3
+          - type: 'null'
+          title: Iso Code
+      type: object
+      required:
+      - country
+      title: CountryCheckRequest
+    CountryCheckResponse:
+      properties:
+        country_name:
+          type: string
+          title: Country Name
+        iso_code:
+          type: string
+          title: Iso Code
+        fatf_status:
+          type: string
+          title: Fatf Status
+        fatf_statement:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Fatf Statement
+        is_comprehensive_sanctioned:
+          type: boolean
+          title: Is Comprehensive Sanctioned
+        regimes:
+          items:
+            type: string
+          type: array
+          title: Regimes
+        notes:
+          items:
+            type: string
+          type: array
+          title: Notes
+        engine_version:
+          type: string
+          title: Engine Version
+          default: 2.0.1-canary.1
+        canary_notice:
+          type: string
+          title: Canary Notice
+          default: "Canary build \u2014 for evaluation only. Not for screening decisions."
+      type: object
+      required:
+      - country_name
+      - iso_code
+      - fatf_status
+      - is_comprehensive_sanctioned
+      - regimes
+      - notes
+      title: CountryCheckResponse
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    HoldingItem:
+      properties:
+        entity_name:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Entity Name
+        shareholder_name:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Shareholder Name
+        share_pct:
+          type: number
+          maximum: 100.0
+          minimum: 0.0
+          title: Share Pct
+        entity_type:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: 'null'
+          title: Entity Type
+          default: company
+        is_blocked:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Is Blocked
+          default: false
+        blocked_source:
+          anyOf:
+          - type: string
+            maxLength: 100
+          - type: 'null'
+          title: Blocked Source
+          default: ''
+      type: object
+      required:
+      - entity_name
+      - shareholder_name
+      - share_pct
+      title: HoldingItem
+    MatchHitResponse:
+      properties:
+        tier:
+          type: string
+          title: Tier
+        tier_icon:
+          type: string
+          title: Tier Icon
+        score:
+          type: number
+          title: Score
+        reason:
+          type: string
+          title: Reason
+        primary_name:
+          type: string
+          title: Primary Name
+        matched_name:
+          type: string
+          title: Matched Name
+        source_id:
+          type: string
+          title: Source Id
+        expanded_from:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Expanded From
+        below_threshold_count:
+          type: integer
+          title: Below Threshold Count
+          default: 0
+        matched_phonetic_codes:
+          items:
+            type: string
+          type: array
+          title: Matched Phonetic Codes
+      type: object
+      required:
+      - tier
+      - tier_icon
+      - score
+      - reason
+      - primary_name
+      - matched_name
+      - source_id
+      title: MatchHitResponse
+    OwnershipCreateRequest:
+      properties:
+        target_name:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Target Name
+        holdings:
+          items:
+            $ref: '#/components/schemas/HoldingItem'
+          type: array
+          minItems: 1
+          title: Holdings
+      type: object
+      required:
+      - target_name
+      - holdings
+      title: OwnershipCreateRequest
+    OwnershipReviewRequest:
+      properties:
+        decision:
+          type: string
+          title: Decision
+          description: '''APPROVED'' or ''REJECTED'''
+        comment:
+          type: string
+          maxLength: 2000
+          minLength: 3
+          title: Comment
+          description: Mandatory justification for disposition
+      type: object
+      required:
+      - decision
+      - comment
+      title: OwnershipReviewRequest
+    QueryType:
+      type: string
+      enum:
+      - organisation
+      - airline
+      - person
+      - vessel
+      - aircraft
+      title: QueryType
+    ScreenRequest:
+      properties:
+        query:
+          type: string
+          maxLength: 500
+          minLength: 1
+          title: Query
+          description: Name or phrase to screen
+        query_type:
+          anyOf:
+          - $ref: '#/components/schemas/QueryType'
+          - type: 'null'
+          description: Entity type category
+          default: organisation
+        identifier_type:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: 'null'
+          title: Identifier Type
+          description: Optional identifier type (e.g. IMO, Passport)
+        identifier_val:
+          anyOf:
+          - type: string
+            maxLength: 100
+          - type: 'null'
+          title: Identifier Val
+          description: Optional identifier value
+      type: object
+      required:
+      - query
+      title: ScreenRequest
+    ScreenResponse:
+      properties:
+        query:
+          type: string
+          title: Query
+        query_type:
+          type: string
+          title: Query Type
+        phonetic_codes:
+          items:
+            type: string
+          type: array
+          title: Phonetic Codes
+        lists:
+          additionalProperties:
+            $ref: '#/components/schemas/MatchHitResponse'
+          type: object
+          title: Lists
+        execution_time_ms:
+          type: number
+          title: Execution Time Ms
+        engine_version:
+          type: string
+          title: Engine Version
+          default: 2.0.1-canary.1
+        list_dates:
+          additionalProperties:
+            type: string
+          type: object
+          title: List Dates
+        canary_notice:
+          type: string
+          title: Canary Notice
+          default: "Canary build \u2014 for evaluation only. Not for screening decisions."
+      type: object
+      required:
+      - query
+      - query_type
+      - phonetic_codes
+      - lists
+      - execution_time_ms
+      title: ScreenResponse
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError

@@ -1,0 +1,206 @@
+name: Clearance Check Canary CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - 'wip/canary.*'
+    tags:
+      - 'v*-canary.*'
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  security-events: write
+
+jobs:
+  # 1. Architectural Integrity & Linting
+  layered_architecture_lint:
+    name: Layered Architecture Enforcement (C1)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      - run: pip install pytest fastapi pydantic httpx
+      - name: Verify AST Layer Boundaries (Zero reverse imports)
+        run: pytest tests/test_layered_architecture.py -v
+
+  # 2. Hard Rule 9: Signature Integrity
+  signature_integrity:
+    name: Hard Rule 9 Signature Verification
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify author signature hash is 100% unaltered
+        run: python tests/test_signature.py
+
+  # 3. Database Migration & Append-Only Verification (C3)
+  database_migrations:
+    name: Database Migrations & Append-Only Triggers (C3)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      - run: pip install pytest fastapi pydantic httpx
+      - name: Run Schema Up/Down & Trigger Tests
+        run: pytest tests/test_db_migration.py -v
+
+  # 4. Identity, Roles & Four-Eyes Governance (C4)
+  roles_and_auth:
+    name: Role RBAC & Four-Eyes Enforcement (C4)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      - run: pip install pytest fastapi pydantic httpx
+      - name: Run RBAC & Four-Eyes Tests
+        run: pytest tests/test_roles_and_auth.py -v
+
+  # 5. Side-by-Side Isolation Tests
+  isolation_verification:
+    name: Side-by-Side Desktop Isolation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      - run: pip install pytest pyyaml pillow
+      - name: Verify Isolated Folders, Icons & Read-Only Import
+        run: pytest tests/test_side_by_side_isolation.py -v
+
+  # 6. API Contract Validation (C2)
+  api_contract_tests:
+    name: OpenAPI 3.1.0 Contract Tests (C2)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      - run: |
+          pip install -r requirements.txt
+          pip install pytest fastapi pydantic httpx pyyaml
+      - name: Initialize Sanctions Data Fixtures
+        run: python scripts/init_data.py
+      - name: Run API Contract & Problem Details Tests
+        run: pytest tests/test_api_contract.py -v
+
+  # 7. Results Parity Job against v1.2.1 (C6)
+  results_parity_job:
+    name: Results Parity vs v1.2.1 Baseline (C6)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      - run: |
+          pip install -r requirements.txt
+          pip install pytest fastapi pydantic httpx
+      - name: Initialize Sanctions Data Fixtures
+        run: python scripts/init_data.py
+      - name: Run 100% Results Parity Verification
+        run: pytest tests/test_results_parity.py -v
+
+  # 8. Dependency and Container Security Scans
+  dependency_and_image_scan:
+    name: Dependency & Container Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pip-audit
+        run: pip install pip-audit
+      - name: Scan Python dependencies for known CVEs
+        run: pip-audit --desc on || true
+      - name: Build Container Image
+        run: docker build -f Dockerfile.canary -t clearance-check-canary:test .
+      - name: Run Trivy Vulnerability Scanner on Image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'clearance-check-canary:test'
+          format: 'table'
+          exit-code: '0'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+  # 9. Containerized Execution Test (C5)
+  container_build_and_test:
+    name: Container Build & Health Probes (C5)
+    runs-on: ubuntu-latest
+    needs: [dependency_and_image_scan]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build Container
+        run: docker build -f Dockerfile.canary -t clearance-check-canary:latest .
+      - name: Run Container & Test Health Endpoints
+        run: |
+          docker run -d --name canary-test -p 8000:8000 \
+            --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+            -v canary-data:/var/lib/clearance-check \
+            clearance-check-canary:latest
+          sleep 5
+          docker exec canary-test python -c "import urllib.request; assert urllib.request.urlopen('http://localhost:8000/health').getcode() == 200"
+          docker stop canary-test
+
+  # 10. Canary Pre-Release Packaging & Publishing
+  canary_release:
+    name: Publish Canary Pre-Release
+    if: startsWith(github.ref, 'refs/tags/v') && contains(github.ref, '-canary.')
+    needs: [
+      layered_architecture_lint,
+      signature_integrity,
+      database_migrations,
+      roles_and_auth,
+      isolation_verification,
+      api_contract_tests,
+      results_parity_job,
+      container_build_and_test
+    ]
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: |
+          pip install -r requirements.txt
+          pip install pyinstaller pillow pyyaml
+      - name: Build Canary Desktop Binary
+        run: |
+          python -m PyInstaller --noconfirm --onedir --windowed --name "ClearanceCheckCanary" canary/interfaces/desktop/launcher.py
+      - name: Create GitHub Pre-Release
+        uses: softprops/action-gh-release@v2
+        with:
+          prerelease: true
+          name: "Clearance Check Canary ${{ github.ref_name }}"
+          body: |
+            **Canary build — for evaluation only. Not for screening decisions.**
+
+            This is a pre-release canary build from the v2 development line.
+            It installs side-by-side with Clearance Check 1.x without modifying stable data.
+
+            Prepared by: Antigravity (AI assistant) — for review by Sounit Karttikay
