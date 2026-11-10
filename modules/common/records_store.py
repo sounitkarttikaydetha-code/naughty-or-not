@@ -410,6 +410,8 @@ def build_13_sections(record: Dict[str, Any], source_id: str = "") -> Dict[str, 
     # Section 8: Listing details
     rid = record.get("sourceID") or record.get("id") or raw_fields.get("Unique ID") or raw_fields.get("OFSI Group ID") or raw_fields.get("UN Reference Number") or raw_fields.get("DATAID")
     add(8, "Source Record Identifier", rid, "sourceID")
+    if "OFSI Group ID" in raw_fields and str(raw_fields.get("OFSI Group ID")) != str(rid):
+        add(8, "OFSI Group ID", raw_fields.get("OFSI Group ID"), "OFSI Group ID")
     add(8, "Designation / Listed Date", raw_fields.get("Date Designated") or raw_fields.get("start_date") or raw_fields.get("LISTED_ON") or raw_fields.get("publication_date"), "start_date")
     add(8, "Last Updated Date", raw_fields.get("Last Updated") or raw_fields.get("LAST_DAY_UPDATED") or raw_fields.get("updated_at"), "Last Updated")
     add(8, "Federal Register Notice", raw_fields.get("federal_register_notice") or raw_fields.get("federal_register_citation") or raw_fields.get("notification_number"), "federal_register_notice")
@@ -418,6 +420,8 @@ def build_13_sections(record: Dict[str, Any], source_id: str = "") -> Dict[str, 
     # Section 9: Remarks and statement of reasons
     rems = sdata.get("remarks") or record.get("remarks") or raw_fields.get("remarks") or raw_fields.get("UK Statement of Reasons") or raw_fields.get("Other Information") or raw_fields.get("COMMENTS1") or raw_fields.get("offenses_or_remarks") or raw_fields.get("summary")
     add(9, "Remarks / Statement of Reasons", rems, "remarks")
+    if "Other Information" in raw_fields and str(raw_fields.get("Other Information")) != str(rems):
+        add(9, "Other Information", raw_fields.get("Other Information"), "Other Information")
     claimed_keys.update(["remarks", "UK Statement of Reasons", "Other Information", "COMMENTS1", "offenses_or_remarks", "summary"])
 
     # Section 10: Vessel, aircraft or entity specifics

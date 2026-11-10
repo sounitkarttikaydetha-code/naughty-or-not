@@ -1,14 +1,16 @@
 /*
-  Clearance Check — Modern UI Theme (T11 Part G)
+  Clearance Check — Professional UI Theme (Part P2 & P3)
   Palette, spacing, typography, focus states, and card styling.
-  Zero external CDN requests. WCAG AA contrast compliant (>= 4.5:1).
+  Zero external CDN requests. Segoe UI system font with system-ui fallback.
+  WCAG AA contrast compliant (>= 4.5:1).
+  Zero gradients, glows, blur, glassmorphism, or decorative shadows.
 */
 
 :root {
-  /* Brand Palette */
-  --cc-primary: #0F52BA;
-  --cc-primary-hover: #0A3C85;
-  --cc-primary-light: #EBF3FE;
+  /* Brand Accent: Corporate Deep Navy / Slate */
+  --cc-primary: #1E3A5F;
+  --cc-primary-hover: #152B46;
+  --cc-primary-light: #F0F4F8;
   --cc-bg-app: #F8FAFC;
   --cc-bg-surface: #FFFFFF;
   --cc-bg-card: #FFFFFF;
@@ -21,7 +23,7 @@
   /* Borders & Focus */
   --cc-border-subtle: #E2E8F0;
   --cc-border-default: #CBD5E1;
-  --cc-border-focus: #2563EB;
+  --cc-border-focus: #1E3A5F;
 
   /* Status Colors */
   --cc-likely-bg: #FEE2E2;
@@ -44,14 +46,12 @@
   --cc-unchecked-text: #334155;
   --cc-unchecked-border: #94A3B8;
 
-  /* Dimensions & Spacing */
-  --cc-radius-sm: 4px;
-  --cc-radius-md: 8px;
-  --cc-radius-lg: 12px;
-  --cc-font-sans: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  /* Single Uniform Corner Radius (4px) */
+  --cc-radius: 4px;
+  --cc-font-sans: 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
-/* Force clean modern light theme across the entire application */
+/* Base App Styling */
 .stApp, html, body {
   background-color: #F8FAFC !important;
   color: #0F172A !important;
@@ -81,11 +81,11 @@ section[data-testid="stSidebar"] {
 }
 
 /* Application Title */
-.stApp h1, [data-testid="stHeaderTitle"] {
-  color: #0F52BA !important;
-  font-weight: 800 !important;
-  font-size: 2.2rem !important;
-  letter-spacing: -0.02em !important;
+.stApp h1, [data-testid="stHeaderTitle"], .app-title {
+  color: #1E3A5F !important;
+  font-weight: 700 !important;
+  font-size: 2.0rem !important;
+  letter-spacing: -0.01em !important;
   margin-bottom: 0.25rem !important;
 }
 
@@ -93,21 +93,22 @@ section[data-testid="stSidebar"] {
 a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
   outline: 2px solid var(--cc-border-focus) !important;
   outline-offset: 2px !important;
+  transition: outline 100ms ease;
 }
 
-/* Form & Expander Card Styling */
+/* Form & Expander Styling */
 div[data-testid="stForm"], div[data-testid="stExpander"] {
   background-color: #FFFFFF !important;
   border: 1px solid #E2E8F0 !important;
-  border-radius: var(--cc-radius-md) !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+  border-radius: var(--cc-radius) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
 }
 
-/* Tab navigation styling */
+/* Tab Navigation */
 div[data-baseweb="tab-list"] {
   background-color: #FFFFFF !important;
   border-bottom: 2px solid #E2E8F0 !important;
-  border-radius: var(--cc-radius-md) var(--cc-radius-md) 0 0 !important;
+  border-radius: var(--cc-radius) var(--cc-radius) 0 0 !important;
   padding: 0 12px !important;
   gap: 12px !important;
 }
@@ -116,36 +117,39 @@ div[data-baseweb="tab"] {
   font-weight: 600 !important;
   color: #64748B !important;
   border-bottom: 3px solid transparent !important;
-  padding: 12px 18px !important;
+  padding: 10px 16px !important;
+  transition: color 120ms ease, border-color 120ms ease;
 }
 div[data-baseweb="tab"][aria-selected="true"] {
-  color: #0F52BA !important;
-  border-bottom: 3px solid #0F52BA !important;
+  color: #1E3A5F !important;
+  border-bottom: 3px solid #1E3A5F !important;
 }
 
-/* Primary Button Styling */
+/* Primary Button */
 button[kind="primary"], .stButton > button[kind="primary"], div[data-testid="stFormSubmitButton"] > button {
-  background-color: #0F52BA !important;
+  background-color: #1E3A5F !important;
   color: #FFFFFF !important;
-  border: 1px solid #0F52BA !important;
-  border-radius: 6px !important;
+  border: 1px solid #1E3A5F !important;
+  border-radius: var(--cc-radius) !important;
   font-weight: 600 !important;
-  padding: 8px 24px !important;
-  box-shadow: 0 1px 2px rgba(15, 82, 186, 0.25) !important;
+  padding: 8px 20px !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  transition: background-color 120ms ease;
 }
 button[kind="primary"]:hover, .stButton > button[kind="primary"]:hover, div[data-testid="stFormSubmitButton"] > button:hover {
-  background-color: #0A3C85 !important;
-  border-color: #0A3C85 !important;
+  background-color: #152B46 !important;
+  border-color: #152B46 !important;
   color: #FFFFFF !important;
 }
 
-/* Secondary Button Styling */
+/* Secondary Button */
 button[kind="secondary"], .stButton > button {
   background-color: #FFFFFF !important;
   color: #334155 !important;
   border: 1px solid #CBD5E1 !important;
-  border-radius: 6px !important;
+  border-radius: var(--cc-radius) !important;
   font-weight: 500 !important;
+  transition: background-color 120ms ease;
 }
 button[kind="secondary"]:hover, .stButton > button:hover {
   background-color: #F1F5F9 !important;
@@ -153,32 +157,28 @@ button[kind="secondary"]:hover, .stButton > button:hover {
   border-color: #94A3B8 !important;
 }
 
-/* Input boxes & select boxes */
+/* Input Boxes */
 div[data-baseweb="input"], div[data-baseweb="select"] > div {
   background-color: #FFFFFF !important;
   border: 1px solid #CBD5E1 !important;
-  border-radius: 6px !important;
+  border-radius: var(--cc-radius) !important;
   color: #0F172A !important;
 }
 div[data-baseweb="input"]:focus-within, div[data-baseweb="select"] > div:focus-within {
-  border-color: #2563EB !important;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2) !important;
+  border-color: #1E3A5F !important;
+  box-shadow: 0 0 0 2px rgba(30, 58, 95, 0.2) !important;
 }
 input, textarea {
   color: #0F172A !important;
 }
 
-/* Cards & Containers */
-div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] > div[data-testid="stBlock"] {
-  border-radius: var(--cc-radius-md);
-}
-
+/* Cards & Panels: strictly single border-radius, no card nesting */
 .source-card {
   background: var(--cc-bg-surface) !important;
   border: 1px solid var(--cc-border-subtle) !important;
-  border-radius: var(--cc-radius-md) !important;
+  border-radius: var(--cc-radius) !important;
   padding: 0.75rem 0.85rem !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
 }
 .source-card-title {
   font-weight: 600 !important;
@@ -190,24 +190,15 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] > div[da
   color: #64748B !important;
 }
 
-.result-card {
-  background: var(--cc-bg-surface) !important;
-  border: 1px solid var(--cc-border-subtle) !important;
-  border-radius: var(--cc-radius-md) !important;
-  padding: 1.25rem !important;
-  margin-bottom: 0.85rem !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
-}
-
-/* Status Chips */
+/* Drawn Status Markers (Part P3) */
 .status-chip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.35rem;
   min-width: 6.8rem;
-  padding: 0.25rem 0.6rem;
-  border-radius: var(--cc-radius-sm);
+  padding: 0.25rem 0.55rem;
+  border-radius: var(--cc-radius);
   font-size: 0.78rem;
   font-weight: 700;
   line-height: 1.2;
@@ -217,177 +208,205 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] > div[da
   white-space: nowrap;
 }
 
+.status-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
 .chip-likely {
   background-color: var(--cc-likely-bg) !important;
   color: var(--cc-likely-text) !important;
   border: 1px solid var(--cc-likely-border) !important;
 }
+.chip-likely .status-dot { background-color: #B71C1C; }
 
 .chip-possible {
   background-color: var(--cc-possible-bg) !important;
   color: var(--cc-possible-text) !important;
   border: 1px solid var(--cc-possible-border) !important;
 }
+.chip-possible .status-dot { background-color: #BF360C; }
 
 .chip-clear {
   background-color: var(--cc-clear-bg) !important;
   color: var(--cc-clear-text) !important;
   border: 1px solid var(--cc-clear-border) !important;
 }
+.chip-clear .status-dot { background-color: #1B5E20; }
 
 .chip-info {
   background-color: var(--cc-info-bg) !important;
   color: var(--cc-info-text) !important;
   border: 1px solid var(--cc-info-border) !important;
 }
+.chip-info .status-dot { background-color: #0D47A1; }
 
 .chip-not-checked {
   background-color: var(--cc-unchecked-bg) !important;
   color: var(--cc-unchecked-text) !important;
   border: 1px solid var(--cc-unchecked-border) !important;
 }
+.chip-not-checked .status-dot { background-color: #546E7A; }
 
-/* Executive Warning & Alert Banners */
+.chip-safety {
+  background-color: #FEE2E2 !important;
+  color: #991B1B !important;
+  border: 1px solid #DC2626 !important;
+}
+.chip-safety .status-dot { background-color: #B71C1C; }
+
+.chip-export {
+  background-color: #FEF3C7 !important;
+  color: #92400E !important;
+  border: 1px solid #F59E0B !important;
+}
+.chip-export .status-dot { background-color: #BF360C; }
+
+/* Banners */
 .warning-banner {
   background: #FEF3C7 !important;
   border: 1px solid #F59E0B !important;
-  border-radius: 6px !important;
+  border-radius: var(--cc-radius) !important;
   color: #92400E !important;
-  padding: 10px 16px !important;
+  padding: 10px 14px !important;
   font-size: 13px !important;
   font-weight: 500 !important;
-  margin-bottom: 16px !important;
+  margin-bottom: 14px !important;
   display: flex !important;
   align-items: center !important;
-  gap: 10px !important;
+  gap: 8px !important;
 }
 
-/* Header and Badges */
-.app-title, h1 {
-    color: #0F52BA !important;
-    font-weight: 800 !important;
-    letter-spacing: -0.5px !important;
+.notice-banner {
+  background: #F1F5F9 !important;
+  border: 1px solid #CBD5E1 !important;
+  border-radius: var(--cc-radius) !important;
+  color: #334155 !important;
+  padding: 10px 14px !important;
+  font-size: 13px !important;
+  margin-bottom: 14px !important;
 }
 
-.app-badge {
-    background: #EBF3FE !important;
-    color: #0F52BA !important;
-    font-size: 11px !important;
-    font-weight: 700 !important;
-    padding: 3px 10px !important;
-    border-radius: 12px !important;
-    border: 1px solid #BFDBFE !important;
-    display: inline-block !important;
-    vertical-align: middle !important;
-}
-
-.status-pill {
-    background: #F1F5F9 !important;
-    color: #475569 !important;
-    font-size: 11px !important;
-    font-weight: 600 !important;
-    padding: 3px 10px !important;
-    border-radius: 12px !important;
-    border: 1px solid #E2E8F0 !important;
-    display: inline-block !important;
-    vertical-align: middle !important;
-}
-
-/* Full Sanctions Record Inspection Card (03_show_full_record.png) */
+/* Full Sanctions Record Inspection Card */
 .full-record-modal-card {
-    width: 100% !important;
-    max-width: 840px !important;
-    background: #FFFFFF !important;
-    border-radius: 8px !important;
-    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.1) !important;
-    border: 1px solid #CBD5E1 !important;
-    overflow: hidden !important;
-    margin: 14px 0 !important;
+  width: 100% !important;
+  max-width: 840px !important;
+  background: #FFFFFF !important;
+  border-radius: var(--cc-radius) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+  border: 1px solid #CBD5E1 !important;
+  overflow: hidden !important;
+  margin: 12px 0 !important;
 }
 
 .full-record-header {
-    background: #0F52BA !important;
-    color: #FFFFFF !important;
-    padding: 14px 20px !important;
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    font-size: 15px !important;
-    font-weight: 700 !important;
-    letter-spacing: -0.2px !important;
+  background: #1E3A5F !important;
+  color: #FFFFFF !important;
+  padding: 12px 18px !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
 }
 
 .full-record-body {
-    padding: 20px 24px !important;
-    background: #FFFFFF !important;
+  padding: 18px 20px !important;
+  background: #FFFFFF !important;
 }
 
 .detail-row {
-    display: flex !important;
-    padding: 9px 0 !important;
-    border-bottom: 1px solid #F1F5F9 !important;
-    font-size: 13px !important;
-    align-items: flex-start !important;
+  display: flex !important;
+  padding: 8px 0 !important;
+  border-bottom: 1px solid #F1F5F9 !important;
+  font-size: 13px !important;
+  align-items: flex-start !important;
 }
-
 .detail-row:last-child {
-    border-bottom: none !important;
+  border-bottom: none !important;
 }
 
 .detail-label {
-    width: 200px !important;
-    min-width: 180px !important;
-    font-weight: 600 !important;
-    color: #475569 !important;
-    flex-shrink: 0 !important;
+  width: 200px !important;
+  min-width: 180px !important;
+  font-weight: 600 !important;
+  color: #475569 !important;
+  flex-shrink: 0 !important;
 }
 
 .detail-val {
-    flex: 1 !important;
-    color: #0F172A !important;
-    word-break: break-word !important;
+  flex: 1 !important;
+  color: #0F172A !important;
+  word-break: break-word !important;
 }
 
-.badge-red {
-    background: #FEE2E2 !important;
-    color: #991B1B !important;
-    border: 1px solid #DC2626 !important;
-    padding: 3px 8px !important;
-    border-radius: 4px !important;
-    font-size: 12px !important;
-    font-weight: 700 !important;
-    display: inline-block !important;
+/* Empty State & Error State Design (Part P5.6) */
+.empty-state-box {
+  background: #FFFFFF;
+  border: 1px dashed #CBD5E1;
+  border-radius: var(--cc-radius);
+  padding: 32px 24px;
+  text-align: center;
+  color: #64748B;
+  margin: 16px 0;
+}
+.empty-state-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 6px;
+}
+.empty-state-desc {
+  font-size: 13px;
+  color: #64748B;
+  margin-bottom: 12px;
 }
 
-.badge-orange {
-    background: #FEF3C7 !important;
-    color: #92400E !important;
-    border: 1px solid #F59E0B !important;
-    padding: 3px 8px !important;
-    border-radius: 4px !important;
-    font-size: 12px !important;
-    font-weight: 700 !important;
-    display: inline-block !important;
+.error-state-box {
+  background: #FEF2F2;
+  border: 1px solid #FCA5A5;
+  border-radius: var(--cc-radius);
+  padding: 16px 20px;
+  margin: 16px 0;
+  color: #991B1B;
+}
+.error-state-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.error-state-next {
+  font-size: 13px;
+  color: #7F1D1D;
+  margin-bottom: 8px;
 }
 
-.badge-yellow {
-    background: #FEF9C3 !important;
-    color: #854D0E !important;
-    border: 1px solid #EAB308 !important;
-    padding: 3px 8px !important;
-    border-radius: 4px !important;
-    font-size: 12px !important;
-    font-weight: 700 !important;
-    display: inline-block !important;
-}
-
-.badge-blue {
-    background: #DBEAFE !important;
-    color: #1E40AF !important;
-    border: 1px solid #3B82F6 !important;
-    padding: 3px 8px !important;
-    border-radius: 4px !important;
-    font-size: 12px !important;
-    font-weight: 700 !important;
-    display: inline-block !important;
+/* Optional Dark Mode strictly based on user's Windows setting */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --cc-bg-app: #0F172A;
+    --cc-bg-surface: #1E293B;
+    --cc-bg-card: #1E293B;
+    --cc-text-primary: #F8FAFC;
+    --cc-text-secondary: #CBD5E1;
+    --cc-text-muted: #94A3B8;
+    --cc-border-subtle: #334155;
+    --cc-border-default: #475569;
+  }
+  .stApp, html, body {
+    background-color: #0F172A !important;
+    color: #F8FAFC !important;
+  }
+  section[data-testid="stSidebar"] {
+    background-color: #1E293B !important;
+    border-right-color: #334155 !important;
+  }
+  div[data-testid="stForm"], div[data-testid="stExpander"] {
+    background-color: #1E293B !important;
+    border-color: #334155 !important;
+  }
 }

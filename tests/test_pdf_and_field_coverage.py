@@ -198,11 +198,20 @@ def test_b6_record_exposure_across_sources():
         # Check raw_fields coverage: all non-empty raw_fields must appear in some section
         raw_fields = rec.get("raw_fields") or {}
         all_section_values = " ".join(val for items in sections.values() for label, val in items)
+        all_section_labels = [label for items in sections.values() for label, _ in items]
+        sec12_labels = [label for label, _ in sections.get(SECTION_NAMES[11], [])]
         for k, v in raw_fields.items():
             if v and str(v).strip() and str(v).strip() not in ["-0-", "None"]:
+                v_items = v if isinstance(v, list) else [v]
                 v_clean = str(v).strip()[:15]
-                # Either key or truncated value should be captured
-                assert (k in all_section_values) or (v_clean in all_section_values) or (str(k) in sections[SECTION_NAMES[11]])
+                # Either key, label, truncated value, or item value should be captured
+                assert (
+                    (k in all_section_values)
+                    or (v_clean in all_section_values)
+                    or any(str(item).strip()[:15] in all_section_values for item in v_items if item)
+                    or (str(k) in sec12_labels)
+                    or any(str(k) == str(lbl) for lbl in all_section_labels)
+                )
 
 
 def test_b6_drift_proofing_synthetic_field():

@@ -18,7 +18,7 @@ class TestBranding(unittest.TestCase):
         self.assertEqual(APP_NAME, "Clearance Check")
         self.assertEqual(MAIN_TITLE, "Sanction checK", "Main title must strictly have capital K")
         self.assertEqual(SHORT_NAME, "ClearanceCheck")
-        self.assertEqual(VERSION_LABEL, "v1.1.3")
+        self.assertEqual(VERSION_LABEL, "v1.2.1")
         self.assertEqual(CODENAME, "Naughty or not")
 
     def test_02_app_title_and_main_screen(self):
@@ -31,7 +31,7 @@ class TestBranding(unittest.TestCase):
     def test_03_desktop_launcher_branding(self):
         """desktop_launcher.py uses APP_NAME and MAIN_TITLE."""
         dl = (PROJECT_ROOT / "desktop_launcher.py").read_text(encoding="utf-8")
-        self.assertIn('APP_TITLE = f"{APP_NAME} {VERSION_LABEL} — {MAIN_TITLE}"', dl)
+        self.assertIn('APP_TITLE = f"{APP_NAME} — {MAIN_TITLE} — {VERSION_LABEL}"', dl)
 
     def test_04_reports_branding(self):
         """Reporting generator uses Clearance Check — Sanction checK."""

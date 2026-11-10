@@ -22,5 +22,4 @@ cache/
 tests/fixtures/*50k*.ftm.json
 tests/fixtures/*500k*.ftm.json
 reviews/*_progress.md
-deliverables/
 

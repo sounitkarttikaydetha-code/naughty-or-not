@@ -78,14 +78,14 @@ def test_status_chip_accessible_components():
 
 
 def test_report_chip_text():
-    """T9-1.4: Reports must use identical symbol + word chip text."""
-    assert format_chip_text("POTENTIAL_MATCH") == "🔴 LIKELY"
-    assert format_chip_text("POSSIBLE_MATCH_REVIEW") == "🟠 POSSIBLE"
-    assert format_chip_text("BELOW_THRESHOLD") == "ℹ️ INFO"
-    assert format_chip_text("NO_MATCH") == "✅ CLEAR"
-    assert format_chip_text("NOT_CHECKED") == "⚪ NOT CHECKED"
-    assert format_chip_text("SAFETY") == "✈️ SAFETY"
-    assert format_chip_text("EXPORT_CONTROL") == "📦 EXPORT CONTROL"
+    """T9-1.4 & Part P: Reports must use drawn marker + word chip text."""
+    assert format_chip_text("POTENTIAL_MATCH") == "● LIKELY"
+    assert format_chip_text("POSSIBLE_MATCH_REVIEW") == "● POSSIBLE"
+    assert format_chip_text("BELOW_THRESHOLD") == "● INFO"
+    assert format_chip_text("NO_MATCH") == "● CLEAR"
+    assert format_chip_text("NOT_CHECKED") == "● NOT CHECKED"
+    assert format_chip_text("SAFETY") == "● SAFETY"
+    assert format_chip_text("EXPORT_CONTROL") == "● EXPORT CONTROL"
 
 
 def test_viewport_overflow_rules():

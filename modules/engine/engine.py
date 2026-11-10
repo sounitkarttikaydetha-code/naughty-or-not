@@ -197,12 +197,18 @@ class PythonEngine:
         cache_dir.mkdir(parents=True, exist_ok=True)
         cache_file = cache_dir / f"engine_index_{cache_key}.pkl"
 
-        # 2. Try loading pre-built index from disk cache
-        if cache_file.is_file():
+        # 2. Try loading pre-built index from disk cache with SHA-256 integrity check
+        hash_file = cache_dir / f"engine_index_{cache_key}.sha256"
+        if cache_file.is_file() and hash_file.is_file():
             try:
                 t0 = time.perf_counter()
+                expected_sha = hash_file.read_text(encoding="utf-8").strip()
                 with open(cache_file, "rb") as f:
-                    cached = pickle.load(f)
+                    data = f.read()
+                computed_sha = hashlib.sha256(data).hexdigest()
+                if computed_sha != expected_sha:
+                    raise ValueError(f"Cache integrity check failed: expected {expected_sha[:12]}, got {computed_sha[:12]}")
+                cached = pickle.loads(data)
                 self.records_by_source = cached["records_by_source"]
                 self.token_index_by_source = cached["token_index_by_source"]
                 self.prefix_index_by_source = cached["prefix_index_by_source"]
@@ -240,24 +246,25 @@ class PythonEngine:
         if any(self.records_by_source.values()):
             try:
                 tmp_cache = cache_dir / f"engine_index_{cache_key}.tmp"
+                cache_payload = {
+                    "records_by_source": self.records_by_source,
+                    "token_index_by_source": self.token_index_by_source,
+                    "prefix_index_by_source": self.prefix_index_by_source,
+                    "phonetic_index_by_source": self.phonetic_index_by_source,
+                    "id_index_by_source": self.id_index_by_source,
+                    "hashes_by_source": self.hashes_by_source,
+                    "source_errors": self.source_errors,
+                }
+                cache_bytes = pickle.dumps(cache_payload, protocol=pickle.HIGHEST_PROTOCOL)
+                cache_sha = hashlib.sha256(cache_bytes).hexdigest()
                 with open(tmp_cache, "wb") as f:
-                    pickle.dump(
-                        {
-                            "records_by_source": self.records_by_source,
-                            "token_index_by_source": self.token_index_by_source,
-                            "prefix_index_by_source": self.prefix_index_by_source,
-                            "phonetic_index_by_source": self.phonetic_index_by_source,
-                            "id_index_by_source": self.id_index_by_source,
-                            "hashes_by_source": self.hashes_by_source,
-                            "source_errors": self.source_errors,
-                        },
-                        f,
-                        protocol=pickle.HIGHEST_PROTOCOL,
-                    )
+                    f.write(cache_bytes)
                 tmp_cache.replace(cache_file)
+                hash_file = cache_dir / f"engine_index_{cache_key}.sha256"
+                hash_file.write_text(cache_sha, encoding="utf-8")
                 # Clean up older caches
-                for old_c in cache_dir.glob("engine_index_*.pkl"):
-                    if old_c != cache_file:
+                for old_c in cache_dir.glob("engine_index_*.*"):
+                    if old_c != cache_file and old_c != hash_file:
                         try:
                             old_c.unlink()
                         except Exception:

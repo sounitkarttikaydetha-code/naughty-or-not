@@ -11,7 +11,7 @@
 
 ## 1. System Overview & Offline Architecture
 
-Clearance Check is an enterprise-grade desktop compliance screening and beneficial ownership analysis application. It operates in a 100% offline, privacy-first mode where all entity matching, phonetic expansion, corporate hierarchy traversal, and report generation execute locally on the analyst's machine.
+Clearance Check is a desktop compliance screening and beneficial ownership analysis application. It operates in a 100% offline, privacy-first mode where all entity matching, phonetic expansion, corporate hierarchy traversal, and report generation execute locally on the analyst's machine.
 
 ```
 +-----------------------------------------------------------------------------------+

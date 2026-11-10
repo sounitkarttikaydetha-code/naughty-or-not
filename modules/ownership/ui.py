@@ -43,8 +43,30 @@ def render_ownership_tab():
     st.caption(
         "Multilateral 50% Rule and Control analysis covering US OFAC (FAQs 399, 401), "
         "EU Council Regulations, and UK OFSI Sanctions Regulations. "
-        "Includes Adani SOP 20% diligence triggers and Indian 10% SBO markers. 100% offline; zero data egress."
+        "Includes Adani SOP 20% diligence triggers and Indian 10% SBO markers. 100% offline; zero data egress. "
+        "[View Privacy Notice](docs/PRIVACY_NOTICE.md)"
     )
+
+    if not st.session_state.get("ownership_privacy_acknowledged"):
+        st.info("### Privacy Notice & Authorisation for Beneficial Ownership Data")
+        st.markdown(
+            "Processing corporate shareholding structures and key managerial personnel involves identifying personal data. "
+            "Please review the [Privacy Notice](docs/PRIVACY_NOTICE.md) before uploading or screening ownership structures.\n\n"
+            "- All corporate records and shareholder data remain strictly in local memory and your local audit log.\n"
+            "- Zero inbound or outbound network transmission occurs during evaluation.\n"
+            "- Activities are logged in the local append-only database."
+        )
+        c_ack1, c_ack2 = st.columns([2, 1])
+        with c_ack1:
+            agreed = st.checkbox(
+                "I confirm authorised compliance use and have reviewed the Privacy Notice",
+                key="ubo_privacy_ack_box",
+            )
+        with c_ack2:
+            if st.button("Proceed to Ownership Check", type="primary", disabled=not agreed):
+                st.session_state["ownership_privacy_acknowledged"] = True
+                st.rerun()
+        return
 
     # Top action bar: Template download and sample loader
     c_top1, c_top2 = st.columns([1, 1])

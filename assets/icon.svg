@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Outer Shield Contour -->
+  <path d="M 128 16 C 176 16, 224 32, 224 56 C 224 148, 176 216, 128 240 C 80 216, 32 148, 32 56 C 32 32, 80 16, 128 16 Z" 
+        fill="none" stroke="#1E3A5F" stroke-width="14" stroke-linejoin="round" stroke-linecap="round"/>
+  
+  <!-- Aviation Horizon Arc -->
+  <path d="M 54 116 C 88 92, 168 92, 202 116" 
+        fill="none" stroke="#1E3A5F" stroke-width="7" stroke-linecap="round"/>
+
+  <!-- Airplane Silhouette -->
+  <path d="M 128 50 L 132 70 L 180 82 L 180 88 L 133 85 L 133 104 L 145 114 L 145 119 L 128 116 L 111 119 L 111 114 L 123 104 L 123 85 L 76 88 L 76 82 L 124 70 Z" 
+        fill="#1E3A5F"/>
+
+  <!-- Document Sheet -->
+  <path d="M 88 126 L 144 126 L 168 150 L 168 206 C 168 210, 164 214, 160 214 L 88 214 C 84 214, 80 210, 80 206 L 80 134 C 80 130, 84 126, 88 126 Z" 
+        fill="none" stroke="#1E3A5F" stroke-width="9" stroke-linejoin="round"/>
+  <!-- Document Fold Corner -->
+  <path d="M 144 126 L 144 150 L 168 150" fill="none" stroke="#1E3A5F" stroke-width="9" stroke-linejoin="round"/>
+  <!-- Document Text Bars -->
+  <line x1="96" y1="152" x2="132" y2="152" stroke="#1E3A5F" stroke-width="6" stroke-linecap="round"/>
+  <line x1="96" y1="168" x2="128" y2="168" stroke="#1E3A5F" stroke-width="6" stroke-linecap="round"/>
+  <line x1="96" y1="184" x2="118" y2="184" stroke="#1E3A5F" stroke-width="6" stroke-linecap="round"/>
+
+  <!-- Magnifying Glass with Check Mark -->
+  <circle cx="152" cy="182" r="24" fill="none" stroke="#1E3A5F" stroke-width="9"/>
+  <line x1="169" y1="199" x2="188" y2="218" stroke="#1E3A5F" stroke-width="11" stroke-linecap="round"/>
+  <!-- Check Mark inside Lens -->
+  <path d="M 142 182 L 149 189 L 163 175" fill="none" stroke="#1E3A5F" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

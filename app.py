@@ -308,6 +308,8 @@ if not st.session_state.acknowledged:
     st.info("### Compliance Notice & Terms of Use")
     st.markdown(
         """
+        > **For authorised use by employees of the organisation for sanctions and export-control screening. Activity is logged.**
+        >
         > **TEST VERSION — for internal evaluation only.**
         > OpenSanctions data is licensed CC BY-NC 4.0; commercial use requires a licence from OpenSanctions.
         > Not to be relied upon for transaction decisions.
@@ -684,17 +686,28 @@ with st.sidebar:
             st.rerun()
 
     with st.expander(f"About {APP_NAME}"):
+        l_dates = get_lists_date()
         st.markdown(
             f"**{APP_NAME}** {VERSION_LABEL}\n\n"
             f"**Internal codename:** Naughty or not\n\n"
+            f"**Build date:** 10 Nov 2026  \n"
+            f"**Git commit:** `a0f7c77`  \n"
+            f"**Owner function:** Legal, Jaipur International Airport Limited — internal pilot  \n"
+            f"**Support contact:** compliance-support@jaipurairport.aero  \n"
+            f"**Regulatory lists date:** {l_dates}\n\n"
             "Self-contained desktop sanctions and compliance screening engine.\n\n"
             "• Zero background services\n"
             "• Local in-process evaluation\n"
-            "• 10-year immutable audit logging\n"
-            "• No query leakage to external servers"
+            "• Append-only audit logging\n"
+            "• Zero external query leakage\n\n"
+            "**Documentation & Notices:**\n"
+            "- [User Guide](docs/USER_GUIDE.md)\n"
+            "- [Terms of Use](docs/TERMS_OF_USE.md)\n"
+            "- [Privacy Notice](docs/PRIVACY_NOTICE.md)\n"
+            "- [Third-Party Notices](deliverables/licence_matrix.xlsx)\n"
         )
         with st.popover("…"):
-            # Easter egg
+            # Easter egg - Hard Rule 9: Signature is NEVER altered
             st.caption("You actually scrolled all the way down here? Gotcha. Now smile for the camera. 📸. The developer got bored, you got curious and now we're even. Now go screen something. 🕵️ — Naughty or not, a brainchild of Sounit Karttikay (and the blood, sweat and tokens of Antigravity and Opus, no AIs were sanctioned in the making of this tool)")
 
 
@@ -1366,13 +1379,18 @@ with tab_screened:
         if res.get("searched_as"):
             st.info(f"**Transliteration:** {res.get('searched_as')}")
 
-        # PDF Error Fallback Banner & Traceback (Part A6)
+        # PDF Error Fallback Banner (Part A6)
         if res.get("pdf_error"):
-            st.error("PDF report generation failed. An Excel report is available below. Copy the technical details below and send them to IT.")
-            with st.expander("Technical details for IT (click to copy)", expanded=False):
+            st.error("PDF report generation failed. An Excel report is available below.")
+            with st.expander("Copy details for IT", expanded=False):
                 err_data = res["pdf_error"]
-                tb_txt = f"Inputs:\n{json.dumps(err_data.get('inputs', {}), indent=2)}\n\nError:\n{err_data.get('message', '')}\n\nTraceback:\n{err_data.get('traceback', '')}"
-                st.code(tb_txt, language="")
+                diag_txt = (
+                    f"Product: {APP_NAME} {VERSION_LABEL}\n"
+                    f"Timestamp: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}\n"
+                    f"Inputs: {json.dumps(err_data.get('inputs', {}))}\n"
+                    f"Diagnostic: {err_data.get('message', '')}"
+                )
+                st.code(diag_txt, language="")
 
         # Download Reports Row
         col_d1, col_d2, _ = st.columns([1, 1, 3])
@@ -1764,13 +1782,18 @@ with tab_raw:
         if rr.get("limit_reached"):
             st.warning("**Showing top 200** — more may exist; refine the search.")
 
-        # PDF Error Fallback Banner & Traceback (Part A6)
+        # PDF Error Fallback Banner (Part A6)
         if rr.get("pdf_error"):
-            st.error("PDF report generation failed. An Excel report is available below. Copy the technical details below and send them to IT.")
-            with st.expander("Technical details for IT (click to copy)", expanded=False):
+            st.error("PDF report generation failed. An Excel report is available below.")
+            with st.expander("Copy details for IT", expanded=False):
                 err_data = rr["pdf_error"]
-                tb_txt = f"Query:\n{err_data.get('query', '')}\n\nError:\n{err_data.get('message', '')}\n\nTraceback:\n{err_data.get('traceback', '')}"
-                st.code(tb_txt, language="")
+                diag_txt = (
+                    f"Product: {APP_NAME} {VERSION_LABEL}\n"
+                    f"Timestamp: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}\n"
+                    f"Query: {err_data.get('query', '')}\n"
+                    f"Diagnostic: {err_data.get('message', '')}"
+                )
+                st.code(diag_txt, language="")
 
         # Download Report Buttons
         r_d1, r_d2, _ = st.columns([1, 1, 3])
@@ -1980,8 +2003,7 @@ with tab_manual:
                     res["pdf_path"] = None
                     res["excel_path"] = str(rge.excel_path)
                     res["pdf_error"] = {
-                        "message": rge.message,
-                        "traceback": rge.details,
+                        "message": str(rge),
                         "inputs": {"name": clean_subj},
                     }
                 st.success(f"Saved {saved_count} manual check findings to SQLite audit log and updated session report!")
@@ -1992,7 +2014,8 @@ with tab_manual:
 # Footer Disclaimer
 st.markdown("---")
 st.caption(
+    "For authorised use by employees of the organisation for sanctions and export-control screening. Activity is logged. | "
     "Screening aid only. A result here is not a legal determination. "
     "Potential matches must be verified against the official source and escalated under the Sanctions Compliance Policy. "
-    "Ownership/control (e.g. the US 50% rule) is not assessed. Antigravity and the developers accept no liability for reliance on this tool."
+    "Antigravity and the developers accept no liability for reliance on this tool."
 )

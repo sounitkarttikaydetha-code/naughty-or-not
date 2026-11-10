@@ -17,10 +17,39 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, Tabl
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+
 from modules.common.paths import get_reports_dir, get_app_data_dir
 from modules.common.records_store import get_record, build_13_sections
 import shutil
 import tempfile
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+FONTS_DIR = PROJECT_ROOT / "assets" / "fonts"
+_NOTO_REGISTERED = False
+
+
+def _register_pdf_fonts():
+    global _NOTO_REGISTERED
+    if _NOTO_REGISTERED:
+        return
+    try:
+        f_reg = FONTS_DIR / "NotoSans-Regular.ttf"
+        if f_reg.is_file():
+            pdfmetrics.registerFont(TTFont('NotoSans', str(f_reg)))
+            pdfmetrics.registerFont(TTFont('NotoSans-Bold', str(f_reg)))
+        f_ar = FONTS_DIR / "NotoSansArabic-Regular.ttf"
+        if f_ar.is_file():
+            pdfmetrics.registerFont(TTFont('NotoSansArabic', str(f_ar)))
+        f_dev = FONTS_DIR / "NotoSansDevanagari-Regular.ttf"
+        if f_dev.is_file():
+            pdfmetrics.registerFont(TTFont('NotoSansDevanagari', str(f_dev)))
+        _NOTO_REGISTERED = True
+    except Exception as e:
+        pass
+
+_register_pdf_fonts()
 
 
 class ReportGenerationError(Exception):
@@ -83,34 +112,47 @@ def soft_wrap_text(text: Any) -> str:
     return str(text)
 
 
+def format_name_with_translit(name: Any) -> str:
+    """Format name preserving original script with transliteration in brackets if non-Latin."""
+    if not name:
+        return ""
+    name_str = str(name).strip()
+    has_non_latin = any(ord(c) > 0x024F for c in name_str if c.isalpha())
+    if has_non_latin and "(" not in name_str:
+        translit = anyascii.anyascii(name_str).strip()
+        if translit and translit.lower() != name_str.lower():
+            return f"{name_str} ({translit})"
+    return name_str
+
+
 def sanitize_for_pdf(text: Any) -> str:
     """
-    Sanitize text for ReportLab Helvetica rendering.
-    Replaces status emojis with plain-text status tags, replaces typography dashes/quotes,
-    transliterates non-Latin characters using anyascii to avoid missing-glyph boxes,
-    and preserves basic HTML formatting.
+    Sanitize text for ReportLab NotoSans rendering.
+    Replaces status emojis with drawn markers (coloured circle ● + status word),
+    preserves original non-Latin scripts (Cyrillic natively, Arabic/Devanagari wrapped in font tags),
+    and escapes XML entities without breaking formatting tags.
     """
     if text is None:
         return "—"
     s = str(text)
 
-    # 1. Map known status markers and emojis to plain-text tags
+    # 1. Map known status markers and emojis to drawn status tags
     emoji_map = {
-        "🔴": "[RED] ",
-        "🟠": "[AMBER] ",
-        "ℹ️": "[INFO] ",
-        "ℹ": "[INFO] ",
-        "✅": "[CLEAR] ",
-        "⚪": "[NOT CHECKED] ",
-        "✈️": "[SAFETY] ",
-        "✈": "[SAFETY] ",
-        "📦": "[EXPORT CONTROL] ",
-        "⚠️": "[WARNING] ",
-        "⚠": "[WARNING] ",
-        "🔍": "[SEARCH] ",
-        "📸": "[PHOTO] ",
-        "🕵️": "[AGENT] ",
-        "🕵": "[AGENT] ",
+        "🔴": '<font color="#B71C1C">●</font> ',
+        "🟠": '<font color="#BF360C">●</font> ',
+        "ℹ️": '<font color="#0D47A1">●</font> ',
+        "ℹ": '<font color="#0D47A1">●</font> ',
+        "✅": '<font color="#1B5E20">●</font> ',
+        "⚪": '<font color="#546E7A">●</font> ',
+        "✈️": '<font color="#B71C1C">●</font> ',
+        "✈": '<font color="#B71C1C">●</font> ',
+        "📦": '<font color="#BF360C">●</font> ',
+        "⚠️": '<font color="#BF360C">▲</font> ',
+        "⚠": '<font color="#BF360C">▲</font> ',
+        "🔍": "",
+        "📸": "",
+        "🕵️": "",
+        "🕵": "",
         "—": "-",
         "–": "-",
         "“": '"',
@@ -119,23 +161,24 @@ def sanitize_for_pdf(text: Any) -> str:
         "’": "'",
         "…": "...",
         "•": "*",
-        "\u200b": "", # Zero-width space causes missing glyph square in Helvetica
+        "\u200b": "",
     }
     for k, v in emoji_map.items():
         s = s.replace(k, v)
 
-    # 2. Transliterate non-Latin characters using anyascii
-    out = []
-    for ch in s:
-        try:
-            ch.encode("latin-1")
-            out.append(ch)
-        except UnicodeEncodeError:
-            out.append(anyascii.anyascii(ch))
-    clean = "".join(out)
+    # 2. Wrap Arabic or Devanagari in font tags
+    def _wrap_scripts(m):
+        seg = m.group(0)
+        if any('\u0600' <= c <= '\u06FF' or '\u0750' <= c <= '\u077F' or '\u08A0' <= c <= '\u08FF' for c in seg):
+            return f'<font name="NotoSansArabic">{seg}</font>'
+        if any('\u0900' <= c <= '\u097F' for c in seg):
+            return f'<font name="NotoSansDevanagari">{seg}</font>'
+        return seg
 
-    # 3. Escape XML entities where necessary without breaking simple tags
-    parts = re.split(r'(</?[a-zA-Z0-9]+(?: [^>]+)?>)', clean)
+    s = re.sub(r'([\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]+|[\u0900-\u097F]+)', _wrap_scripts, s)
+
+    # 3. Escape XML entities safely
+    parts = re.split(r'(</?[a-zA-Z0-9]+(?: [^>]+)?>)', s)
     final_parts = []
     for p in parts:
         if p.startswith('<') and p.endswith('>'):
@@ -146,18 +189,18 @@ def sanitize_for_pdf(text: Any) -> str:
 
 
 def format_chip_text(tier_or_status: str) -> str:
-    """Format status with both symbol and word for accessibility and colour-blind support."""
+    """Format status with drawn marker (dot + word) for screen, PDF and Excel."""
     mapping = {
-        "POTENTIAL_MATCH": "🔴 LIKELY",
-        "POSSIBLE_MATCH_REVIEW": "🟠 POSSIBLE",
-        "BELOW_THRESHOLD": "ℹ️ INFO",
-        "NO_MATCH": "✅ CLEAR",
-        "NOT_CHECKED": "⚪ NOT CHECKED",
-        "FAILED": "⚪ NOT CHECKED",
-        "NOT_RUN": "⚪ NOT RUN",
-        "SAFETY": "✈️ SAFETY",
-        "EXPORT_CONTROL": "📦 EXPORT CONTROL",
-        "EAR_RESTRICTION": "📦 EXPORT CONTROL",
+        "POTENTIAL_MATCH": "● LIKELY",
+        "POSSIBLE_MATCH_REVIEW": "● POSSIBLE",
+        "BELOW_THRESHOLD": "● INFO",
+        "NO_MATCH": "● CLEAR",
+        "NOT_CHECKED": "● NOT CHECKED",
+        "FAILED": "● NOT CHECKED",
+        "NOT_RUN": "● NOT RUN",
+        "SAFETY": "● SAFETY",
+        "EXPORT_CONTROL": "● EXPORT CONTROL",
+        "EAR_RESTRICTION": "● EXPORT CONTROL",
     }
     return mapping.get(str(tier_or_status), str(tier_or_status))
 
@@ -204,7 +247,8 @@ def _self_check_pdf(
     if clean_search and len(clean_search) >= 3:
         # Check if full name or prominent token is present
         if clean_search not in full_norm:
-            search_tokens = [tok for tok in clean_search.split() if len(tok) >= 3]
+            raw_tokens = [re.sub(r'[^a-z0-9]', '', anyascii.anyascii(tok).lower()) for tok in str(searched_name).split()]
+            search_tokens = [tok for tok in raw_tokens if len(tok) >= 3]
             if not search_tokens or not any(tok in full_norm for tok in search_tokens):
                 raise ReportSelfCheckError(f"PDF validation failed: Searched name '{searched_name}' not found in report text")
 
@@ -264,8 +308,9 @@ def generate_reports(
         or inputs.get("country")
         or "Search"
     )
-    safe_name = _safe_filename(entity_key)[:30]
-    base_name = f"Screening_Report_{search_type}_{safe_name}_{ts}"
+    safe_name = _safe_filename(str(entity_key))[:30]
+    safe_search = _safe_filename(str(search_type))[:30]
+    base_name = f"Screening_Report_{safe_search}_{safe_name}_{ts}"
 
     pdf_path = reports_dir / f"{base_name}.pdf"
     excel_path = reports_dir / f"{base_name}.xlsx"
@@ -360,17 +405,17 @@ def _build_pdf(
     title_style = ParagraphStyle(
         'DocTitle',
         parent=styles['Heading1'],
-        fontName='Helvetica-Bold',
+        fontName='NotoSans',
         fontSize=16,
         leading=20,
-        textColor=colors.HexColor("#0D47A1"),
+        textColor=colors.HexColor("#1E3A5F"),
         spaceAfter=6,
         wordWrap='CJK',
     )
     notice_style = ParagraphStyle(
         'Notice',
         parent=styles['Normal'],
-        fontName='Helvetica',
+        fontName='NotoSans',
         fontSize=7,
         leading=9,
         textColor=colors.HexColor("#B71C1C"),
@@ -379,7 +424,7 @@ def _build_pdf(
     meta_style = ParagraphStyle(
         'Meta',
         parent=styles['Normal'],
-        fontName='Helvetica',
+        fontName='NotoSans',
         fontSize=8,
         leading=11,
         wordWrap='CJK',
@@ -387,7 +432,7 @@ def _build_pdf(
     banner_style = ParagraphStyle(
         'Banner',
         parent=styles['Normal'],
-        fontName='Helvetica-Bold',
+        fontName='NotoSans',
         fontSize=10,
         leading=13,
         textColor=colors.white,
@@ -398,7 +443,7 @@ def _build_pdf(
     cell_style = ParagraphStyle(
         'TableCell',
         parent=styles['Normal'],
-        fontName='Helvetica',
+        fontName='NotoSans',
         fontSize=7.5,
         leading=9.5,
         wordWrap='CJK',
@@ -406,16 +451,16 @@ def _build_pdf(
     cell_style_bold = ParagraphStyle(
         'TableCellBold',
         parent=cell_style,
-        fontName='Helvetica-Bold',
+        fontName='NotoSans',
         wordWrap='CJK',
     )
     appendix_header_style = ParagraphStyle(
         'AppendixHeader',
         parent=styles['Heading2'],
-        fontName='Helvetica-Bold',
+        fontName='NotoSans',
         fontSize=11,
         leading=14,
-        textColor=colors.HexColor("#0D47A1"),
+        textColor=colors.HexColor("#1E3A5F"),
         spaceBefore=8,
         spaceAfter=4,
         wordWrap='CJK',
@@ -423,7 +468,7 @@ def _build_pdf(
     sec_subhead_style = ParagraphStyle(
         'SecSubhead',
         parent=styles['Normal'],
-        fontName='Helvetica-Bold',
+        fontName='NotoSans',
         fontSize=8,
         leading=10,
         textColor=colors.HexColor("#263238"),
@@ -498,7 +543,7 @@ def _build_pdf(
     t_src = Table(src_table_data, colWidths=[80, 155, 95, 75, 118], repeatRows=1)
     t_src.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#ECEFF1")),
-        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('FONTNAME', (0,0), (-1,0), 'NotoSans'),
         ('FONTSIZE', (0,0), (-1,-1), 7.5),
         ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#CFD8DC")),
         ('TOPPADDING', (0,0), (-1,-1), 2.5),
@@ -525,8 +570,8 @@ def _build_pdf(
             Paragraph("<b>Reason</b>", cell_style_bold),
         ]]
         for h in sorted_hits:
-            m_name = h.get("matched_name", "—")
-            p_name = h.get("primary_name", "—")
+            m_name = format_name_with_translit(h.get("matched_name", "—"))
+            p_name = format_name_with_translit(h.get("primary_name", "—"))
             exp = f" [via {h.get('expanded_from')}]" if h.get("expanded_from") else ""
             display_name = f"<b>{sanitize_for_pdf(p_name)}</b><br/><font color='#555555'>Matched: {sanitize_for_pdf(m_name)}{sanitize_for_pdf(exp)}</font>"
             sanc_data.append([
@@ -540,7 +585,7 @@ def _build_pdf(
         t_sanc = Table(sanc_data, colWidths=[60, 85, 195, 50, 45, 88], repeatRows=1)
         t_sanc.setStyle(TableStyle([
             ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#ECEFF1")),
-            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+            ('FONTNAME', (0,0), (-1,0), 'NotoSans'),
             ('FONTSIZE', (0,0), (-1,-1), 7),
             ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#CFD8DC")),
             ('TOPPADDING', (0,0), (-1,-1), 2.5),
@@ -572,7 +617,7 @@ def _build_pdf(
         t_av = Table(av_data, colWidths=[85, 105, 205, 128], repeatRows=1)
         t_av.setStyle(TableStyle([
             ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#ECEFF1")),
-            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+            ('FONTNAME', (0,0), (-1,0), 'NotoSans'),
             ('FONTSIZE', (0,0), (-1,-1), 7),
             ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#CFD8DC")),
             ('TOPPADDING', (0,0), (-1,-1), 2.5),
@@ -601,7 +646,7 @@ def _build_pdf(
         t_cr = Table(cr_data, colWidths=[85, 95, 205, 138], repeatRows=1)
         t_cr.setStyle(TableStyle([
             ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#ECEFF1")),
-            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+            ('FONTNAME', (0,0), (-1,0), 'NotoSans'),
             ('FONTSIZE', (0,0), (-1,-1), 7),
             ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#CFD8DC")),
             ('TOPPADDING', (0,0), (-1,-1), 2.5),
@@ -632,7 +677,7 @@ def _build_pdf(
         t_man = Table(man_data, colWidths=[80, 105, 80, 130, 128], repeatRows=1)
         t_man.setStyle(TableStyle([
             ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#ECEFF1")),
-            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+            ('FONTNAME', (0,0), (-1,0), 'NotoSans'),
             ('FONTSIZE', (0,0), (-1,-1), 7),
             ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#CFD8DC")),
             ('TOPPADDING', (0,0), (-1,-1), 2.5),
@@ -692,8 +737,8 @@ def _build_pdf(
                 rec_payload = get_record(src_list, rec_id) or h
                 sections = build_13_sections(rec_payload, src_list)
 
-                pname = h.get("primary_name") or rec_payload.get("name") or "—"
-                mname = h.get("matched_name") or pname
+                pname = format_name_with_translit(h.get("primary_name") or rec_payload.get("name") or "—")
+                mname = format_name_with_translit(h.get("matched_name") or pname)
                 score_str = f"{float(h.get('score') or 0.0):.4f}"
                 reason_str = str(h.get("reason") or h.get("reason_code") or "Match")
 
@@ -733,7 +778,7 @@ def _build_pdf(
 
     # Footer note
     story.append(Spacer(1, 10))
-    story.append(Paragraph(sanitize_for_pdf("<i>End of Screening Report. Generated by Naughty or not (Sanction checK).</i>"), meta_style))
+    story.append(Paragraph(sanitize_for_pdf("<i>End of Screening Report. Generated by Clearance Check (Sanction checK).</i>"), meta_style))
 
     doc.build(story)
 
@@ -929,11 +974,6 @@ def generate_raw_reports(
     options: Dict[str, Any],
 ) -> Tuple[Path, Path]:
     """Generate reports specifically for Raw Text Index Searches."""
-    sanctions_hits = sanctions_hits or []
-    aviation_hits = aviation_hits or []
-    country_risk_hits = country_risk_hits or []
-    source_statuses = source_statuses or []
-
     reports_dir = _get_base_reports_dir()
     reports_dir.mkdir(parents=True, exist_ok=True)
     ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
@@ -964,12 +1004,15 @@ def generate_raw_reports(
     try:
         doc = SimpleDocTemplate(str(pdf_path), pagesize=A4, leftMargin=36, rightMargin=36, topMargin=36, bottomMargin=36)
         styles = getSampleStyleSheet()
+        raw_title_style = ParagraphStyle('RawH1', parent=styles['Heading1'], fontName='NotoSans', fontSize=15, leading=18, textColor=colors.HexColor("#1E3A5F"))
+        raw_notice_style = ParagraphStyle('RawN', parent=styles['Normal'], fontName='NotoSans', fontSize=7, leading=9, textColor=colors.HexColor("#B71C1C"))
+        raw_body_style = ParagraphStyle('RawB', parent=styles['Normal'], fontName='NotoSans', fontSize=8.5, leading=11)
         story = [
-            Paragraph(sanitize_for_pdf(f"<b>{APP_NAME} - {MAIN_TITLE} Raw Search Audit Report</b>"), styles['Heading1']),
+            Paragraph(sanitize_for_pdf(f"<b>{APP_NAME} — {MAIN_TITLE} Raw Search Audit Report</b>"), raw_title_style),
             Spacer(1, 4),
-            Paragraph(sanitize_for_pdf(NOTICE_TEXT), ParagraphStyle('N', parent=styles['Normal'], fontSize=7, textColor=colors.HexColor("#B71C1C"))),
+            Paragraph(sanitize_for_pdf(NOTICE_TEXT), raw_notice_style),
             Spacer(1, 10),
-            Paragraph(sanitize_for_pdf(f"<b>Query:</b> {query} | <b>Total Matches:</b> {len(results)} | <b>Options:</b> {options}"), styles['Normal']),
+            Paragraph(sanitize_for_pdf(f"<b>Query:</b> {format_name_with_translit(query)} | <b>Total Matches:</b> {len(results)} | <b>Options:</b> {options}"), raw_body_style),
             Spacer(1, 10),
         ]
         t_data = [["Source", "Source ID", "Field", "Matched Term", "Snippet / Details"]]
@@ -979,12 +1022,12 @@ def generate_raw_reports(
                 r.get("entity_id", "—"),
                 r.get("field", "—"),
                 r.get("term", "—"),
-                Paragraph(sanitize_for_pdf(str(r.get("snippet", "—"))[:200]), styles['Normal']),
+                Paragraph(sanitize_for_pdf(str(r.get("snippet", "—"))[:200]), raw_body_style),
             ])
         t = Table(t_data, colWidths=[80, 80, 70, 90, 203], repeatRows=1)
         t.setStyle(TableStyle([
             ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#ECEFF1")),
-            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+            ('FONTNAME', (0,0), (-1,0), 'NotoSans'),
             ('FONTSIZE', (0,0), (-1,-1), 8),
             ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#CFD8DC")),
             ('TOPPADDING', (0,0), (-1,-1), 3),

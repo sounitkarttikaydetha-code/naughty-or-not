@@ -1,86 +1,95 @@
-# Status Markers Configuration (Part C2)
+# Status Markers Configuration (Part C2 & Part P3)
 # Defines functional status indicators paired with explicit text.
-# Meaning must never depend on color or emoji rendering alone.
+# Drawn markers use a solid filled circle (●) in the status colour.
+# Status glyph emojis are retired from UI and reports (retained only in author signature under Hard Rule 9).
 
 markers:
   LIKELY:
     symbol: "🔴"
+    dot_char: "●"
     label: "LIKELY"
-    full_text: "🔴 LIKELY"
+    full_text: "● LIKELY"
     description: "High confidence potential match requiring mandatory verification and escalation."
     hex_color: "#B71C1C"
     bg_color: "#FFEBEE"
-    pdf_tag: "[RED] LIKELY"
+    pdf_tag: "● LIKELY"
     excel_fill: "FFCDD2"
 
   POSSIBLE:
     symbol: "🟠"
+    dot_char: "●"
     label: "POSSIBLE"
-    full_text: "🟠 POSSIBLE"
+    full_text: "● POSSIBLE"
     description: "Possible match or sound-alike similarity requiring manual compliance review."
     hex_color: "#BF360C"
     bg_color: "#FFF3E0"
-    pdf_tag: "[AMBER] POSSIBLE"
+    pdf_tag: "● POSSIBLE"
     excel_fill: "FFE0B2"
 
   INFO:
     symbol: "ℹ️"
+    dot_char: "●"
     label: "INFO"
-    full_text: "ℹ️ INFO"
+    full_text: "● INFO"
     description: "Informational result, advisory notice, or low-scoring weak similarity."
     hex_color: "#0D47A1"
     bg_color: "#E3F2FD"
-    pdf_tag: "[INFO] INFO"
+    pdf_tag: "● INFO"
     excel_fill: "BBDEFB"
 
   CLEAR:
     symbol: "✅"
+    dot_char: "●"
     label: "CLEAR"
-    full_text: "✅ CLEAR"
+    full_text: "● CLEAR"
     description: "No matching sanctions entries detected in screened sources."
     hex_color: "#1B5E20"
     bg_color: "#E8F5E9"
-    pdf_tag: "[CLEAR] CLEAR"
+    pdf_tag: "● CLEAR"
     excel_fill: "C8E6C9"
 
   NOT_CHECKED:
     symbol: "⚪"
+    dot_char: "●"
     label: "NOT CHECKED"
-    full_text: "⚪ NOT CHECKED"
+    full_text: "● NOT CHECKED"
     description: "Source was not queried for this search type."
     hex_color: "#546E7A"
     bg_color: "#ECEFF1"
-    pdf_tag: "[NOT CHECKED] NOT CHECKED"
+    pdf_tag: "● NOT CHECKED"
     excel_fill: "CFD8DC"
 
   SAFETY:
     symbol: "✈️"
+    dot_char: "●"
     label: "SAFETY"
-    full_text: "✈️ SAFETY"
+    full_text: "● SAFETY"
     description: "Aviation safety finding or carrier operating ban."
     hex_color: "#B71C1C"
     bg_color: "#FFEBEE"
-    pdf_tag: "[SAFETY] SAFETY"
+    pdf_tag: "● SAFETY"
     excel_fill: "FFCDD2"
 
   EXPORT_CONTROL:
     symbol: "📦"
+    dot_char: "●"
     label: "EXPORT CONTROL"
-    full_text: "📦 EXPORT CONTROL"
+    full_text: "● EXPORT CONTROL"
     description: "Export control listing or denied persons restriction."
     hex_color: "#BF360C"
     bg_color: "#FFF3E0"
-    pdf_tag: "[EXPORT CONTROL] EXPORT CONTROL"
+    pdf_tag: "● EXPORT CONTROL"
     excel_fill: "FFE0B2"
 
   SEARCH:
     symbol: "🔍"
+    dot_char: ""
     label: "Search"
-    full_text: "🔍 Search"
+    full_text: "Search"
     description: "Search control action."
-    hex_color: "#0F52BA"
+    hex_color: "#1E3A5F"
     bg_color: "#F1F5F9"
-    pdf_tag: "[SEARCH] Search"
+    pdf_tag: "Search"
     excel_fill: "FFFFFF"
 
 # Signature locations under Hard Rule 9 (exempt from emoji removal)

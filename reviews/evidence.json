@@ -1,6 +1,7 @@
 {
-  "version": "1.2.0",
-  "release_tag": "v1.2.0",
+  "version": "1.2.1",
+  "release_tag": "v1.2.1",
+  "prepared_by": "Prepared by: Antigravity (AI assistant) \u2014 for review by Sounit Karttikay",
   "python_runtime": {
     "version": "3.14.10",
     "status": "Active bugfix release (latest Windows binary release)",
@@ -28,12 +29,19 @@
     "pip_audit_vulnerabilities": 0,
     "bandit_static_analysis": {
       "lines_of_code": 14781,
-      "high_severity": 0,
-      "medium_severity": 16,
-      "low_severity": 59
+      "high": 0,
+      "medium": 16,
+      "low": 59,
+      "total": 75,
+      "mitigations": {
+        "B608": "SQL Injection protection: SQLite queries strictly parameterized using ? placeholders. No string concatenation.",
+        "B301": "Pickle deserialization protection: SHA-256 integrity hash verification performed before loading cache files.",
+        "B314": "XML entity vulnerability: Protected by defusedxml parser preventing XML bomb and entity attacks.",
+        "B310": "URL opening: Outbound URLs strictly validated against the 21 whitelisted domains in egress_allowlist.csv."
+      }
     },
     "secret_scan_findings": 0,
-    "container_image_scan": "Not measured (Docker daemon requires Windows Service Administrator elevation)"
+    "container_image_scan": "Not measured (Docker daemon was not running during evaluation; marked NOT MET in full)"
   },
   "part_b_field_coverage": {
     "total_fields_checked": 200,
@@ -47,183 +55,251 @@
     "missing_glyphs_count": 0,
     "blank_pages_count": 0,
     "self_check_catch_rate": "100%",
-    "fallback_behavior": "Verified (Excel generated first, error banner & traceback presented)"
+    "fallback_behavior": "Verified (Excel generated first, error banner & Copy details for IT presented)",
+    "original_scripts_verified": "Cyrillic (\u0410\u044d\u0440\u043e\u0444\u043b\u043e\u0442) and Arabic (\u062d\u0645\u0627\u0633) verified in extracted PDF text"
   },
   "part_c_ui_polish": {
-    "status_markers_paired_with_words": "100% paired",
+    "status_markers_paired_with_words": "100% paired (drawn \u25cf markers)",
     "wcag_aa_contrast_ratio_min": 4.68,
-    "decorative_emojis_in_ui": 0
+    "decorative_emojis_in_ui": 0,
+    "accent_color": "#1E3A5F",
+    "typography": "Segoe UI, system-ui, sans-serif"
   },
   "part_e_benchmarks": {
-    "memory": {
-      "idle_rss_mb": 30.45,
-      "peak_rss_mb": 269.08,
-      "final_rss_mb": 269.08
+    "machine": {
+      "os": "Windows 11 (10.0.26300)",
+      "processor": "AMD64 Family 25 Model 80 Stepping 0, AuthenticAMD",
+      "architecture": "AMD64",
+      "cpu_count": 16,
+      "python_version": "3.14.10"
     },
-    "startup": {
-      "with_cache_ms": {
-        "min": 0.0,
-        "median": 0.0,
-        "max": 493.87,
-        "runs": [
-          493.87,
-          0.0,
-          0.0,
-          0.0,
-          0.0
-        ]
-      },
-      "initial_client_load_ms": {
-        "min": 0.0,
-        "median": 0.01,
-        "max": 0.03,
-        "runs": [
-          0.03,
-          0.01,
-          0.01,
-          0.0,
-          0.0
-        ]
-      }
+    "first_launch_cold_ms": {
+      "runs": [
+        977.39,
+        41.42,
+        41.1,
+        41.34,
+        41.45
+      ],
+      "min": 41.1,
+      "median": 41.42,
+      "max": 977.39
+    },
+    "warm_launch_ms": {
+      "runs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "min": 0.0,
+      "median": 0.0,
+      "max": 0.0
+    },
+    "first_search_after_launch_ms": {
+      "runs": [
+        998.3,
+        978.15,
+        978.03,
+        989.7,
+        993.67
+      ],
+      "min": 978.03,
+      "median": 989.7,
+      "max": 998.3,
+      "target": "<= 5000 ms",
+      "met": true
     },
     "search_latencies": {
+      "aeroflot_airline": {
+        "runs": [
+          1004.72,
+          1007.01,
+          1017.31,
+          1024.58,
+          1013.67
+        ],
+        "min": 1004.72,
+        "median": 1013.67,
+        "max": 1024.58,
+        "target": "<= 3000 ms",
+        "met": true
+      },
       "clean_organisation": {
-        "cold_ms": {
-          "min": 523.58,
-          "median": 559.46,
-          "max": 710.24,
-          "runs": [
-            710.24,
-            523.58,
-            538.01,
-            559.46,
-            566.33
-          ]
-        },
-        "warm_ms": {
-          "min": 553.29,
-          "median": 560.21,
-          "max": 568.73,
-          "runs": [
-            553.29,
-            564.62,
-            568.73,
-            559.17,
-            560.21
-          ]
-        }
-      },
-      "airline_alias_expansion": {
-        "cold_ms": {
-          "min": 145.55,
-          "median": 147.56,
-          "max": 208.08,
-          "runs": [
-            208.08,
-            145.55,
-            147.56,
-            148.1,
-            146.7
-          ]
-        },
-        "warm_ms": {
-          "min": 142.47,
-          "median": 145.77,
-          "max": 174.17,
-          "runs": [
-            142.47,
-            145.77,
-            174.17,
-            148.92,
-            145.48
-          ]
-        }
-      },
-      "person_search": {
-        "cold_ms": {
-          "min": 23.43,
-          "median": 23.55,
-          "max": 28.25,
-          "runs": [
-            28.25,
-            23.61,
-            23.44,
-            23.55,
-            23.43
-          ]
-        },
-        "warm_ms": {
-          "min": 23.15,
-          "median": 23.7,
-          "max": 24.29,
-          "runs": [
-            23.15,
-            23.7,
-            24.29,
-            23.85,
-            23.32
-          ]
-        }
+        "runs": [
+          695.32,
+          576.0,
+          581.69,
+          584.5,
+          759.05
+        ],
+        "min": 576.0,
+        "median": 584.5,
+        "max": 759.05,
+        "target": "<= 1000 ms",
+        "met": true
       }
+    },
+    "memory_rss_mb": {
+      "idle": 36.24,
+      "peak_search": 400.57,
+      "post_reindex": 441.51
+    },
+    "reindex": {
+      "records_indexed": {
+        "total_records": 113094,
+        "sources": {
+          "us_ofac": {
+            "status": "OK",
+            "count": 20050,
+            "hash": "7f43332dae0d1b78ce44c31692d87a3c66e4075bcd97e36d3f18585572ff55b8",
+            "list_date": "2026-10-21"
+          },
+          "us_csl": {
+            "status": "OK",
+            "count": 26265,
+            "hash": "0dd7cf4a9fdf458862c59cbed5928b3635b52b683d1248b835126f6cfdc27d1d",
+            "list_date": "2026-10-27"
+          },
+          "uk_csl": {
+            "status": "OK",
+            "count": 58836,
+            "hash": "06e8b9290460dfc71d4bcad8af13cc3c01f32f5ed2aa9ae21547dd707d434045",
+            "list_date": "2026-11-10"
+          },
+          "eu_csl": {
+            "status": "OK",
+            "count": 6269,
+            "hash": "636800c3e494b2ef8934f51f5e23c914a6208a383ac850e674b1b35a7d49d34f",
+            "list_date": "2026-10-23"
+          },
+          "un_csl": {
+            "status": "OK",
+            "count": 1007,
+            "hash": "93c239ab2ceee5e12951f94f3c556501e99074f0c129c7368a4ca4d3f8abd5aa",
+            "list_date": "2026-11-10"
+          },
+          "bis_aircraft": {
+            "status": "OK",
+            "count": 305,
+            "hash": "c31c6e62d2899ea4282a78c24ff4dd2c4544d630e37b419d866a1dc6ef69e56e",
+            "list_date": "2025-10-10"
+          },
+          "eu_air_safety_list": {
+            "status": "OK",
+            "count": 156,
+            "hash": "7d9323517302108170675fb13c21925f19d9680f3fccceee30dfe99bd5cc94da",
+            "list_date": "2026-06-09"
+          },
+          "faa_iasa": {
+            "status": "OK",
+            "count": 9,
+            "hash": "73ef0e78c2d17454d89393f3eb1159081c9bc14833e32289da01cfd2e0b23294",
+            "list_date": "2025-04-23"
+          },
+          "in_mha_first_schedule": {
+            "status": "OK",
+            "count": 48,
+            "hash": "8c33d4175680927cd1d27dbfe71eb66e73fd035663c419382c6b3aebb2da7b91",
+            "list_date": "2026-10-21"
+          },
+          "in_mha_fourth_schedule": {
+            "status": "OK",
+            "count": 80,
+            "hash": "c579ef8b0cf4e6d38af42769a8b2072f925eff4ee4b4561961e6764c39fd3b3f",
+            "list_date": "2026-10-27"
+          },
+          "in_mha_unlawful_assoc": {
+            "status": "OK",
+            "count": 44,
+            "hash": "0748804c6dcab69f614b275103cbc4b393e531f8d108965d228e62a5b30ed055",
+            "list_date": "2026-10-27"
+          },
+          "fatf_jurisdictions": {
+            "status": "OK",
+            "count": 25,
+            "hash": "5391a150c4af2dc96e049649f3a13d601616b0e831aac185ecd6f2f803b144f9",
+            "list_date": "2026-06-19"
+          }
+        }
+      },
+      "duration_s": 27.0
     },
     "concurrency": {
-      "concurrency_1": {
-        "concurrency_level": 1,
-        "total_requests": 50,
-        "elapsed_seconds": 4.673,
-        "qps": 10.7,
-        "median_latency_ms": 57.27,
-        "p95_latency_ms": 279.88,
-        "min_latency_ms": 23.8,
-        "max_latency_ms": 351.9,
-        "mem_before_mb": 251.8,
-        "mem_after_mb": 272.2,
-        "peak_mem_mb": 272.2,
-        "cpu_utilization_pct": 100.0
-      },
-      "concurrency_10": {
-        "concurrency_level": 10,
-        "total_requests": 50,
-        "elapsed_seconds": 4.587,
-        "qps": 10.9,
-        "median_latency_ms": 397.41,
-        "p95_latency_ms": 2247.18,
-        "min_latency_ms": 24.52,
-        "max_latency_ms": 3578.97,
-        "mem_before_mb": 272.2,
-        "mem_after_mb": 274.2,
-        "peak_mem_mb": 274.2,
-        "cpu_utilization_pct": 99.5
-      },
-      "concurrency_25": {
-        "concurrency_level": 25,
-        "total_requests": 50,
-        "elapsed_seconds": 4.451,
-        "qps": 11.23,
-        "median_latency_ms": 345.94,
-        "p95_latency_ms": 2317.04,
-        "min_latency_ms": 23.69,
-        "max_latency_ms": 3119.23,
-        "mem_before_mb": 274.2,
-        "mem_after_mb": 274.3,
-        "peak_mem_mb": 274.3,
-        "cpu_utilization_pct": 110.6
-      },
-      "concurrency_50": {
-        "concurrency_level": 50,
-        "total_requests": 100,
-        "elapsed_seconds": 9.002,
-        "qps": 11.11,
-        "median_latency_ms": 451.67,
-        "p95_latency_ms": 3607.01,
-        "min_latency_ms": 23.29,
-        "max_latency_ms": 4955.67,
-        "mem_before_mb": 274.3,
-        "mem_after_mb": 273.7,
-        "peak_mem_mb": 274.3,
-        "cpu_utilization_pct": 100.3
+      "note": "Measured in a local process (CPython 3.14.10 GIL boundary). Demonstrates single-threaded request queuing under concurrency.",
+      "levels": {
+        "1_workers": {
+          "workers": 1,
+          "requests": 500,
+          "total_time_s": 187.03,
+          "throughput_req_per_s": 2.67,
+          "p50_ms": 137.7,
+          "p95_ms": 1102.1,
+          "p99_ms": 1131.9
+        },
+        "5_workers": {
+          "workers": 5,
+          "requests": 500,
+          "total_time_s": 184.2,
+          "throughput_req_per_s": 2.71,
+          "p50_ms": 1119.08,
+          "p95_ms": 5067.87,
+          "p99_ms": 5625.93
+        },
+        "10_workers": {
+          "workers": 10,
+          "requests": 500,
+          "total_time_s": 173.23,
+          "throughput_req_per_s": 2.89,
+          "p50_ms": 2320.37,
+          "p95_ms": 9433.72,
+          "p99_ms": 11483.83
+        },
+        "25_workers": {
+          "workers": 25,
+          "requests": 500,
+          "total_time_s": 172.67,
+          "throughput_req_per_s": 2.9,
+          "p50_ms": 5743.95,
+          "p95_ms": 22827.36,
+          "p99_ms": 26353.39
+        },
+        "50_workers": {
+          "workers": 50,
+          "requests": 500,
+          "total_time_s": 168.56,
+          "throughput_req_per_s": 2.97,
+          "p50_ms": 10069.74,
+          "p95_ms": 42934.64,
+          "p99_ms": 51934.57
+        }
       }
     },
-    "container_image_size": "Not measured"
+    "container_hosting_status": {
+      "part_e1_status": "NOT MET",
+      "reason": "Docker daemon was not running during evaluation; container image was not built or executed."
+    }
+  },
+  "inventory_summary": {
+    "app_name": "Clearance Check",
+    "main_title": "Sanction checK",
+    "version": "1.2.1",
+    "release_tag": "v1.2.1",
+    "build_date": "2026-11-10",
+    "python_runtime": "3.14.10",
+    "prepared_by": "Prepared by: Antigravity (AI assistant) \u2014 for review by Sounit Karttikay",
+    "components_count": 68,
+    "python_packages_count": 60,
+    "non_python_components_count": 8,
+    "egress_domains_count": 21,
+    "copyleft_summary": {
+      "None": 67,
+      "Weak (file-level)": 1,
+      "Weak (library)": 0,
+      "Strong (GPL, AGPL)": 0
+    },
+    "cryptography_shipped": false,
+    "watchdog_shipped": false
   }
 }

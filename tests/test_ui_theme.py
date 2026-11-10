@@ -38,10 +38,11 @@ class TestModernUITheme(unittest.TestCase):
         self.assertLessEqual(css_size, 30 * 1024, f"theme.css ({css_size} bytes) exceeds 30KB budget")
 
     def test_02_inter_font_budget(self):
-        """Bundled font size <= 1MB."""
-        self.assertTrue(INTER_FONT.is_file(), "Inter-Regular.woff2 must be bundled locally")
-        font_size = INTER_FONT.stat().st_size
-        self.assertLessEqual(font_size, 1024 * 1024, f"Font ({font_size} bytes) exceeds 1MB budget")
+        """Part P2: Inter removed in favor of Windows system font Segoe UI; PDF fonts within budget."""
+        self.assertFalse(INTER_FONT.exists(), "Inter-Regular.woff2 must be removed as per Part P2")
+        pdf_font = PROJECT_ROOT / "assets" / "fonts" / "NotoSans-Regular.ttf"
+        self.assertTrue(pdf_font.is_file(), "NotoSans-Regular.ttf must be present for PDF reporting")
+        self.assertLessEqual(pdf_font.stat().st_size, 1024 * 1024, "PDF font exceeds 1MB budget")
 
     def test_03_zero_network_calls_in_css(self):
         """Theme must never reference external CDNs or external fonts."""

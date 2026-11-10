@@ -1,0 +1,1413 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:bc2dbf4b-eea0-4d7f-804f-341bbaa1bf11",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-11-10T22:30:00Z",
+    "tools": [
+      {
+        "vendor": "Antigravity Engineering",
+        "name": "Clearance Check Deliverables Builder",
+        "version": "1.2.1"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "bom-ref": "pkg:generic/clearance-check@1.2.1",
+      "name": "Clearance Check (Sanction checK)",
+      "version": "1.2.1",
+      "description": "Enterprise sanctions screening, beneficial ownership, and compliance verification engine.",
+      "licenses": [
+        {
+          "license": {
+            "id": "Proprietary"
+          }
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/altair@6.3.0",
+      "name": "altair",
+      "version": "6.3.0",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/altair@6.3.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7defb6ca730676dfc99a299768e2769f51585fcb3dc960ea71aacc368929d65e"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/anyio@4.15.1",
+      "name": "anyio",
+      "version": "4.15.1",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/anyio@4.15.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "6152fdbbf9a77fdec97731721bebf7c4c44f7c29b424b0065826173efc7ed101"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/attrs@26.1.0",
+      "name": "attrs",
+      "version": "26.1.0",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/attrs@26.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c647aa4a12dfbad9333ca4e71fe62ddc36f4e63b2d260a37a8b83d2f043ac309"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/bottle@0.13.4",
+      "name": "bottle",
+      "version": "0.13.4",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/bottle@0.13.4",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "045684fbd2764eac9cdeb824861d1551d113e8b683d8d26e296898d3dd99a12e"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/certifi@2026.10.19",
+      "name": "certifi",
+      "version": "2026.10.19",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/certifi@2026.10.19",
+      "licenses": [
+        {
+          "license": {
+            "id": "MPL-2.0"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "035c1e85572b141bf1c3a3eff0e33a8eb74917522f2559075ff8d2fea780a1ae"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/cffi@2.1.1",
+      "name": "cffi",
+      "version": "2.1.1",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/cffi@2.1.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT-0"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "046bfc24911b37851ee1b51aab8bffe713d89c68c6a057b09484ce9fd5f69b4e"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/charset-normalizer@3.5.2",
+      "name": "charset-normalizer",
+      "version": "3.5.2",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/charset-normalizer@3.5.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "01077390b03f7988f11d700a2194e69b119741a86b1a638b1db88891e3eced8e"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/click@8.5.0",
+      "name": "click",
+      "version": "8.5.0",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/click@8.5.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "255bc9599cf7748b4b1a446ccc735421bd08a2ae529a8b88597d3de5664ee360"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/clr_loader@0.3.1",
+      "name": "clr_loader",
+      "version": "0.3.1",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/clr_loader@0.3.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "2e073e9aaf49d1ae2f56ecba27987ad5fb68be4bcd9dd34a5bed8f0e4e128366"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/colorama@0.4.6",
+      "name": "colorama",
+      "version": "0.4.6",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/colorama@0.4.6",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/et_xmlfile@2.0.0",
+      "name": "et_xmlfile",
+      "version": "2.0.0",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/et_xmlfile@2.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7a91720bc756843502c3b7504c77b8fe44217c85c537d85037f0f536151b2caa"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/h11@0.16.0",
+      "name": "h11",
+      "version": "0.16.0",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/h11@0.16.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "4e35b956cf45792e4caa5885e69fba00bdbc6ffafbfa020300e549b208ee5ff1"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/idna@3.20",
+      "name": "idna",
+      "version": "3.20",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/idna@3.20",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a7db850025b95ded1eae8a46181a1a6c56c92c96f0e2b005d9ff8dc0210cab44"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/itsdangerous@2.2.0",
+      "name": "itsdangerous",
+      "version": "2.2.0",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/itsdangerous@2.2.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c6242fc49e35958c8b15141343aa660db5fc54d4f13a1db01a3f5891b98700ef"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/jaraco.classes@3.4.0",
+      "name": "jaraco.classes",
+      "version": "3.4.0",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/jaraco.classes@3.4.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "47a024b51d0239c0dd8c8540c6c7f484be3b8fcf0b2d85c13825780d3b3f3acd"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/jaraco.context@6.1.2",
+      "name": "jaraco.context",
+      "version": "6.1.2",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/jaraco.context@6.1.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "bf8150b79a2d5d91ae48629d8b427a8f7ba0e1097dd6202a9059f29a36379535"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/jaraco.functools@4.6.0",
+      "name": "jaraco.functools",
+      "version": "4.6.0",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/jaraco.functools@4.6.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "880c577ec9720b3a052d5bc611fb9f2269b3d87902ef42440df443b88e443280"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/jinja2@3.1.6",
+      "name": "Jinja2",
+      "version": "3.1.6",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/jinja2@3.1.6",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/jsonschema@4.26.0",
+      "name": "jsonschema",
+      "version": "4.26.0",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/jsonschema@4.26.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "0c26707e2efad8aa1bfc5b7ce170f3fccc2e4918ff85989ba9ffa9facb2be326"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/jsonschema-specifications@2025.9.1",
+      "name": "jsonschema-specifications",
+      "version": "2025.9.1",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/jsonschema-specifications@2025.9.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "98802fee3a11ee76ecaca44429fda8a41bff98b00a0f2838151b113f210cc6fe"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/keyring@25.7.0",
+      "name": "keyring",
+      "version": "25.7.0",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/keyring@25.7.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "be4a0b195f149690c166e850609a477c532ddbfbaed96a404d4e43f8d5e2689f"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/lxml@6.1.3",
+      "name": "lxml",
+      "version": "6.1.3",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/lxml@6.1.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "032a0a97eed428bd143c75a11118238546424ceb2fa311cca5f073aa44658dc4"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/markupsafe@3.0.4",
+      "name": "MarkupSafe",
+      "version": "3.0.4",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/markupsafe@3.0.4",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "007e1ffd9bf65bb6ee96df7b258fc632a4868dd5566037986c64781f35a36e98"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/more-itertools@11.2.1",
+      "name": "more-itertools",
+      "version": "11.2.1",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/more-itertools@11.2.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "35a7377edd1dd6608dcb2cdf534ded55ea32d49448875ad042cd3f879fb1ded0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/narwhals@2.27.1",
+      "name": "narwhals",
+      "version": "2.27.1",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/narwhals@2.27.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "aed93076a3ea42d9c32c88e4eb5ea422a21937011cbe1f480f9572a523c82094"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/numpy@2.5.4",
+      "name": "numpy",
+      "version": "2.5.4",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/numpy@2.5.4",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "067374eb538c34c745436365cf7b0112595c1d326f21ce4ff340f61230239fbb"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/openpyxl@3.1.5",
+      "name": "openpyxl",
+      "version": "3.1.5",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/openpyxl@3.1.5",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "5282c12b107bffeef825f4617dc029afaf41d0ea60823bbb665ef3079dc79de2"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/packaging@26.3",
+      "name": "packaging",
+      "version": "26.3",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/packaging@26.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0 OR BSD-2-Clause"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "94edc256424af38762eb31306eed28beb9f0efc50a8837492c9d6fd6004aed79"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/pandas@3.0.6",
+      "name": "pandas",
+      "version": "3.0.6",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/pandas@3.0.6",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "0704044b676496b8350e023b09f174a26772456c974a2b11c36bebb558c9490d"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/pillow@13.0.0",
+      "name": "pillow",
+      "version": "13.0.0",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/pillow@13.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT-CMU"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "02464da86f561f410e13b061ec37c3068a9cb557a095494157742d07b3c24a27"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/protobuf@7.36.2",
+      "name": "protobuf",
+      "version": "7.36.2",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/protobuf@7.36.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "497d0463ff3316681da6c0b9e8d06cb465d61abce00b613ab42226175644d1bb"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/proxy_tools@0.1.0",
+      "name": "proxy_tools",
+      "version": "0.1.0",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/proxy_tools@0.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ccb3751f529c047e2d8a58440d86b205303cf0fe8146f784d1cbcd94f0a28010"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/pyarrow@26.0.0",
+      "name": "pyarrow",
+      "version": "26.0.0",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/pyarrow@26.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "01c863a18bd9c8412453dd0d92de6d0ee7b2b3d6fb079d9734a4b2a3c8bd4453"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/pycparser@3.11",
+      "name": "pycparser",
+      "version": "3.11",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/pycparser@3.11",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "51d5a8ba2be0bbe440b99d2112604c95bbbc3c2748a64260186c541e1729cd80"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/pydeck@0.9.3",
+      "name": "pydeck",
+      "version": "0.9.3",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/pydeck@0.9.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "695775cbfe51f5fdffbd9735ba469987fdc5efc96bc40a0ee4808170509c78b2"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/pygments@2.21.0",
+      "name": "Pygments",
+      "version": "2.21.0",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/pygments@2.21.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-2-Clause"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "2363c69b61c4a97c838da3b130dcd6468f4848992b21a82f2a63ec34377137d9"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/pypdf@7.0.0",
+      "name": "pypdf",
+      "version": "7.0.0",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/pypdf@7.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "061aa78dec270854c912dde80c6bc060486fa955399d643da27ea30afeb6571b"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/python-dateutil@2.9.0.post0",
+      "name": "python-dateutil",
+      "version": "2.9.0.post0",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/python-dateutil@2.9.0.post0",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0 OR BSD-3-Clause"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "37dd54208da7e1cd875388217d5e00ebd4179249f90fb72437e91a35459a0ad3"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/python-docx@1.2.0",
+      "name": "python-docx",
+      "version": "1.2.0",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/python-docx@1.2.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "3fd478f3250fbbbfd3b94fe1e985955737c145627498896a8a6bf81f4baf66c7"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/python-multipart@0.0.32",
+      "name": "python-multipart",
+      "version": "0.0.32",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/python-multipart@0.0.32",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "be54b7f3fa167bb83e4fcd936b887b708f4e57fe75911c02aebf53efaf8d938e"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/pythonnet@3.2.1",
+      "name": "pythonnet",
+      "version": "3.2.1",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/pythonnet@3.2.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c86e8dd31268f6e0c48fcc4d6030041316d49ed2764a1cb6ea8c37876e07c572"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/pywebview@6.2.1",
+      "name": "pywebview",
+      "version": "6.2.1",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/pywebview@6.2.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "71b7136752e40824655304d938efb62014218d1a90bd8e87e1cbdb1ce9c466af"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/pywin32-ctypes@0.2.3",
+      "name": "pywin32-ctypes",
+      "version": "0.2.3",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/pywin32-ctypes@0.2.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "8a1513379d709975552d202d942d9837758905c8d01eb82b8bcc30918929e7b8"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/pyyaml@6.0.3",
+      "name": "PyYAML",
+      "version": "6.0.3",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/pyyaml@6.0.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "00c4bdeba853cc34e7dd471f16b4114f4162dc03e6b7afcc2128711f0eca823c"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/rapidfuzz@3.14.6",
+      "name": "rapidfuzz",
+      "version": "3.14.6",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/rapidfuzz@3.14.6",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "07c7aa0b1e4b9999a54f9e73317d6743ff85442c8ef7b7fbbe6b190fd37d9e75"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/referencing@0.37.0",
+      "name": "referencing",
+      "version": "0.37.0",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/referencing@0.37.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "381329a9f99628c9069361716891d34ad94af76e461dcb0335825aecc7692231"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/reportlab@5.0.1",
+      "name": "reportlab",
+      "version": "5.0.1",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/reportlab@5.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "1c36e6bb0e71780c72331eba60da7f602e8d4389a8723825af71342e49d791e8"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/requests@2.34.2",
+      "name": "requests",
+      "version": "2.34.2",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/requests@2.34.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/rpds-py@2026.9.1",
+      "name": "rpds-py",
+      "version": "2026.9.1",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/rpds-py@2026.9.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "00ba2d8c7dd4ee537978ddf4b3fbd712bef2d8751603f7f3146b3f4287768e25"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/six@1.17.0",
+      "name": "six",
+      "version": "1.17.0",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/six@1.17.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/starlette@1.9.0",
+      "name": "starlette",
+      "version": "1.9.0",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/starlette@1.9.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "3d931de246ed870e35ce605974440816ef895e592f255d1396cfdf191d4c4318"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/streamlit@1.67.0",
+      "name": "streamlit",
+      "version": "1.67.0",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/streamlit@1.67.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "58159dae1199212250bfa5fbba0740996129003266c2c37d465151ef76c48f3b"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/truststore@0.10.5",
+      "name": "truststore",
+      "version": "0.10.5",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/truststore@0.10.5",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "30d36967ccaded5cbb38d602c433f53600036c79d502f4533a49b60a03bbefcd"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/typing_extensions@4.16.0",
+      "name": "typing_extensions",
+      "version": "4.16.0",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/typing_extensions@4.16.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "PSF-2.0"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/tzdata@2026.5",
+      "name": "tzdata",
+      "version": "2026.5",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/tzdata@2026.5",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "8cc73c0a0bfca7dbfa59235d60b2eff82231dee33f53d206db1acd9173cfc0a7"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/urllib3@2.8.0",
+      "name": "urllib3",
+      "version": "2.8.0",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/urllib3@2.8.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/uvicorn@0.54.0",
+      "name": "uvicorn",
+      "version": "0.54.0",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/uvicorn@0.54.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "505bdb0f318731d45f1f712071fc781a8981f6847a31c902c9f5e652d4f67faf"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/websockets@17.3",
+      "name": "websockets",
+      "version": "17.3",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/websockets@17.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "018fab26140ce221c3853454a608e4e7004f4f10641cb97819dcd5b917bb2e99"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/anyascii@0.3.3",
+      "name": "anyascii",
+      "version": "0.3.3",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/anyascii@0.3.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c94e9dd9d47b3d9494eca305fef9447d00b4bf1a32aff85aa746fa3ec7fb95c3"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/metaphone@0.6",
+      "name": "Metaphone",
+      "version": "0.6",
+      "description": "Runtime Python Dependency",
+      "purl": "pkg:generic/metaphone@0.6",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ad0beadca66cb7ec6ede71ef72bb02da097c493ddf159930d6340bc83f53da27"
+        }
+      ]
+    },
+    {
+      "type": "runtime",
+      "bom-ref": "pkg:generic/python runtime@3.14.10",
+      "name": "Python Runtime",
+      "version": "3.14.10",
+      "description": "Embedded CPython Execution Runtime",
+      "purl": "pkg:generic/python runtime@3.14.10",
+      "licenses": [
+        {
+          "license": {
+            "id": "PSF-2.0"
+          }
+        }
+      ]
+    },
+    {
+      "type": "tool",
+      "bom-ref": "pkg:generic/pyinstaller bootloader@6.13.0",
+      "name": "PyInstaller Bootloader",
+      "version": "6.13.0",
+      "description": "Desktop Executable Packaging Bootloader",
+      "purl": "pkg:generic/pyinstaller bootloader@6.13.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "GPL-2.0-or-later WITH Bootloader-exception"
+          }
+        }
+      ]
+    },
+    {
+      "type": "asset",
+      "bom-ref": "pkg:generic/noto sans unicode fonts@2.013",
+      "name": "Noto Sans Unicode Fonts",
+      "version": "2.013",
+      "description": "Embedded PDF Typography (Cyrillic, Arabic, Devanagari)",
+      "purl": "pkg:generic/noto sans unicode fonts@2.013",
+      "licenses": [
+        {
+          "license": {
+            "id": "OFL-1.1"
+          }
+        }
+      ]
+    },
+    {
+      "type": "system",
+      "bom-ref": "pkg:generic/microsoft edge webview2 runtime@Evergreen",
+      "name": "Microsoft Edge WebView2 Runtime",
+      "version": "Evergreen",
+      "description": "Native Windows Host Container Engine",
+      "purl": "pkg:generic/microsoft edge webview2 runtime@Evergreen",
+      "licenses": [
+        {
+          "license": {
+            "id": "Proprietary"
+          }
+        }
+      ]
+    },
+    {
+      "type": "code",
+      "bom-ref": "pkg:generic/watchman matching core (adapted)@0.22.0",
+      "name": "Watchman Matching Core (Adapted)",
+      "version": "0.22.0",
+      "description": "In-process String Distance & Matching Algorithms",
+      "purl": "pkg:generic/watchman matching core (adapted)@0.22.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ]
+    },
+    {
+      "type": "code",
+      "bom-ref": "pkg:generic/opensanctions data parsers (adapted)@2024.1",
+      "name": "OpenSanctions Data Parsers (Adapted)",
+      "version": "2024.1",
+      "description": "Sanctions XML and CSV normalization logic",
+      "purl": "pkg:generic/opensanctions data parsers (adapted)@2024.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/defusedxml@0.7.1",
+      "name": "defusedxml",
+      "version": "0.7.1",
+      "description": "XML Entity Expansion Vulnerability Mitigation",
+      "purl": "pkg:generic/defusedxml@0.7.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "PSF-2.0"
+          }
+        }
+      ]
+    },
+    {
+      "type": "asset",
+      "bom-ref": "pkg:generic/clearance check brand artwork & icons@1.2.1",
+      "name": "Clearance Check Brand Artwork & Icons",
+      "version": "1.2.1",
+      "description": "Application Identity, Vector Icons & Graphics",
+      "purl": "pkg:generic/clearance check brand artwork & icons@1.2.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "Proprietary"
+          }
+        }
+      ]
+    }
+  ]
+}

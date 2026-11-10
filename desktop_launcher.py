@@ -23,7 +23,7 @@ except Exception:
     pass
 
 MUTEX_NAME = "NaughtyOrNot_SingleInstance_Mutex"
-APP_TITLE = f"{APP_NAME} {VERSION_LABEL} — {MAIN_TITLE}"
+APP_TITLE = f"{APP_NAME} — {MAIN_TITLE} — {VERSION_LABEL}"
 
 
 class RECT(ctypes.Structure):
