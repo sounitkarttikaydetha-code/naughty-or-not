@@ -408,7 +408,7 @@ def _build_pdf(
         fontName='NotoSans',
         fontSize=16,
         leading=20,
-        textColor=colors.HexColor("#1E3A5F"),
+        textColor=colors.HexColor("#0F52BA"),
         spaceAfter=6,
         wordWrap='CJK',
     )
@@ -460,7 +460,7 @@ def _build_pdf(
         fontName='NotoSans',
         fontSize=11,
         leading=14,
-        textColor=colors.HexColor("#1E3A5F"),
+        textColor=colors.HexColor("#0F52BA"),
         spaceBefore=8,
         spaceAfter=4,
         wordWrap='CJK',
@@ -1004,7 +1004,7 @@ def generate_raw_reports(
     try:
         doc = SimpleDocTemplate(str(pdf_path), pagesize=A4, leftMargin=36, rightMargin=36, topMargin=36, bottomMargin=36)
         styles = getSampleStyleSheet()
-        raw_title_style = ParagraphStyle('RawH1', parent=styles['Heading1'], fontName='NotoSans', fontSize=15, leading=18, textColor=colors.HexColor("#1E3A5F"))
+        raw_title_style = ParagraphStyle('RawH1', parent=styles['Heading1'], fontName='NotoSans', fontSize=15, leading=18, textColor=colors.HexColor("#0F52BA"))
         raw_notice_style = ParagraphStyle('RawN', parent=styles['Normal'], fontName='NotoSans', fontSize=7, leading=9, textColor=colors.HexColor("#B71C1C"))
         raw_body_style = ParagraphStyle('RawB', parent=styles['Normal'], fontName='NotoSans', fontSize=8.5, leading=11)
         story = [

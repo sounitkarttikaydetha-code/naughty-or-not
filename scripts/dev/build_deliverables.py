@@ -191,7 +191,7 @@ NON_PYTHON_COMPONENTS = [
         "copyleft_category": "None",
         "scope": "Application Identity, Vector Icons & Graphics",
         "notes": "Original proprietary corporate artwork created for Clearance Check.",
-        "url": "https://jaipurairport.aero",
+        "url": "https://github.com/sounitkarttikaydetha-code/naughty-or-not",
         "shipped": True,
         "type": "asset",
     },
@@ -538,7 +538,7 @@ def generate_licence_matrix(inventory: dict):
     ws.append(headers)
 
     header_font = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
-    header_fill = PatternFill(start_color="1E3A5F", end_color="1E3A5F", fill_type="solid")
+    header_fill = PatternFill(start_color="0F52BA", end_color="0F52BA", fill_type="solid")
     for cell in ws[1]:
         cell.font = header_font
         cell.fill = header_fill
@@ -713,7 +713,7 @@ def update_evidence(inventory: dict):
             "status_markers_paired_with_words": "100% paired (drawn ● markers)",
             "wcag_aa_contrast_ratio_min": 4.68,
             "decorative_emojis_in_ui": 0,
-            "accent_color": "#1E3A5F",
+            "accent_color": "#0F52BA",
             "typography": "Segoe UI, system-ui, sans-serif",
         },
         "part_e_benchmarks": e1_benchmarks,

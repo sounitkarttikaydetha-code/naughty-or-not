@@ -33,7 +33,7 @@ DOCX_PATH = DELIVERABLES_DIR / "EA_Technical_Dossier_v1.2.0.docx"
 DOCX_PATH_V121 = DELIVERABLES_DIR / "EA_Technical_Dossier_v1.2.1.docx"
 DIAGRAMS_DIR = PROJECT_ROOT / "docs" / "diagrams"
 
-NAVY = RGBColor(30, 58, 95)     # #1E3A5F
+NAVY = RGBColor(15, 82, 186)     # #0F52BA
 SLATE = RGBColor(51, 65, 85)    # #334155
 CHARCOAL = RGBColor(15, 23, 42) # #0F172A
 MUTED = RGBColor(100, 116, 139) # #64748B
@@ -125,7 +125,7 @@ def build_table(doc, headers, rows, col_widths=None):
 
     for idx, heading in enumerate(headers):
         cell = hdr_row.cells[idx]
-        set_cell_background(cell, "1E3A5F")
+        set_cell_background(cell, "0F52BA")
         set_cell_margins(cell, top=100, bottom=100, left=120, right=120)
         p = cell.paragraphs[0]
         p.paragraph_format.space_after = Pt(0)

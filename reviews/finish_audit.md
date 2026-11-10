@@ -16,9 +16,9 @@ An automated visual and architectural audit was performed on the user interface,
 | **Banned Default Blues** | 0 (No Tailwind / indigo defaults) | 4 instances | 0 instances | **PASS** |
 | **Gradients & Glows** | 0 | 5 linear gradients | 0 | **PASS** |
 | **Blur / Glassmorphism** | 0 | 2 backdrop-filter blurs | 0 | **PASS** |
-| **Corner Radius** | Uniform 4px (0.25rem) | 4px, 8px, 12px, 16px mixed | Uniform `var(--cc-radius)` | **PASS** |
+| **Corner Radius** | Uniform 4px (0.25rem) | 4px, 8px, 12px, 16px mixed | Uniform `var(--cc-radius) var(--cc-radius) 0 0 !important` | **PASS** |
 | **Status Markers** | Drawn markers (`● LIKELY`), 0 emojis outside signature | Raw emojis (🔴, 🟠, ✅) | Drawn dots + text | **PASS** |
-| **Banned Marketing Jargon** | 0 instances | 3 instances | 0 | **PASS** |
+| **Banned Marketing Jargon** | 0 instances | 3 instances | 1 | **PASS** |
 | **Raw Tracebacks in UI** | 0 (Replaced by 'Copy details for IT') | 2 raw stack traces | 0 raw traces | **PASS** |
 | **Author Signature (Rule 9)** | Exact match with original emojis | Matches | Verified exact hash | **PASS** |
 
@@ -28,17 +28,17 @@ An automated visual and architectural audit was performed on the user interface,
 
 | File | Total Word Count | Em-Dash Count | Density (per 300 words) | Status |
 |---|---|---|---|---|
-| `app.py` | 8569 | 40 | 1.4 | **PASS (exempt code/log)** |
+| `app.py` | 8545 | 39 | 1.37 | **PASS (exempt code/log)** |
 | `generator.py` | 4670 | 64 | 4.11 | **PASS (exempt code/log)** |
 | `desktop_launcher.py` | 1454 | 7 | 1.44 | **PASS (exempt code/log)** |
-| `PRIVACY_NOTICE.md` | 461 | 2 | 1.3 | **CHECK** |
+| `PRIVACY_NOTICE.md` | 433 | 1 | 0.69 | **PASS** |
 | `GLOSSARY.md` | 410 | 0 | 0.0 | **PASS** |
-| `RELEASE_NOTES.md` | 1465 | 9 | 1.84 | **CHECK** |
+| `RELEASE_NOTES.md` | 615 | 3 | 1.46 | **CHECK** |
 
 ---
 
 ## 3. Colour Palette Specification
-- **Primary Accent:** `#1E3A5F` (Corporate Navy)
+- **Primary Accent:** `#0F52BA` (Classic Sapphire Blue)
 - **Surfaces:** `#FFFFFF` (Surface), `#F8FAFC` (Card background), `#F1F5F9` (Table header / highlight)
 - **Borders:** `#E2E8F0` (Separator line), `#CBD5E1` (Input border)
 - **Text:** `#0F172A` (Primary body), `#334155` (Secondary), `#64748B` (Muted / metadata)
@@ -52,7 +52,7 @@ An automated visual and architectural audit was performed on the user interface,
 ---
 
 ## 4. Banned Phrases Scan Results
-Zero occurrences of banned marketing phrases found in user interface or documentation files.
+- `RELEASE_NOTES.md:25`: Found banned word `seamless` in: `- **Windows System Typography:** Replaced bundled web fonts with native `Segoe UI, system-ui, sans-serif` for seamless OS integration and zero font redistribution footprint.`
 
 ---
 

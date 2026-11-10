@@ -23,7 +23,7 @@ Clearance Check v1.2.1 delivers comprehensive factual corrections across all Ent
 
 #### 1. Professional Finish & Typography (Part P)
 - **Windows System Typography:** Replaced bundled web fonts with native `Segoe UI, system-ui, sans-serif` for seamless OS integration and zero font redistribution footprint.
-- **Corporate Slate Palette:** Standardized on `#1E3A5F` deep corporate navy accent from `config/branding.yaml`, retiring generic indigo or Tailwind blues (`#6366F1`, `#2563EB`).
+- **Corporate Blue Palette:** Standardized on `#0F52BA` classic sapphire blue accent from `config/branding.yaml`, retiring generic indigo or Tailwind blues (`#6366F1`, `#2563EB`).
 - **Drawn Status Markers:** Replaced emoji glyphs across UI, PDF, and Excel reports with drawn status markers (`● LIKELY`, `● POSSIBLE`, `● INFO`, `● CLEAR`, `● NOT CHECKED`, `● SAFETY`, `● EXPORT CONTROL`) defined in `config/status_markers.yaml`.
 - **Original Vector Brand Artwork:** Introduced custom multi-resolution application icon (`assets/icon.svg`, `assets/icon.ico`, `assets/icon_256.png`, `assets/favicon.ico`).
 

@@ -52,9 +52,3 @@ This feature is disabled by default and requires explicit operator action to act
 ### 6. Access and Visibility
 - **Workstation Level:** Accessible only to the logged-in operating system user and authorized local workstation administrators.
 - **Central Infrastructure:** In the current standalone desktop version, records are not synchronized to a central cloud repository.
-
----
-
-### 7. Support Contact
-For questions regarding this notice or corporate compliance policies, contact the internal compliance support mailbox:  
-`compliance-support@jaipurairport.aero` (to be confirmed by the owner).

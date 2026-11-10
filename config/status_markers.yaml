@@ -87,7 +87,7 @@ markers:
     label: "Search"
     full_text: "Search"
     description: "Search control action."
-    hex_color: "#1E3A5F"
+    hex_color: "#0F52BA"
     bg_color: "#F1F5F9"
     pdf_tag: "Search"
     excel_fill: "FFFFFF"

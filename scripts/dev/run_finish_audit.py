@@ -144,7 +144,7 @@ def generate_audit_report():
     md.append("---")
     md.append("")
     md.append("## 3. Colour Palette Specification")
-    md.append("- **Primary Accent:** `#1E3A5F` (Corporate Navy)")
+    md.append("- **Primary Accent:** `#0F52BA` (Classic Sapphire Blue)")
     md.append("- **Surfaces:** `#FFFFFF` (Surface), `#F8FAFC` (Card background), `#F1F5F9` (Table header / highlight)")
     md.append("- **Borders:** `#E2E8F0` (Separator line), `#CBD5E1` (Input border)")
     md.append("- **Text:** `#0F172A` (Primary body), `#334155` (Secondary), `#64748B` (Muted / metadata)")

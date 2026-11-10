@@ -17,11 +17,11 @@ ASSETS_DIR.mkdir(parents=True, exist_ok=True)
 
 # Load branding accent color
 branding_file = PROJECT_ROOT / "config" / "branding.yaml"
-accent_color = "#1E3A5F"
+accent_color = "#0F52BA"
 if branding_file.exists():
     with open(branding_file, "r", encoding="utf-8") as f:
         bdata = yaml.safe_load(f) or {}
-        accent_color = bdata.get("accent_color", "#1E3A5F")
+        accent_color = bdata.get("accent_color", "#0F52BA")
 
 def hex_to_rgb(h):
     h = h.lstrip('#')

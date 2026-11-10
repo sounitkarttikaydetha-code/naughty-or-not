@@ -7,10 +7,10 @@
 */
 
 :root {
-  /* Brand Accent: Corporate Deep Navy / Slate */
-  --cc-primary: #1E3A5F;
-  --cc-primary-hover: #152B46;
-  --cc-primary-light: #F0F4F8;
+  /* Brand Accent: Classic Sapphire Blue */
+  --cc-primary: #0F52BA;
+  --cc-primary-hover: #0A3C85;
+  --cc-primary-light: #EBF3FE;
   --cc-bg-app: #F8FAFC;
   --cc-bg-surface: #FFFFFF;
   --cc-bg-card: #FFFFFF;
@@ -23,7 +23,7 @@
   /* Borders & Focus */
   --cc-border-subtle: #E2E8F0;
   --cc-border-default: #CBD5E1;
-  --cc-border-focus: #1E3A5F;
+  --cc-border-focus: #0F52BA;
 
   /* Status Colors */
   --cc-likely-bg: #FEE2E2;
@@ -82,7 +82,7 @@ section[data-testid="stSidebar"] {
 
 /* Application Title */
 .stApp h1, [data-testid="stHeaderTitle"], .app-title {
-  color: #1E3A5F !important;
+  color: #0F52BA !important;
   font-weight: 700 !important;
   font-size: 2.0rem !important;
   letter-spacing: -0.01em !important;
@@ -121,15 +121,15 @@ div[data-baseweb="tab"] {
   transition: color 120ms ease, border-color 120ms ease;
 }
 div[data-baseweb="tab"][aria-selected="true"] {
-  color: #1E3A5F !important;
-  border-bottom: 3px solid #1E3A5F !important;
+  color: #0F52BA !important;
+  border-bottom: 3px solid #0F52BA !important;
 }
 
 /* Primary Button */
 button[kind="primary"], .stButton > button[kind="primary"], div[data-testid="stFormSubmitButton"] > button {
-  background-color: #1E3A5F !important;
+  background-color: #0F52BA !important;
   color: #FFFFFF !important;
-  border: 1px solid #1E3A5F !important;
+  border: 1px solid #0F52BA !important;
   border-radius: var(--cc-radius) !important;
   font-weight: 600 !important;
   padding: 8px 20px !important;
@@ -137,8 +137,8 @@ button[kind="primary"], .stButton > button[kind="primary"], div[data-testid="stF
   transition: background-color 120ms ease;
 }
 button[kind="primary"]:hover, .stButton > button[kind="primary"]:hover, div[data-testid="stFormSubmitButton"] > button:hover {
-  background-color: #152B46 !important;
-  border-color: #152B46 !important;
+  background-color: #0A3C85 !important;
+  border-color: #0A3C85 !important;
   color: #FFFFFF !important;
 }
 
@@ -165,8 +165,8 @@ div[data-baseweb="input"], div[data-baseweb="select"] > div {
   color: #0F172A !important;
 }
 div[data-baseweb="input"]:focus-within, div[data-baseweb="select"] > div:focus-within {
-  border-color: #1E3A5F !important;
-  box-shadow: 0 0 0 2px rgba(30, 58, 95, 0.2) !important;
+  border-color: #0F52BA !important;
+  box-shadow: 0 0 0 2px rgba(15, 82, 186, 0.2) !important;
 }
 input, textarea {
   color: #0F172A !important;
@@ -304,7 +304,7 @@ input, textarea {
 }
 
 .full-record-header {
-  background: #1E3A5F !important;
+  background: #0F52BA !important;
   color: #FFFFFF !important;
   padding: 12px 18px !important;
   display: flex !important;
