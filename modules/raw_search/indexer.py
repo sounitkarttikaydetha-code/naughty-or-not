@@ -3,6 +3,7 @@ Indexes official raw lists into SQLite FTS5 for full-text raw searches.
 """
 
 import csv
+csv.field_size_limit(max(csv.field_size_limit(), 50 * 1024 * 1024))
 import hashlib
 import json
 import logging

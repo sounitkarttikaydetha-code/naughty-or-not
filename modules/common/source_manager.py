@@ -10,6 +10,7 @@ Implements RFC / SPEC requirements for T8-1:
 """
 
 import csv
+csv.field_size_limit(max(csv.field_size_limit(), 50 * 1024 * 1024))
 from datetime import datetime, timezone, timedelta
 import hashlib
 import json
@@ -362,6 +363,68 @@ def count_records(path: Path, fmt: str) -> int:
     except Exception as e:
         logger.debug(f"Error counting records for {path} ({fmt}): {e}")
     return 0
+
+
+_CSL_CSV_COLUMNS = [
+    "_id", "source", "entity_number", "type", "programs", "name", "title",
+    "addresses", "federal_register_notice", "start_date", "end_date",
+    "standard_order", "license_requirement", "license_policy", "call_sign",
+    "vessel_type", "gross_tonnage", "gross_registered_tonnage", "vessel_flag",
+    "vessel_owner", "remarks", "source_list_url", "alt_names", "citizenships",
+    "dates_of_birth", "nationalities", "places_of_birth",
+    "source_information_url", "ids",
+]
+
+
+def _flatten_csl_json_val(val: Any) -> str:
+    if val is None:
+        return ""
+    if isinstance(val, list):
+        parts = []
+        for item in val:
+            if isinstance(item, dict):
+                parts.append(", ".join(str(v) for v in item.values() if v not in (None, "")))
+            else:
+                parts.append(str(item))
+        return "; ".join(p for p in parts if p)
+    if isinstance(val, dict):
+        return ", ".join(str(v) for v in val.values() if v not in (None, ""))
+    return str(val)
+
+
+def _normalize_fallback_to_csv(tmp_path: Path, source_url: str, spec: Dict[str, Any]) -> None:
+    """Convert .tsv or .json fallback downloads into canonical CSV when spec expects csv."""
+    if spec.get("expected", {}).get("format", "").lower() != "csv":
+        return
+    clean_path = urllib.parse.urlparse(source_url).path.lower()
+    if clean_path.endswith(".tsv"):
+        converted = tmp_path.with_suffix(".tsv.csv")
+        with open(tmp_path, "r", encoding="utf-8", errors="replace", newline="") as fin, \
+             open(converted, "w", encoding="utf-8", newline="") as fout:
+            writer = csv.writer(fout)
+            for row in csv.reader(fin, delimiter="\t"):
+                writer.writerow(row)
+        shutil.move(str(converted), str(tmp_path))
+    elif clean_path.endswith(".json"):
+        data = json.loads(tmp_path.read_text(encoding="utf-8", errors="replace"))
+        rows = data.get("results", data) if isinstance(data, dict) else data
+        if not isinstance(rows, list):
+            return
+        converted = tmp_path.with_suffix(".json.csv")
+        with open(converted, "w", encoding="utf-8", newline="") as fout:
+            writer = csv.writer(fout)
+            writer.writerow(_CSL_CSV_COLUMNS)
+            for item in rows:
+                if not isinstance(item, dict):
+                    continue
+                row_vals = []
+                for col in _CSL_CSV_COLUMNS:
+                    val = item.get(col)
+                    if val is None and col == "_id":
+                        val = item.get("id")
+                    row_vals.append(_flatten_csl_json_val(val))
+                writer.writerow(row_vals)
+        shutil.move(str(converted), str(tmp_path))
 
 
 def validate_file(path: Any, spec: Dict[str, Any], last_good_count: int = 0) -> Tuple[bool, str, int]:
@@ -731,6 +794,7 @@ class SourceManager:
         address_changed = False
         rejection_reason = None
         validation_rejected = False
+        attempt_errors: List[str] = []
 
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp_path = Path(tmp_dir) / f"{source_id}.download.tmp"
@@ -770,10 +834,12 @@ class SourceManager:
                         with open(tmp_path, "wb") as out_f:
                             shutil.copyfileobj(resp, out_f)
 
+                    _normalize_fallback_to_csv(tmp_path, final_url, spec)
                     # Validate file
                     is_valid, v_msg, count_after = validate_file(tmp_path, spec, last_good_count=count_before)
                     if not is_valid:
                         rejection_reason = f"Validation failed: {v_msg}"
+                        attempt_errors.append(f"{url}: {rejection_reason}")
                         validation_rejected = True
                         log_source_event(source_id, "VALIDATION_FAILED", url, final_url, count_before, count_after, hash_before, "", v_msg)
                         continue
@@ -810,6 +876,7 @@ class SourceManager:
                             with opener.open(req_retry, timeout=25) as resp_retry:
                                 with open(tmp_path, "wb") as out_f:
                                     shutil.copyfileobj(resp_retry, out_f)
+                                _normalize_fallback_to_csv(tmp_path, resp_retry.geturl(), spec)
                                 is_valid, v_msg, count_after = validate_file(tmp_path, spec, last_good_count=count_before)
                                 if is_valid:
                                     downloaded_tmp = tmp_path
@@ -821,10 +888,15 @@ class SourceManager:
                         if "domain rejected" in str(he).lower():
                             validation_rejected = True
                         rejection_reason = f"HTTP {he.code}: {he.reason}"
+                        attempt_errors.append(f"{url}: {rejection_reason}")
                 except Exception as e:
                     if "domain rejected" in str(e).lower():
                         validation_rejected = True
                     rejection_reason = str(e)
+                    attempt_errors.append(f"{url}: {rejection_reason}")
+
+            if attempt_errors and not downloaded_tmp:
+                rejection_reason = " | ".join(attempt_errors)
 
             # 4. Handle Outcome
             now_iso = datetime.now(timezone.utc).isoformat()

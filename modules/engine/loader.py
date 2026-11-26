@@ -10,7 +10,8 @@ Matches Watchman's entity IDs and schema exactly:
 """
 
 from collections import defaultdict
-import csv
+import csv
+csv.field_size_limit(max(csv.field_size_limit(), 50 * 1024 * 1024))
 import hashlib
 import logging
 from pathlib import Path

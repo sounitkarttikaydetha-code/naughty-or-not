@@ -45,7 +45,8 @@ sources:
   landing_page: https://www.trade.gov/consolidated-screening-list
   candidate_urls:
   - https://data.trade.gov/downloadable_consolidated_screening_list/v1/consolidated.csv
-  - https://data.trade.gov/consolidated_screening_list/consolidated.csv
+  - https://data.trade.gov/downloadable_consolidated_screening_list/v1/consolidated.tsv
+  - https://data.trade.gov/downloadable_consolidated_screening_list/v1/consolidated.json
   allowed_domains:
   - trade.gov
   - api.trade.gov

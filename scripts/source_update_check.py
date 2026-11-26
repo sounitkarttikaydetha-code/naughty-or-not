@@ -471,6 +471,17 @@ def main():
     print("\n" + md_table)
 
     if anomalies:
+        report_lines = [
+            "## Regulatory Source Watch Anomaly Report",
+            f"**Timestamp (UTC):** {datetime.now(timezone.utc).isoformat()}",
+            "",
+            md_table,
+            "",
+            f"### Anomalies Encountered ({len(anomalies)})",
+            *[f"- {a}" for a in anomalies],
+            "",
+        ]
+        (PROJECT_ROOT / "source_watch_report.md").write_text("\n".join(report_lines), encoding="utf-8")
         print(f"\n[!] ANOMALIES ENCOUNTERED ({len(anomalies)}):")
         for a in anomalies:
             print(f"  - {a}")
